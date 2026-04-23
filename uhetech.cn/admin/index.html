@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>人类帝国中央档案库 CMS 后台</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="admin.css" />
+  <script src="../config.js"></script>
+  <script src="../js/timeline-node-config.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="logo-title">
+        <h1>中央档案库 · 内容管理后台</h1>
+        <span class="subtitle">UHE Central Archive CMS</span>
+      </div>
+
+      <div class="admin-auth">
+        <span class="auth-badge">管理员会话已验证</span>
+
+        <label>
+          备用 Token
+          <input type="password" id="admin-token-input" placeholder="Optional token for scripts" />
+        </label>
+
+        <button id="save-token-btn">保存备用 Token</button>
+        <button id="open-settings-btn" class="secondary" type="button">管理员设置</button>
+
+        <form class="admin-logout-form" method="post" action="/admin/logout">
+          <button type="submit" class="secondary">退出后台</button>
+        </form>
+
+        <button id="reload-btn" class="secondary">从服务器重载</button>
+        <button id="save-data-btn" class="primary">保存全部改动</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <aside class="tree-panel">
+        <div class="tree-header">
+          <span>站点结构</span>
+          <button id="add-category-btn" class="small-btn">+ 新建分类</button>
+        </div>
+
+        <div class="tree-search">
+          <input
+            type="text"
+            id="global-search-input"
+            class="search-input"
+            placeholder="按标题 / ID / 正文搜索"
+          />
+
+          <select id="search-type-filter" class="search-type-select">
+            <option value="all">全部</option>
+            <option value="category">分类</option>
+            <option value="item">条目</option>
+            <option value="subItem">子节点</option>
+            <option value="era">时间线</option>
+            <option value="branch">分支</option>
+            <option value="branchEvent">分支事件</option>
+            <option value="musicRoot">音乐库</option>
+            <option value="musicTrack">歌曲</option>
+          </select>
+
+          <button id="global-search-btn" class="small-btn">搜索</button>
+        </div>
+
+        <div id="search-results-panel" class="search-results-panel">
+          <div class="search-results-toolbar">
+            <span class="search-results-title">搜索结果</span>
+            <div class="search-results-toolbar-actions">
+              <span id="search-results-count" class="search-results-count">0</span>
+              <button id="toggle-search-results-btn" class="small-btn secondary" type="button" aria-expanded="true">
+                收起
+              </button>
+            </div>
+          </div>
+          <div id="search-results" class="search-results"></div>
+        </div>
+
+        <div id="tree-container" class="tree-container">
+          <!-- 左侧树结构 -->
+        </div>
+      </aside>
+
+      <section class="editor-panel">
+        <div id="editor-selection-bar" class="editor-selection-bar">
+          <div class="editor-selection-copy">
+            <div id="editor-node-path" class="editor-node-path">未选择节点</div>
+
+            <div class="editor-selection-main">
+              <div class="editor-selection-heading">
+                <h2 id="editor-node-title" class="editor-node-title">请选择左侧节点</h2>
+                <div id="editor-node-meta" class="editor-node-meta"></div>
+              </div>
+            </div>
+
+            <div id="editor-status-inline" class="editor-status-inline" aria-live="polite">未选择节点</div>
+
+            <div id="editor-outline" class="editor-outline"></div>
+          </div>
+        </div>
+
+        <div id="editor-actions-dock" class="editor-actions-dock docked-top" aria-label="编辑快捷操作">
+          <div id="editor-actions-handle" class="editor-actions-handle" title="拖动操作卡片">
+            <span class="editor-actions-handle-grip" aria-hidden="true"></span>
+            <span>快捷操作</span>
+          </div>
+          <div class="editor-selection-actions editor-selection-actions--dock">
+            <button id="editor-apply-current-btn" class="primary" type="button">应用当前</button>
+            <button id="add-child-btn" class="secondary" type="button">新增子节点</button>
+            <button id="delete-node-btn" class="secondary danger-soft" type="button">删除当前</button>
+            <button id="editor-save-all-btn" class="secondary" type="button">保存全部</button>
+          </div>
+        </div>
+
+        <div id="status-bar" class="status-bar">未选择节点</div>
+
+        <div id="editor-container" class="editor-container">
+          <!-- 右侧编辑表单 -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="admin-settings-modal" class="admin-modal hidden" aria-hidden="true">
+    <div class="admin-modal-backdrop" data-close-settings="true"></div>
+
+    <section
+      class="admin-modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-settings-title"
+    >
+      <div class="admin-modal-header">
+        <div>
+          <h2 id="admin-settings-title">管理员设置</h2>
+          <p class="admin-modal-subtitle">
+            后台密钥现在由环境变量 <code>ADMIN_TOKEN</code> 驱动。
+          </p>
+        </div>
+
+        <button id="close-settings-btn" class="secondary" type="button">关闭</button>
+      </div>
+
+      <div id="admin-settings-source" class="settings-note">
+        正在读取管理员密钥配置...
+      </div>
+
+      <form id="admin-password-form" class="settings-form">
+        <label class="settings-field">
+          <span>当前密钥</span>
+          <input id="admin-current-token" type="password" autocomplete="current-password" required />
+        </label>
+
+        <label class="settings-field">
+          <span>新密钥</span>
+          <input id="admin-next-token" type="password" autocomplete="new-password" minlength="6" required />
+        </label>
+
+        <label class="settings-field">
+          <span>确认新密钥</span>
+          <input id="admin-confirm-token" type="password" autocomplete="new-password" minlength="6" required />
+        </label>
+
+        <div class="settings-actions">
+          <button id="change-admin-token-btn" class="primary" type="submit">更新管理员密钥</button>
+          <button id="clear-settings-form-btn" class="secondary" type="button">清空输入</button>
+        </div>
+
+        <div id="admin-settings-message" class="settings-message" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
+
+  <script src="../color-palette.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,4951 @@
+﻿/* START OF FILE style.css */
+
+/* Version 1.7.0: Fully Responsive AI Agent UI */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* 设计 Token：亮色 / 暗色基础色板 */
+:root {
+  /* 背景 */
+  --bg-main: #fdfaf4;
+  --bg-elevated: rgba(255, 255, 255, 0.85);
+  --bg-elevated-soft: rgba(255, 255, 255, 0.7);
+  --bg-backdrop: rgba(255, 255, 255, 0.25);
+
+  /* 文字 */
+  --text-main: #20252d;
+  --text-muted: #7a7f8a;
+  --text-faint: #b0b5c0;
+  --text-on-accent: #ffffff;
+
+  /* 边框与分割线 */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.16);
+
+  /* 强调色（帝国主题） */
+  --accent: #00aeff;
+  --accent-soft: rgba(0, 174, 255, 0.1);
+  --accent-strong: #0092d6;
+  --accent-glow: rgba(0, 174, 255, 0.55);
+
+  /* 状态色（预留） */
+  --status-good: #44c48c;
+  --status-warn: #ffb347;
+  --status-danger: #ff5c5c;
+
+  /* 顶部导航（返回按钮 / 面包屑） */
+  --nav-breadcrumb-color: var(--text-main);
+  --nav-breadcrumb-muted: #6b7280;
+  --reader-nav-surface: rgba(255, 255, 255, 0.2);
+  --reader-nav-border: rgba(255, 255, 255, 0.3);
+
+  /* 阴影 */
+  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.12);
+  --shadow-strong: 0 28px 80px rgba(0, 0, 0, 0.22);
+
+  /* 通用尺寸/动效 */
+  --card-radius: 18px;
+  --transition-fast: 0.18s ease-out;
+  --transition-normal: 0.32s ease;
+  --transition-slow: 0.5s ease;
+  
+   /* 新增：磨砂层的颜色（亮色主题下） */
+    --frost-glass-color: rgba(255, 255, 255, 0.5);
+    
+     /* 新增：音乐播放器磨砂层的颜色（亮色主题下） */
+       --player-glass-bg: rgba(255, 255, 255, 0.7);
+    --player-glass-hover-bg: rgba(255, 255, 255, 0.9);
+    --player-glass-border: rgba(0, 0, 0, 0.06);
+    --player-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    --player-shadow-hover: 0 6px 15px rgba(0, 0, 0, 0.1);
+    
+     --ai-chat-window-bg: rgba(255, 255, 255, 0.92);
+  --ai-chat-header-bg: rgba(255, 255, 255, 0.78);
+  --ai-chat-input-bg: rgba(255, 255, 255, 0.86);
+
+  --ai-chat-ai-bubble-bg: rgba(0, 0, 0, 0.04);
+  --ai-chat-border: var(--border-color);
+  --ai-chat-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+
+  --ai-chat-link-color: var(--accent-color);
+  --ai-chat-link-bg: rgba(0, 123, 255, 0.10);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Character Archive styles (merged from characters.css)                      */
+/* Adjust this block if you want to tune card density, panel ratio or mobile  */
+/* stacking behavior without opening another CSS file.                        */
+/* -------------------------------------------------------------------------- */
+
+#character-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 40px 40px;
+  box-sizing: border-box;
+}
+
+.character-archive {
+  width: min(1280px, 96vw);
+  height: min(820px, calc(100vh - 140px));
+  border-radius: var(--card-radius);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.character-header {
+  padding: 22px 22px 14px;
+  background: var(--bg-elevated-soft);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.character-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.character-title-row h2 {
+  margin: 0;
+  font-size: 1.35em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-main);
+}
+
+.character-tip {
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.character-controls {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+#character-search {
+  flex: 1;
+  height: 42px;
+  border-radius: 14px;
+  padding: 0 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-backdrop);
+  color: var(--text-main);
+  outline: none;
+}
+
+#character-search::placeholder {
+  color: var(--text-faint);
+}
+
+.character-btn {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.character-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: var(--bg-elevated-soft);
+}
+
+:root[data-theme="dark"] .character-card:hover {
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+}
+
+.character-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.character-list {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.character-grid {
+  height: 100%;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  overflow: auto;
+  align-content: start;
+}
+
+.character-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--bg-elevated-soft);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.character-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+}
+
+.character-card.active {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent-strong);
+}
+
+.character-card.placeholder {
+  cursor: default;
+}
+
+.character-avatar {
+  width: 100%;
+  height: 124px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.character-avatar.placeholder {
+  background: var(--bg-backdrop);
+}
+
+.character-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.character-avatar-fallback {
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+}
+
+.character-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.character-name {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.character-snippet {
+  font-size: 0.88em;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.character-empty {
+  padding: 18px;
+  color: var(--text-muted);
+  font-size: 0.95em;
+}
+
+.character-detail {
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid var(--border-subtle);
+  padding: 18px 22px;
+}
+
+.character-detail-placeholder {
+  padding: 18px 0;
+}
+
+.character-detail-title {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.character-detail-text {
+  margin-top: 10px;
+  font-size: 0.95em;
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+.character-detail-text.faint {
+  color: var(--text-faint);
+}
+
+.character-detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.character-detail-name {
+  font-size: 1.35em;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.character-detail-img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+}
+
+.character-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.character-section {
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--bg-elevated-soft);
+  border: 1px solid var(--border-subtle);
+}
+
+.character-section-title {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.character-section-text {
+  margin-top: 8px;
+  font-size: 0.95em;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.character-section.level-1 { margin-left: 10px; }
+.character-section.level-2 { margin-left: 20px; }
+.character-section.level-3 { margin-left: 30px; }
+
+@media (max-width: 900px) {
+  #character-section { padding: 90px 16px 24px; }
+  .character-archive { height: calc(100vh - 120px); }
+  .character-body { grid-template-columns: 1fr; grid-template-rows: 1fr 1.1fr; }
+  .character-detail { border-left: none; border-top: 1px solid var(--border-subtle); }
+  .character-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+}
+
+:root[data-theme="dark"] {
+  --bg-main: #05060a;
+  --bg-elevated: rgba(18, 22, 32, 0.96);
+  --bg-elevated-soft: rgba(18, 22, 32, 0.88);
+  --bg-backdrop: rgba(5, 8, 16, 0.6);
+
+  --text-main: #f2f4ff;
+  --text-muted: #8d95a8;
+  --text-faint: #666f86;
+  --text-on-accent: #0b1015;
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --accent: #35b6ff;
+  --accent-soft: rgba(53, 182, 255, 0.15);
+  --accent-strong: #5ac6ff;
+  --accent-glow: rgba(53, 182, 255, 0.7);
+
+  --status-good: #46d39c;
+  --status-warn: #ffc970;
+  --status-danger: #ff7b7b;
+
+  --nav-breadcrumb-color: #f2f4ff;
+  --nav-breadcrumb-muted: #a7b0c2;
+  --reader-nav-surface: rgba(18, 22, 32, 0.52);
+  --reader-nav-border: rgba(255, 255, 255, 0.12);
+
+  --shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.6);
+  --shadow-strong: 0 40px 90px rgba(0, 0, 0, 0.85);
+  
+   /* 暗色下，磨砂用接近黑色的透明层 */
+    --frost-glass-color: rgba(5, 8, 16, 0.55);
+    
+       --ai-chat-window-bg: rgba(18, 22, 32, 0.92);
+  --ai-chat-header-bg: rgba(18, 22, 32, 0.72);
+  --ai-chat-input-bg: rgba(18, 22, 32, 0.80);
+
+  --ai-chat-ai-bubble-bg: rgba(255, 255, 255, 0.06);
+  --ai-chat-border: var(--border-color);
+  --ai-chat-shadow: 0 30px 80px rgba(0, 0, 0, 0.75);
+
+  --ai-chat-link-color: var(--accent-color);
+  --ai-chat-link-bg: rgba(53, 182, 255, 0.14);
+    
+  /*音乐播放器磨砂层的颜色*/
+  /* :root[data-theme="dark"] {
+    --player-glass-bg: rgba(18, 22, 32, 0.7);       /* 深色磨砂 */
+  /*  --player-glass-hover-bg: rgba(18, 22, 32, 0.85);
+    --player-glass-border: rgba(255, 255, 255, 0.08);
+    --player-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    --player-shadow-hover: 0 6px 15px rgba(0, 0, 0, 0.8);
+    
+    
+}*/
+/* ==============================
+   AI Chat Theme Surfaces (NEW)
+   ============================== */
+
+
+}
+
+
+/* 1. 默认背景样式（由主题控制） */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    background-image: none;
+    background-size: cover;
+    background-position: center;
+    transition:
+        background-color var(--transition-slow, 0.5s ease),
+        color var(--transition-normal, 0.3s ease),
+        background-image 0.5s ease;
+}
+
+
+/* 2. 磨砂效果背景 */
+body.mosaic-background {
+    background-image: url('images/帝国总理府.png');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+     z-index: -10;
+}
+
+/* 3. 磨砂效果 */
+body.mosaic-background::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--frost-glass-color);
+    pointer-events: none;
+    backdrop-filter: blur(5px);
+    z-index: -1;
+    transition:
+        background-color var(--transition-slow, 0.5s ease),
+        backdrop-filter var(--transition-slow, 0.5s ease);
+
+
+    /* 可选：让主题切换时磨砂层也平滑过渡 */
+    transition:
+        background-color var(--transition-slow, 0.5s ease),
+        backdrop-filter var(--transition-slow, 0.5s ease);
+}
+
+
+/* 4. 页面切换按钮的样式 */
+/* ====== 基础按钮样式(背景切换按钮） ====== */
+.background-toggle-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+
+    background-color: #007BFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: none;
+    transition: background-color 0.3s ease;
+}
+
+/* 图标仍然居中 */
+.background-toggle-button svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+    stroke: #FFF;
+    fill: none;
+}
+
+/* 悬停 */
+.background-toggle-button:hover {
+    background-color: #0056b3;
+}
+
+/* ====== 点击触发扩散波，只执行一次 ====== */
+.background-toggle-button.bg-toggle-pulsing {
+    animation: bg-toggle-pulse 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+/* 扩散波动画 */
+@keyframes bg-toggle-pulse {
+    0% { 
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(255,255,255,0.35);
+    }
+    40% { 
+        transform: scale(1.08);
+        box-shadow: 0 0 0 40px rgba(255,255,255,0.18);
+    }
+    75% { 
+        transform: scale(1.02);
+        box-shadow: 0 0 0 80px rgba(255,255,255,0.02);
+    }
+    100% { 
+        transform: scale(1);
+        box-shadow: none;
+    }
+}
+
+/* ====== 背景激活时的呼吸光（持续循环） ====== */
+.background-toggle-button.bg-toggle-active {
+    animation: bg-toggle-breath 3.2s ease-in-out infinite;
+}
+
+/* 呼吸光动画 */
+@keyframes bg-toggle-breath {
+    0% {
+        box-shadow: 0 0 16px rgba(255,255,255,0.22);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255,255,255,0.10);
+        transform: scale(1.04);
+    }
+    100% {
+        box-shadow: 0 0 16px rgba(255,255,255,0.22);
+        transform: scale(1);
+    }
+}
+
+
+
+
+
+/* 明暗主题切换按钮：与背景按钮统一风格，稍微向左偏一点 */
+.theme-toggle-button {
+    position: fixed;
+    top: 20px;
+    right: 80px; /* 背景按钮在右 20px，这里往左挪一点，避免重叠 */
+    z-index: 9999;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    padding: 8px 14px;
+    background-color: var(--bg-elevated);
+    color: var(--text-main);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-soft);
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.theme-toggle-button:hover {
+    background-color: var(--accent-soft);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-1px);
+}
+
+.theme-toggle-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+
+:root {
+    --primary-bg-color: var(--bg-main);
+    --text-color: var(--text-main);
+    --accent-color: var(--accent);
+    --logo-shadow-color: var(--accent-glow);
+    --border-color: var(--border-subtle);
+    --transition-speed: var(--transition-normal);
+    --logo-size: 300px;
+    --scroll-transition-duration: 1.2s;
+}
+
+
+body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    font-family: 'Poppins', 'Microsoft YaHei', sans-serif;
+    background-color: var(--primary-bg-color);
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+body.is-navigating { pointer-events: none; }
+
+.page-scroller {
+    width: 100%;
+    height: 100%;
+    transition: transform var(--scroll-transition-duration) cubic-bezier(0.65, 0, 0.35, 1);
+}
+.page-section {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+     z-index: 1;/*主页面的那些文字的位置*/
+}
+
+.view-container {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 100px 40px 40px 40px; 
+    box-sizing: border-box;
+    opacity: 0; visibility: hidden;
+    transition: opacity var(--transition-speed) ease-in-out, visibility var(--transition-speed) ease-in-out;
+}
+.view-container.active-view { opacity: 1; visibility: visible; }
+
+.back-button, .breadcrumb, .view-mode-toggle {
+    position: absolute;
+    top: 32px;
+    z-index: 11;
+    opacity: 0;
+}
+.active-view .back-button.animate-in,
+.active-view .breadcrumb.animate-in,
+.active-view .view-mode-toggle.animate-in {
+    animation: fade-in 0.5s ease forwards;
+}
+
+/* 返回按钮：全站统一蓝色圆形按钮 */
+.back-button {
+    left: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007BFF;              /* 纯蓝 */
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    font-weight: 300;
+    color: #ffffff;                          /* 白色箭头 */
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+.back-button.animate-in {
+    animation-delay: 0.4s;
+}
+.back-button:hover {
+    transform: scale(1.05) translateY(-1px);
+    background-color: #0056b3;              /* 深一点的蓝 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 面包屑：无底黑字 */
+.breadcrumb {
+    left: 100px;
+    font-size: 1.1em;
+    color: var(--nav-breadcrumb-color);                          /* 黑字 */
+}
+.breadcrumb.animate-in {
+    animation-delay: 0.5s;
+}
+.breadcrumb a {
+    color: var(--nav-breadcrumb-color);                          /* 链接也用黑色 */
+    text-decoration: none;
+    transition: color 0.3s;z
+    font-weight: 400;
+}
+.breadcrumb a:hover {
+    color: #007BFF;                          /* 悬停变蓝 */
+}
+.breadcrumb span {
+    margin: 0 12px;
+    color: var(--nav-breadcrumb-muted);
+}
+.breadcrumb a.active {
+    color: #007BFF;
+    font-weight: 600;
+    pointer-events: none;
+    cursor: default;
+}
+
+
+
+
+
+/* 视图切换条：小磨砂条 */
+.view-mode-toggle {
+    right: 40px;
+    display: flex;
+    background-color: var(--bg-elevated-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 4px;
+    box-shadow: var(--shadow-soft);
+}
+.view-mode-toggle.animate-in {
+    animation-delay: 0.6s;
+}
+
+.toggle-button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+.toggle-button:hover {
+    color: var(--text-main);
+    background-color: var(--accent-soft);
+}
+.toggle-button.active {
+    color: var(--text-on-accent);
+    background-color: var(--accent);
+}
+.toggle-button svg {
+    width: 100%;
+    height: 100%;
+}
+
+
+#landing-view { overflow: hidden; }
+#landing-view .empire-logo {
+    max-width: var(--logo-size); width: 40%; margin-bottom: 20px;
+    animation: breathe 4s ease-in-out infinite; cursor: pointer; transition: transform 0.3s ease;
+}
+#landing-view .empire-logo:hover { transform: scale(1.1); }
+
+/* ====== L1 → L2 徽标传送门动效 ====== */
+
+/* 点击后：Landing 其它内容淡出 + 轻微后退 */
+body.landing-portal-mode #landing-view .intro-text,
+body.landing-portal-mode #landing-view .sponsor-info,
+body.landing-portal-mode #landing-view .music-player,
+body.landing-portal-mode #landing-view .scroll-down-hint {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(10px) scale(0.98);
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease,
+        filter 0.3s ease;
+}
+
+/* 克隆出来、执行动画的徽标 */
+.logo-portal-clone {
+    /* transitionFromLanding 里已经写 transform/opacity 过渡，这里补充光圈感 */
+    filter: drop-shadow(0 0 16px rgba(90, 198, 255, 0.7));
+}
+
+/* 克隆徽标周围的光圈 */
+.logo-portal-clone::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+            rgba(90, 198, 255, 0.7) 0%,
+            rgba(90, 198, 255, 0.35) 35%,
+            transparent 70%);
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+    animation: logo-portal-glow 0.6s ease-out forwards;
+}
+
+/* 光圈扩散关键帧 */
+@keyframes logo-portal-glow {
+    0% {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.0);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.6);
+    }
+}
+
+/* L2 分类视图：从徽标位置“浮出” */
+#category-view.enter-from-logo-portal {
+    opacity: 0;
+    transform-origin: center top;
+    transform: translateY(40px) scale(0.94);
+}
+
+#category-view.enter-from-logo-portal.active-view {
+    transition:
+        opacity 0.55s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+
+#landing-view .intro-text {
+    max-width: 600px; font-size: 1.1em; line-height: 1.8; text-align: center;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+#landing-view .intro-text.visible { opacity: 1; transform: translateY(0); }
+@keyframes breathe {
+    0%, 100% { filter: drop-shadow(0 0 10px var(--logo-shadow-color)); }
+    50% { filter: drop-shadow(0 0 25px var(--logo-shadow-color)); }
+}
+
+.scroll-down-hint {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #aaa;
+    font-size: 0.9em;
+    animation: bounce 2s infinite;
+    z-index: 5;
+    opacity: 0.8;
+    cursor: default;
+    text-align: center;
+}
+.scroll-down-hint::after {
+    content: '▼';
+    display: block;
+    margin-top: 5px;
+}
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
+    40% { transform: translate(-50%, -10px); }
+    60% { transform: translate(-50%, -5px); }
+}
+
+.category-gateway {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* 大入口卡片：背景、边框、阴影全部走 Token */
+.category-panel {
+    flex: 1;
+    min-width: 250px;
+    max-width: 400px;
+    margin: 0;
+    padding: 60px 40px;
+    background-color: var(--bg-elevated-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    opacity: 0;
+    transform: translateY(30px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+    z
+}
+
+/* 内层半透明盖板，保证背景图不影响文字可读性 */
+.category-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-elevated);
+    border-radius: 12px;
+    pointer-events: none;
+    transition: background-color 0.3s ease;
+}
+.category-panel:hover::before {
+    background-color: var(--bg-elevated-soft);
+}
+
+.category-panel.animate-in {
+    animation: fade-in-up 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+.category-panel:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: var(--shadow-strong);
+}
+
+/* 标题：直接吃主文字色 */
+.panel-title {
+    font-size: 2.5em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-main);
+    pointer-events: none;
+    position: relative;
+    z-index: 1;
+}
+
+
+.view-content-container {
+    width: 100%;
+    max-width: 1000px;
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.view-content {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+}
+.view-content.active {
+    opacity: 1;
+    transform: scale(1);
+    position: relative;
+    pointer-events: auto;
+}
+
+.list-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 列表卡片：同样走统一 Token */
+.list-item {
+    background-color: var(--bg-elevated-soft);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateX(-100vw);
+    cursor: pointer;
+    transition:
+        background-color 0.3s,
+        transform 0.3s,
+        box-shadow 0.3s;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+}
+.list-item.animate-in {
+    animation: slide-in-overshoot 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+.list-item:hover {
+    background-color: var(--bg-elevated);
+    transform: translateX(-5px);
+    box-shadow: var(--shadow-strong);
+}
+
+.list-title {
+    padding: 18px 20px;
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 400;
+    pointer-events: none;
+    color: var(--text-main);
+     z-index: 1;
+}
+
+
+.tree-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    overflow: hidden;
+}
+#g6-tree-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+.g6-tooltip {
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #545454;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px 8px;
+    box-shadow: rgb(174, 174, 174) 0px 0px 10px;
+}
+
+/* ===== 详情页主体布局 ===== */
+.detail-content {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    max-height: 100%;
+    align-items: center;
+
+    /* 新增：详情整体作为一张“卡片” */
+    background-color: var(--bg-elevated);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    padding: 32px 32px;
+    box-sizing: border-box;
+    transition:
+        background-color var(--transition-normal),
+        box-shadow var(--transition-normal),
+        transform var(--transition-fast);
+}
+
+/* 左侧：封面/插图区域 */
+.detail-left {
+    flex: 0 0 35%;
+    padding-right: 40px;
+    opacity: 0;
+    transform: translateX(-30px);
+}
+.detail-left.animate-in {
+    animation: slide-fade-in-left 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.2s forwards;
+}
+
+/* 右侧：标题 + 事件框（事件框内滚动） */
+.detail-right {
+    flex: 1;
+    max-height: calc(100vh - 140px);
+
+    /* 新增：垂直布局，让 title 固定在上，正文框占剩余空间 */
+    display: flex;
+    flex-direction: column;
+
+    /* 不再让整列滚动，滚动交给 #detail-text */
+    overflow: hidden;
+
+    padding-right: 15px;
+    opacity: 0;
+    transform: translateY(30px);
+    z-index: 1;
+}
+
+.detail-right.animate-in {
+    animation: fade-in-up 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.4s forwards;
+}
+
+/* 封面图：背景 & 圆角吃 Token */
+#detail-image {
+    width: 100%;
+    border-radius: 12px;
+    background-color: var(--bg-elevated-soft);
+    min-height: 200px;
+    object-fit: cover;
+    box-shadow: var(--shadow-soft);
+}
+
+/* 标题：跟随主文字色 */
+#detail-title {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+
+/* 正文框：统一高度，多余内容在内部滚动 */
+#detail-text {
+  font-size: 1.1em;
+  line-height: 1.9;
+  color: var(--text-muted);
+
+  /* 关键：固定高度。你可以根据帝国纪元元年的视觉来微调这两个值 */
+  flex: 0 0 260px;              /* 固定占 260px 高度 */
+  max-height: 260px;            /* 即使内容再多，也不再长 */
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  padding-right: 4px;
+}
+
+/* 小滚动条美化，可选 */
+#detail-text::-webkit-scrollbar {
+  width: 6px;
+}
+#detail-text::-webkit-scrollbar-thumb {
+  background-color: var(--accent-color);
+  border-radius: 4px;
+}
+#detail-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* 可选：单独给正文框一个细滚动条样式 */
+#detail-text::-webkit-scrollbar {
+    width: 6px;
+}
+#detail-text::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+    border-radius: 4px;
+}
+#detail-text::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* 可选：详情卡片轻微浮起 */
+.detail-content:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-strong);
+}
+
+
+
+/* 图谱所在整屏，背景跟随主题主背景 */
+#graph-section {
+    background-color: var(--bg-main);
+}
+
+/* ECharts 容器本身透明，只负责占位 */
+#relationship-graph-container {
+    width: 100%;
+    height: 100vh;
+    min-height: 500px;
+    position: relative;
+}
+
+/* 图谱返回按钮：用统一 Token 做磨砂小胶囊 */
+.graph-back-button {
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    padding: 8px 16px;
+    background-color: var(--bg-elevated-soft);
+    color: var(--text-main);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0;
+    display: none;
+    transition:
+        opacity 0.5s,
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+    backdrop-filter: blur(5px);
+    font-size: 0.9em;
+    box-shadow: var(--shadow-soft);
+}
+.graph-back-button:hover {
+    background-color: var(--bg-elevated);
+    box-shadow: var(--shadow-strong);
+    transform: scale(1.05);
+}
+
+
+@keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes fade-in-up { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes slide-fade-in-left { 0% { opacity: 0; transform: translateX(-30px); } 100% { opacity: 1; transform: translateX(0); } }
+@keyframes slide-in-overshoot {
+    0% { opacity: 0; transform: translateX(-100vw); }
+    70% { opacity: 1; transform: translateX(10px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes pop-in {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .view-container { padding: 80px 20px 20px 20px; }
+    .breadcrumb { left: 70px; right: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .category-gateway { flex-direction: column; }
+    .category-panel { margin: 15px 0; width: 80%; min-width: 200px; }
+    .panel-title { font-size: 2em; }
+    .detail-content { flex-direction: column; align-items: center; max-height: calc(100vh - 100px); overflow-y: auto; }
+    .detail-left { padding-right: 0; margin-bottom: 20px; width: 80%; flex-shrink: 0; }
+    .detail-right { height: auto; max-height: none; overflow-y: visible; }
+    #detail-title { font-size: 2em; }
+
+    .graph-back-button {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+    
+    /* Reader specific responsive styles */
+    .reader-controls {
+        right: 20px;
+    }
+    .reader-toc-panel {
+        width: 250px;
+    }
+
+    /* Music player specific responsive styles */
+    .music-player { 
+        top: 20px; 
+        max-width: calc(100% - 40px); 
+        padding: 8px 12px; 
+    }
+    #current-song { 
+        max-width: 120px; 
+        font-size: 0.88em; 
+    }
+    .control-btn, .play-pause-btn, .loop-btn, .toggle-btn { 
+        width: 32px; 
+        height: 32px; 
+        font-size: 1em; 
+    }
+
+    #progress-bar { 
+        width: 160px; 
+    }
+}
+
+/* Music Player Styles */
+.music-player {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    padding: 8px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(5px);
+}
+.music-player:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+
+#current-song {
+    font-size: 0.95em;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    text-align: center;
+}
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.control-btn,
+.play-pause-btn,
+.loop-btn,
+.toggle-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.12s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+.control-btn:hover,
+.play-pause-btn:hover,
+.loop-btn:hover,
+.toggle-btn:hover {
+    background-color: #008fcc;
+    transform: scale(1.06);
+}
+.control-btn svg,
+.loop-btn svg,
+.toggle-btn svg {
+    width: 60%;
+    height: 60%;
+    fill: currentColor;
+}
+.loop-btn.active {
+    background-color: #ffc107;
+    color: #333;
+}
+.loop-btn.active:hover { background-color: #e0a800; }
+.extra-controls {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.extra-controls.active { display: flex; }
+#progress-bar { width: 220px; }
+.music-player.minimized {
+    padding: 6px 12px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 6px;
+    min-width: 120px;
+}
+.music-player.minimized .controls > :not(.toggle-btn) {
+    display: none !important;
+}
+.music-player.minimized .extra-controls {
+    display: none !important;
+}
+.music-player.minimized .toggle-btn {
+    width: 34px;
+    height: 34px;
+}
+.music-player.minimized #current-song {
+    max-width: 220px;
+    font-size: 1em;
+    font-weight: 500;
+}
+/* 暗色主题下的音乐播放器整体玻璃风格 */
+:root[data-theme="dark"] .music-player {
+    background-color: rgba(15, 23, 42, 0.85);          /* 深色磨砂玻璃 */
+    border-color: rgba(148, 163, 184, 0.4);            /* 稍亮的边框 */
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);        /* 阴影加深一点 */
+}
+
+:root[data-theme="dark"] .music-player:hover {
+    background-color: rgba(15, 23, 42, 0.95);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.9);
+}
+
+/* 歌曲标题：在深色玻璃上用浅字 */
+:root[data-theme="dark"] .music-player #current-song {
+    color: #e5e7eb;  /* 相当于 Tailwind 的 text-gray-200 */
+}
+
+/* 播放器按钮：基础状态仍用 accent 色，暗色下略压一点亮度 */
+:root[data-theme="dark"] .music-player .control-btn,
+:root[data-theme="dark"] .music-player .play-pause-btn,
+:root[data-theme="dark"] .music-player .loop-btn,
+:root[data-theme="dark"] .music-player .toggle-btn {
+    background-color: var(--accent-color);  /* 继续用你的 accent-color */
+    color: #0b1120;                         /* 深色背景上的图标用深色，保证在亮色按钮上有对比 */
+}
+
+/* 悬停时略微加深 accent */
+:root[data-theme="dark"] .music-player .control-btn:hover,
+:root[data-theme="dark"] .music-player .play-pause-btn:hover,
+:root[data-theme="dark"] .music-player .loop-btn:hover,
+:root[data-theme="dark"] .music-player .toggle-btn:hover {
+    background-color: #0f5fbf;  /* 比原来的 #007acc 稍暗一点的蓝，可以按需要微调 */
+}
+
+
+/* 进度条：用 CSS 的 accent-color，让滑块/轨道跟主题变色 */
+:root[data-theme="light"] .music-player #progress-bar {
+    accent-color: var(--accent-color); ！important
+}
+:root[data-theme="dark"] .music-player #progress-bar {
+    accent-color: #38bdf8;  /* 稍亮一点的青蓝，在暗背景上清晰 */
+}
+
+    /* 循环开启状态：基础样式（亮/暗通用） */
+.music-player .loop-btn.active {
+    background-color: #ffc107; !important  /* 黄色：两种主题都用同一个值 */
+    color: #333333;              /* 默认深色文字（亮色主题用） */
+}
+
+/* 循环图标跟随文本颜色，不再单独乱改填充 */
+.music-player .loop-btn.active svg,
+.music-player .loop-btn.active i {
+    fill: currentColor;
+    stroke: currentColor;
+}
+/* 暗色主题下：只把内部内容变白，其他一切保持一致 */
+:root[data-theme="dark"] .music-player .loop-btn.active {
+    color: #ffffff;   /* 背景仍是 #ffc107，上面基础样式规定的 */
+}
+/* 暗色主题下：循环开启按钮保持亮色模式的黄色背景，内部变白 */
+:root[data-theme="dark"] .music-player .loop-btn.active {
+    background-color: #ffc107;    /* 背景保持黄色，和亮色完全一致 */
+    color: #ffffff;               /* 图标/文字反转成白色 */
+}
+
+/* 如果内部是 SVG 或 <i> 图标，也统一用白色 */
+:root[data-theme="dark"] .music-player .loop-btn.active svg,
+:root[data-theme="dark"] .music-player .loop-btn.active i {
+    fill: #ffffff;
+    stroke: #ffffff;
+}
+
+/* 一圈匀速旋转（循环阶段） */
+@keyframes loopRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* 激活瞬间的“弹一下”启动动画（0.45s） */
+@keyframes loopSpinKick {
+    0%   { transform: rotate(0deg); }
+    60%  { transform: rotate(380deg); }  /* 稍微过冲一点 */
+    100% { transform: rotate(360deg); }
+}
+
+/* 激活时：对图标本身加动画（不动按钮本体） */
+.music-player .loop-btn.active svg,
+.music-player .loop-btn.active i {
+    transform-origin: center;
+
+    /* 两个动画叠加：
+       1) 0.45s 的弹性启动，只执行一次
+       2) 1.6s 一圈的匀速旋转，从 0.45s 后开始无限循环
+    */
+    animation:
+        loopSpinKick 0.45s cubic-bezier(0.25, 1.5, 0.5, 1) 0s 1 both,
+        loopRotate   1.6s linear 0.45s infinite;
+}
+/* 亮色主题下的发光脉冲：弱一点，避免太刺眼 */
+@keyframes loopGlowPulseLight {
+    0%   { box-shadow: 0 0 0px rgba(0, 0, 0, 0); }
+    50%  { box-shadow: 0 0 10px rgba(0, 0, 0, 0.6); }
+    100% { box-shadow: 0 0 0px rgba(0, 0, 0, 0); }
+}
+
+/* 暗色主题下的发光脉冲：略强一点，在暗背景更清晰 */
+@keyframes loopGlowPulseDark {
+    0%   { box-shadow: 0 0 0px rgba(255, 255, 255, 0); }
+    50%  { box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); }
+    100% { box-shadow: 0 0 0px rgba(255, 255, 255, 0); }
+}
+
+/* 亮色：按钮自身做轻微发光呼吸 */
+:root[data-theme="light"] .music-player .loop-btn.active {
+    animation: loopGlowPulseLight 2.4s ease-in-out 0.45s infinite;
+}
+
+/* 暗色：发光稍微强一点 */
+:root[data-theme="dark"] .music-player .loop-btn.active {
+    animation: loopGlowPulseDark 2.0s ease-in-out 0.45s infinite;
+}
+
+
+
+
+
+/* 赞助信息文字*/
+.sponsor-info { text-align: center; margin-top: 20px; font-size: 1.1em; color: #bbb; }
+.sponsor-info label { margin-right: 5px; }
+#sponsor-name {
+    font-size: 1.5em; font-weight: bold;
+    background: linear-gradient( to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3 );
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: rainbow-flow 4s linear infinite;
+}
+#sponsor-name:hover {
+    animation-play-state: paused;
+}
+@keyframes rainbow-flow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+
+/* --- Reader Styles --- */
+#reader-view {
+    padding: 0;
+    background-color: #F5F2E8;
+    color: #3f3f3f;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    align-items: flex-start;
+    justify-content: flex-start;
+    --ui-visibility-transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+}
+#reader-view.dark-mode {
+    background-color: #1a1a1a;
+    color: #ccc;
+}
+#reader-view .back-button, #reader-view .breadcrumb {
+    background-color: var(--reader-nav-surface);
+    border: 1px solid var(--reader-nav-border);
+    backdrop-filter: blur(5px);
+    transition: var(--ui-visibility-transition);
+}
+
+#library-view.library-light,
+#category-view.library-light,
+#list-view.library-light,
+#detail-view.library-light,
+#reader-view.library-light {
+    --nav-breadcrumb-color: #1f2937;
+    --nav-breadcrumb-muted: #475569;
+    --reader-nav-surface: rgba(255, 255, 255, 0.82);
+    --reader-nav-border: rgba(31, 41, 55, 0.14);
+}
+
+#library-view.library-dark,
+#category-view.library-dark,
+#list-view.library-dark,
+#detail-view.library-dark,
+#reader-view.library-dark {
+    --nav-breadcrumb-color: #f3f4f6;
+    --nav-breadcrumb-muted: rgba(226, 232, 240, 0.78);
+    --reader-nav-surface: rgba(15, 23, 42, 0.52);
+    --reader-nav-border: rgba(148, 163, 184, 0.2);
+}
+
+/* 图书馆体系使用独立的亮/暗阅读主题。
+   当全站仍处于暗色变量、但图书馆切到亮色阅读时，
+   左上角返回与面包屑不能继续吃全站白字，否则对比度不足。 */
+#library-view.library-light .breadcrumb,
+#category-view.library-light .breadcrumb,
+#list-view.library-light .breadcrumb,
+#detail-view.library-light .breadcrumb,
+#reader-view.library-light .breadcrumb {
+    color: #1f2937;
+}
+
+#library-view.library-light .breadcrumb a,
+#category-view.library-light .breadcrumb a,
+#list-view.library-light .breadcrumb a,
+#detail-view.library-light .breadcrumb a,
+#reader-view.library-light .breadcrumb a,
+#library-view.library-light .breadcrumb span,
+#category-view.library-light .breadcrumb span,
+#list-view.library-light .breadcrumb span,
+#detail-view.library-light .breadcrumb span,
+#reader-view.library-light .breadcrumb span {
+    color: #1f2937;
+}
+
+#reader-view.library-light .back-button {
+    background-color: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(31, 41, 55, 0.14);
+    color: #1f2937;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+#reader-view.library-light .back-button:hover {
+    background-color: rgba(255, 255, 255, 0.94);
+    color: #0f172a;
+}
+
+/* 文库一级页的标题和书名跟随文库自己的亮暗阅读主题，
+   不继续使用全站 text token，避免切到暗色阅读时仍然是深色字。 */
+#library-view.library-light .library-title,
+#library-view.library-light .novel-title {
+    color: #1f2937;
+}
+
+#library-view.library-dark .library-title,
+#library-view.library-dark .novel-title {
+    color: #f3f4f6;
+    text-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+.reader-controls {
+    position: fixed;
+    top: 32px;
+    right: 40px;
+    z-index: 102;
+    display: flex;
+    gap: 10px;
+    background: rgba(255,255,255,0.2);
+    padding: 8px;
+    border-radius: 25px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: var(--ui-visibility-transition);
+}
+#reader-view.dark-mode .reader-controls {
+    background: rgba(40,40,40,0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.reader-controls button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.reader-controls button:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+#reader-view.immersive .back-button, 
+#reader-view.immersive .breadcrumb, 
+#reader-view.immersive .reader-controls {
+    transform: translateY(-200%); /* 向上滑出屏幕 */
+}
+
+.reader-toc-panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 300px;
+    background: #fff;
+    z-index: 101;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    padding: 100px 20px 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+}
+.reader-toc-panel.visible {
+    transform: translateX(0);
+}
+#reader-view.dark-mode .reader-toc-panel {
+    background-color: #2c2c2c;
+}
+.reader-toc-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.reader-toc-panel a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+    border-radius: 5px;
+}
+.reader-toc-panel a:hover {
+    background-color: #f0f0f0;
+}
+#reader-view.dark-mode .reader-toc-panel a {
+    color: #ddd;
+    border-bottom-color: #444;
+}
+#reader-view.dark-mode .reader-toc-panel a:hover {
+    background-color: #444;
+}
+
+.reader-content-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto; 
+    padding: 100px 20px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+}
+#reader-content {
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Source Han Serif CN', 'Songti SC', serif;
+    font-size: 19px;
+    line-height: 2;
+    letter-spacing: 0.5px;
+    text-align: justify;
+    transition: font-size 0.2s;
+}
+#reader-content p {
+    margin: 0 0 2em 0;
+    text-indent: 2em;
+}
+#reader-content h2 {
+    font-size: 1.8em;
+    margin: 2.5em 0 1.5em;
+    text-align: center;
+    text-indent: 0;
+}
+.highlighted-paragraph {
+    background-color: rgba(255, 229, 100, 0.6);
+    transition: background-color 0.5s ease;
+    border-radius: 4px;
+    padding: 0.2em 0;
+    margin: -0.2em 0;
+}
+#reader-view.dark-mode .highlighted-paragraph {
+    background-color: rgba(255, 235, 59, 0.4);
+}
+
+/* --- AI Agent Styles (Fully Responsive) --- */
+#ai-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #007bff, #00aeff);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    z-index: 999;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+#ai-fab:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5);
+}
+
+#ai-chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    
+    /* 使用 max-* 和 vw/vh 单位实现响应式布局 */
+    width: 90vw; /* 基础宽度为视窗宽度的90% */
+    height: 75vh; /* 基础高度为视窗高度的75% */
+    max-width: 400px;  /* 在大屏幕上，最大宽度不超过 400px */
+    max-height: 600px; /* 在大屏幕上，最大高度不超过 600px */
+
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 998;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+#ai-chat-window.hidden {
+    display: flex; /* 保持 flex 以便动画正确执行 */
+}
+#ai-chat-window:not(.hidden) {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.chat-header {
+    padding: 15px 20px;
+    background: #f7f7f7;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* 防止头部在 flex 布局中被压缩 */
+}
+/* 【【【 CHANGE START 】】】 */
+.new-chat {
+    font-size: 1.6em;
+    font-weight: bold;
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.2s, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.new-chat:hover {
+    color: var(--text-color);
+    transform: rotate(90deg);
+}
+.chat-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    flex-grow: 1;
+    text-align: center;
+    padding: 0 10px;
+}
+/* 【【【 CHANGE END 】】】 */
+.close-chat {
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.2s;
+}
+.close-chat:hover {
+    color: var(--text-color);
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.message {
+    margin-bottom: 15px;
+    max-width: 90%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+.user-response {
+    background-color: var(--accent-color);
+    color: white;
+    border-bottom-right-radius: 5px;
+    margin-left: auto;
+}
+.ai-response {
+    background-color: #f1f1f1;
+    color: var(--text-color);
+    border-bottom-left-radius: 5px;
+    margin-right: auto;
+}
+.ai-response.thinking::after {
+    content: '▋';
+    display: inline-block;
+    animation: blink 1s infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* 【【【 CHANGE START 】】】 */
+.system-notification-response {
+    font-size: 0.8em;
+    text-align: center;
+    color: #aaa;
+    background-color: transparent;
+    width: 100%;
+    max-width: 100%;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    padding: 0;
+}
+/* 【【【 CHANGE END 】】】 */
+
+.ai-response a.novel-link, .detail-text a.novel-link {
+    color: #0056b3;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+    background-color: rgba(0, 123, 255, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.chat-input-area {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid var(--border-color);
+    background-color: #fff;
+    flex-shrink: 0; /* 防止输入区被压缩 */
+}
+#chat-input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 1em;
+    resize: none;
+    margin-right: 10px;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+#chat-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+#chat-send {
+    padding: 10px 20px;
+    border: none;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#chat-send:hover {
+    background-color: #0086c3;
+}
+#chat-send:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* --- Library & Novel Styles --- */
+#library-icon {
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    color: var(--text-color);
+}
+#library-icon:hover {
+    transform: scale(1.1) rotate(-10deg);
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    color: var(--accent-color);
+}
+#library-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.library-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+}
+.library-title {
+    font-size: 2.5em;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: var(--text-color);
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.library-title.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.novel-grid {
+    width: 100%;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 30px;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+}
+.novel-card {
+    cursor: pointer;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), 
+                transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.novel-card.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+.novel-card:hover {
+    transform: translateY(-10px);
+}
+.novel-cover {
+    width: 100%;
+    padding-bottom: 140%; /* 封面高宽比 */
+    background-color: #eee;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    transition: box-shadow 0.3s ease;
+}
+.novel-card:hover .novel-cover {
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+.novel-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* --- Final Media Queries for Mobile Fine-tuning --- */
+@media (max-width: 768px) {
+    #library-icon {
+        left: 20px;
+        top: 20px;
+    }
+    .novel-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 20px;
+    }
+    .library-title {
+        font-size: 2em;
+    }
+}
+
+@media (max-width: 480px) {
+    /* 在小屏幕上，让AI聊天窗口几乎占满屏幕 */
+    #ai-chat-window {
+        width: calc(100vw - 20px);
+        height: calc(100vh - 90px);
+        max-width: none; /* 取消最大宽度限制 */
+        max-height: none;/* 取消最大高度限制 */
+        bottom: 70px;
+        right: 10px;
+        left: 10px; /* 左右都设置，使其居中 */
+    }
+    #ai-fab {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+/* 请将这些样式添加到 style.css 文件的末尾 */
+
+/* --- 新增：加载占位符样式 --- */
+.loading-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    color: #999;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+}
+
+.loading-placeholder.error {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+/* AI Chat Window */
+#ai-chat-window {
+  background-color: var(--ai-chat-window-bg);
+  border: 1px solid var(--ai-chat-border);
+  box-shadow: var(--ai-chat-shadow);
+  backdrop-filter: blur(8px);
+}
+
+.chat-header {
+  background-color: var(--ai-chat-header-bg);
+  border-bottom: 1px solid var(--ai-chat-border);
+}
+
+
+.chat-input-area {
+  background-color: var(--ai-chat-input-bg);
+  border-top: 1px solid var(--ai-chat-border);
+}
+
+#chat-input {
+  background-color: rgba(0,0,0,0); /* 让它吃输入区的“面” */
+  color: var(--text-color);
+  border: 1px solid var(--ai-chat-border);
+}
+
+#chat-input::placeholder {
+  color: var(--text-muted);
+}
+
+
+/* 消息气泡 */
+.message.ai-response {
+  background-color: var(--ai-chat-ai-bubble-bg);
+  color: var(--text-color);
+}
+
+
+.message.user-response {
+  background-color: var(--ai-chat-bubble-user-bg);
+  color: var(--ai-chat-bubble-user-text);
+}
+
+/* 发送按钮也吃主题强调色（可选但建议一起做，避免暗色下“固定亮蓝”不统一） */
+#chat-send {
+  background-color: var(--ai-chat-send-bg);
+}
+
+#chat-send:hover {
+  background-color: var(--ai-chat-send-bg-hover);
+}
+
+/* --- START OF FILE style.css (追加内容) --- */
+
+/* =========================================
+   ARCHIVE STYLE DETAIL VIEW (档案风格详情页)
+   覆盖原有的 .detail-content 样式
+   ========================================= */
+
+/* 1. 档案袋/文件纸主体 */
+#detail-view .detail-content {
+    /* 重置原有卡片样式 */
+    border-radius: 2px !important; /* 极小的圆角，接近直角 */
+    background-color: #F2F0E6 !important; /* 档案纸张的米白色 */
+    box-shadow: 
+        15px 15px 0 rgba(0,0,0,0.8), /* 硬投影 */
+        inset 0 0 100px rgba(0,0,0,0.05) !important; /* 纸张陈旧感内阴影 */
+    border: 3px solid #111 !important; /* 粗黑边框 */
+    
+    /* 增加内部装饰：顶部红线和网格背景 */
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(#D80000, #D80000); /* 顶部红线 */
+    background-size: 
+        20px 20px, 
+        20px 20px,
+        100% 8px; /* 红线高度 */
+    background-repeat: repeat, repeat, no-repeat;
+    background-position: 0 0, 0 0, 0 0;
+    
+    padding: 50px 40px 40px 40px !important; /* 顶部留出红线空间 */
+    position: relative;
+    overflow: visible !important; /* 允许印章溢出 */
+}
+
+/* 装饰：右上角的“机密”印章 */
+#detail-view .detail-content::after {
+    content: "TOP SECRET // 绝密";
+    position: absolute;
+    top: -25px;
+    right: 20px;
+    background-color: #D80000;
+    color: #fff;
+    font-family: 'Russo One', sans-serif; /* 借用 timeline 的字体 */
+    font-size: 1rem;
+    padding: 5px 15px;
+    transform: rotate(-2deg);
+    box-shadow: 3px 3px 0 #111;
+    border: 2px solid #111;
+    z-index: 10;
+}
+
+/* 装饰：左上角的档案编号 */
+#detail-view .detail-content::before {
+    content: "ARCHIVE_ID: " attr(data-cat-index) "-X09"; /* 模拟编号 */
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: #D80000;
+    letter-spacing: 2px;
+}
+
+/* 2. 左侧图片区：证物照片风格 */
+#detail-view .detail-left {
+    position: relative;
+    padding-right: 30px !important;
+}
+
+#detail-image {
+    border-radius: 0 !important; /* 直角 */
+    border: 4px solid #fff !important; /* 白边模拟相纸 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+    filter: grayscale(80%) contrast(1.2); /* 褪色黑白照片感 */
+    transform: rotate(-1deg); /* 轻微歪斜，像贴上去的 */
+    transition: all 0.3s ease;
+    background-color: #000; /* 图片未加载时的底色 */
+}
+
+/* 悬停时图片恢复彩色 */
+#detail-view .detail-content:hover #detail-image {
+    filter: grayscale(0%) contrast(1);
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: 5px 5px 10px rgba(0,0,0,0.3) !important;
+}
+
+/* 装饰：图片上的“回形针” */
+#detail-view .detail-left::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 40px;
+    width: 15px;
+    height: 40px;
+    border: 3px solid #555;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    z-index: 5;
+}
+
+/* 3. 右侧内容区：打字机文档 */
+#detail-view .detail-right {
+    border-left: 2px dashed rgba(0,0,0,0.2); /* 分割线 */
+    padding-left: 30px !important;
+}
+
+/* 标题 */
+#detail-title {
+    font-family: 'Russo One', 'Impact', sans-serif !important;
+    text-transform: uppercase;
+    font-size: 2.2rem !important;
+    color: #111 !important;
+    border-bottom: 4px solid #111;
+    padding-bottom: 10px;
+    margin-bottom: 20px !important;
+    letter-spacing: 1px;
+    line-height: 1.1;
+}
+
+/* 正文容器 */
+#detail-text {
+    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
+    font-size: 1.05rem !important;
+    color: #333 !important;
+    line-height: 1.6 !important;
+    text-align: justify; /* 两端对齐，像报纸 */
+    
+    /* 滚动条区域样式 */
+    background-color: rgba(255,255,255,0.4);
+    border: 1px solid #aaa;
+    padding: 15px;
+}
+
+/* 档案风格的滚动条 */
+#detail-text::-webkit-scrollbar {
+    width: 12px;
+    background: #e0e0e0;
+    border-left: 1px solid #000;
+}
+#detail-text::-webkit-scrollbar-thumb {
+    background-color: #D80000; /* 鲜艳的红色滑块 */
+    border: 1px solid #000;
+    border-radius: 0;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.5);
+}
+#detail-text::-webkit-scrollbar-track {
+    background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), 
+                      linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
+    background-size: 4px 4px;
+    background-position: 0 0, 2px 2px;
+}
+
+/* 4. 暗色模式适配 (Dark Mode) */
+/* 如果系统处于暗色模式，档案变成“底片”或“终端荧光屏”风格 */
+:root[data-theme="dark"] #detail-view .detail-content {
+    background-color: #121212 !important;
+    border-color: #444 !important;
+    box-shadow: 
+        15px 15px 0 #000,
+        inset 0 0 50px rgba(0,0,0,0.8) !important;
+    background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(#D80000, #D80000); /* 红线保持 */
+}
+
+:root[data-theme="dark"] #detail-view .detail-content::after {
+    border-color: #fff;
+    box-shadow: 3px 3px 0 #000;
+}
+
+:root[data-theme="dark"] #detail-title {
+    color: #f0f0f0 !important;
+    border-bottom-color: #D80000;
+    text-shadow: 0 0 5px rgba(255,255,255,0.2);
+}
+
+:root[data-theme="dark"] #detail-text {
+    color: #aaa !important;
+    background-color: rgba(0,0,0,0.3);
+    border-color: #444;
+}
+
+:root[data-theme="dark"] #detail-image {
+    border-color: #333 !important;
+    filter: grayscale(100%) contrast(1.1) brightness(0.8);
+}
+
+/* 5. 移动端适配 */
+@media (max-width: 768px) {
+    #detail-view .detail-content {
+        padding: 50px 20px 20px 20px !important;
+        flex-direction: column;
+    }
+    
+    #detail-view .detail-left {
+        width: 100% !important;
+        padding-right: 0 !important;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    #detail-image {
+        max-width: 200px;
+        transform: rotate(-2deg);
+    }
+    
+    #detail-view .detail-right {
+        border-left: none;
+        border-top: 2px dashed rgba(0,0,0,0.2);
+        padding-left: 0 !important;
+        padding-top: 20px;
+    }
+    
+    #detail-view .detail-content::after {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        top: -15px;
+        right: 10px;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Empire Laws views                                                           */
+/* Frostpunk-inspired pale codex layout for the dedicated law category.       */
+/* Tune spacing, card density and tone here without touching script.js.       */
+/* -------------------------------------------------------------------------- */
+
+#law-hub-view,
+#law-detail-view {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    align-items: stretch;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.law-hub-shell,
+.law-detail-shell {
+    width: auto;
+    max-width: none;
+    margin: 0;
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.law-hub-frame,
+.law-detail-frame {
+    width: min(100%, 1380px);
+    margin: 0 auto;
+    color: #20252d;
+    background-color: #e8ebee;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgba(108, 116, 124, 0.22);
+    background:
+        linear-gradient(180deg, rgba(246, 246, 244, 0.97), rgba(228, 231, 234, 0.96)),
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 46%),
+        linear-gradient(135deg, rgba(184, 189, 194, 0.26), rgba(255, 255, 255, 0));
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.law-hub-frame::before,
+.law-detail-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 18%),
+        radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.45), transparent 24%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.012) 0,
+            rgba(0, 0, 0, 0.012) 1px,
+            transparent 1px,
+            transparent 56px
+        );
+    pointer-events: none;
+}
+
+.law-hub-frame {
+    min-height: calc(100vh - 150px);
+    padding: 0 30px 30px;
+}
+
+.law-hub-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: 18px 0 16px;
+    background: linear-gradient(180deg, rgba(243, 244, 243, 0.94), rgba(243, 244, 243, 0.68) 72%, rgba(243, 244, 243, 0));
+}
+
+/* 法律页开场：先让整张法典板轻微上浮并去模糊，避免整页直接硬切出现。 */
+#law-hub-view.active-view .law-hub-frame,
+#law-detail-view.active-view .law-detail-frame {
+    animation: law-frame-reveal 0.72s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+/* 法律总览顶部切换条稍晚一步浮入，形成先底板、后导航的层次。 */
+#law-hub-view.active-view .law-hub-topbar {
+    animation: law-topbar-float 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+}
+
+/* 标题、摘要、状态条跟随底板淡入，减少阅读区突然跳出的生硬感。 */
+#law-hub-view.active-view .law-hub-header,
+#law-hub-view.active-view .law-hub-page-status,
+#law-detail-view.active-view .law-detail-header {
+    animation: law-copy-reveal 0.68s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.law-hub-tabrail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    width: min(860px, 100%);
+    margin: 0 auto;
+    padding: 8px;
+    border-radius: 22px;
+    border: 1px solid rgba(120, 126, 132, 0.2);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.law-hub-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 56px;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+    color: rgba(32, 37, 45, 0.66);
+    cursor: pointer;
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast),
+        color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.law-hub-tab:hover,
+.law-hub-tab.is-active {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(233, 236, 239, 0.94));
+    color: #20252d;
+    box-shadow:
+        0 12px 24px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.law-hub-tab-index {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(32, 37, 45, 0.45);
+}
+
+.law-hub-tab-label {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.law-hub-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 8px 18px;
+    border-bottom: 1px solid rgba(74, 82, 90, 0.16);
+}
+
+.law-hub-header::after {
+    content: "";
+    width: min(280px, 34vw);
+    max-width: 100%;
+    height: 1px;
+    margin-top: 2px;
+    background: linear-gradient(90deg, rgba(74, 82, 90, 0.26), rgba(74, 82, 90, 0));
+}
+
+.law-hub-kicker,
+.law-clause-kicker,
+.law-detail-domain,
+.law-column-index {
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+.law-hub-kicker {
+    font-size: 0.74rem;
+    color: rgba(32, 37, 45, 0.58);
+    margin-bottom: 10px;
+}
+
+.law-hub-title,
+.law-detail-title,
+.law-column-copy h2,
+.law-clause-title {
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+}
+
+.law-hub-title {
+    margin: 0;
+    font-size: clamp(2.2rem, 4.3vw, 3.8rem);
+    line-height: 0.98;
+    color: #171b22;
+    letter-spacing: 0.02em;
+}
+
+.law-hub-summary {
+    display: none;
+    max-width: 760px;
+    color: rgba(32, 37, 45, 0.8);
+    font-size: 0.98rem;
+    line-height: 1.85;
+}
+
+.law-hub-summary p,
+.law-detail-enacted-copy p,
+.law-clause-text p {
+    margin: 0 0 0.75em;
+}
+
+.law-hub-summary p:last-child,
+.law-detail-enacted-copy p:last-child,
+.law-clause-text p:last-child {
+    margin-bottom: 0;
+}
+
+.law-hub-note {
+    display: none;
+    position: relative;
+    z-index: 1;
+    margin-top: 18px;
+    padding: 16px 20px;
+    border-left: 2px solid rgba(66, 73, 80, 0.3);
+    background: rgba(255, 255, 255, 0.42);
+    color: rgba(32, 37, 45, 0.7);
+    font-size: 0.93rem;
+    line-height: 1.7;
+}
+
+.law-hub-page-status {
+    position: relative;
+    z-index: 1;
+    width: min(980px, 100%);
+    margin: 18px auto 0;
+    padding: 16px 20px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px 18px;
+    align-items: center;
+    border-radius: 18px;
+    border: 1px solid rgba(97, 104, 112, 0.16);
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 12px 28px rgba(0, 0, 0, 0.05);
+}
+
+.law-hub-page-badge,
+.law-hub-page-count {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(32, 37, 45, 0.48);
+}
+
+.law-hub-page-name {
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+    font-size: 1.38rem;
+    color: #171b22;
+}
+
+.law-columns {
+    position: relative;
+    z-index: 1;
+    width: min(980px, 100%);
+    margin: 18px auto 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.72fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.law-column {
+    min-height: 100%;
+}
+
+.law-column--page .law-column-board {
+    min-height: 420px;
+}
+
+.law-column--visual {
+    min-height: 100%;
+}
+
+.law-column-visual {
+    position: sticky;
+    top: 112px;
+    min-height: 580px;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(97, 104, 112, 0.16);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(241, 243, 245, 0.12)),
+        rgba(18, 22, 28, 0.08);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 22px 38px rgba(0, 0, 0, 0.08);
+}
+
+.law-column-visual-media,
+.law-column-visual-overlay,
+.law-column-visual-copy {
+    position: absolute;
+    inset: 0;
+}
+
+.law-column-visual-media {
+    overflow: hidden;
+}
+
+.law-column-visual-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) contrast(0.94) brightness(0.82);
+    transform: scale(1.04);
+}
+
+.law-column-visual-overlay {
+    background:
+        linear-gradient(180deg, rgba(247, 247, 245, 0.08) 0%, rgba(247, 247, 245, 0.1) 30%, rgba(247, 247, 245, 0.82) 100%),
+        linear-gradient(90deg, rgba(247, 247, 245, 0.08) 0%, rgba(247, 247, 245, 0.1) 42%, rgba(247, 247, 245, 0.54) 100%);
+}
+
+.law-column-visual-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 28px;
+}
+
+.law-column-visual-kicker {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(250, 251, 252, 0.86);
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+}
+
+.law-column-visual-title {
+    margin: 0;
+    max-width: 10ch;
+    font-size: clamp(2rem, 4vw, 3.3rem);
+    line-height: 0.95;
+    color: #ffffff;
+    text-shadow: 0 6px 24px rgba(0, 0, 0, 0.32);
+}
+
+.law-column-visual-caption {
+    align-self: flex-start;
+    min-height: 34px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(32, 37, 45, 0.08);
+    color: rgba(32, 37, 45, 0.74);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.law-column-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+    margin-bottom: 14px;
+}
+
+.law-column-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(32, 37, 45, 0.08);
+    color: rgba(32, 37, 45, 0.72);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.law-column-copy h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.12;
+    color: #20252d;
+}
+
+.law-column-copy p {
+    margin: 8px 0 0;
+    color: rgba(32, 37, 45, 0.66);
+    font-size: 0.92rem;
+    line-height: 1.72;
+}
+
+.law-column-board {
+    padding: 18px 18px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(97, 104, 112, 0.16);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(241, 243, 245, 0.62)),
+        repeating-linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.015) 0,
+            rgba(0, 0, 0, 0.015) 1px,
+            transparent 1px,
+            transparent 52px
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.66),
+        0 18px 34px rgba(0, 0, 0, 0.06);
+}
+
+.law-column-note {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(32, 37, 45, 0.08);
+    color: rgba(32, 37, 45, 0.56);
+    font-size: 0.84rem;
+    line-height: 1.7;
+}
+
+.law-column-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.law-entry {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: start;
+    padding: 14px 14px 13px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.law-entry-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.law-entry-shell.animate-in {
+    animation: law-entry-settle 0.54s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.law-column.animate-in {
+    animation: law-column-rise 0.72s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.law-entry.animate-in {
+    animation: law-entry-settle 0.54s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.law-entry:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 12px 22px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.law-entry--charter {
+    background:
+        linear-gradient(180deg, rgba(255, 250, 242, 0.96), rgba(245, 235, 219, 0.88)),
+        linear-gradient(135deg, rgba(175, 135, 72, 0.08), rgba(255, 255, 255, 0));
+    box-shadow:
+        inset 0 0 0 1px rgba(138, 101, 46, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.law-entry--charter .law-entry-symbol {
+    color: rgba(119, 86, 42, 0.82);
+}
+
+.law-entry--charter .law-entry-status {
+    background: rgba(127, 89, 35, 0.12);
+    color: #6d4a1f;
+}
+
+.law-entry-symbol {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.8rem;
+    line-height: 1;
+    color: rgba(32, 37, 45, 0.74);
+}
+
+.law-entry-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.law-entry-title {
+    font-size: 1.06rem;
+    line-height: 1.3;
+    color: #20252d;
+}
+
+.law-entry-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.58;
+    color: rgba(32, 37, 45, 0.62);
+}
+
+.law-entry-status {
+    align-self: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(26, 111, 61, 0.09);
+    color: #245838;
+    font-size: 0.74rem;
+    white-space: nowrap;
+}
+
+.law-entry-empty {
+    cursor: default;
+}
+
+.law-entry-empty:hover {
+    transform: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.law-entry-history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 58px;
+}
+
+.law-entry-history-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    min-height: 58px;
+    padding: 12px 16px;
+    border: 1px solid rgba(32, 37, 45, 0.12);
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(246, 247, 249, 0.78)),
+        linear-gradient(135deg, rgba(127, 89, 35, 0.06), rgba(255, 255, 255, 0));
+    color: rgba(32, 37, 45, 0.7);
+    cursor: pointer;
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.law-entry-history-toggle:hover,
+.law-entry-history-toggle.is-open {
+    transform: translateY(-1px);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 244, 236, 0.86)),
+        linear-gradient(135deg, rgba(127, 89, 35, 0.08), rgba(255, 255, 255, 0));
+    border-color: rgba(127, 89, 35, 0.26);
+    color: #6d4a1f;
+}
+
+.law-entry-history-toggle-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+
+.law-entry-history-toggle-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.law-entry-history-toggle-meta {
+    font-size: 0.76rem;
+    color: rgba(32, 37, 45, 0.52);
+}
+
+.law-entry-history-toggle-count {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(127, 89, 35, 0.1);
+    font-size: 0.74rem;
+    color: #6d4a1f;
+}
+
+.law-entry-history-panel {
+    position: relative;
+    display: grid;
+    gap: 10px;
+    padding: 4px 0 0 12px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+        max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.26s ease;
+}
+
+.law-entry-history-panel::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 18px;
+    bottom: 18px;
+    width: 1px;
+    background: linear-gradient(
+        180deg,
+        rgba(127, 89, 35, 0.22),
+        rgba(127, 89, 35, 0.04)
+    );
+}
+
+.law-entry-history-panel.is-open {
+    max-height: 560px;
+    opacity: 1;
+}
+
+.law-entry-history-panel.is-animating .law-entry-history-link {
+    animation: law-history-drawer-item 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.law-entry-history-panel.is-animating .law-entry-history-link:nth-child(2) {
+    animation-delay: 40ms;
+}
+
+.law-entry-history-panel.is-animating .law-entry-history-link:nth-child(3) {
+    animation-delay: 80ms;
+}
+
+.law-entry-history-panel.is-animating .law-entry-history-link:nth-child(4) {
+    animation-delay: 120ms;
+}
+
+.law-entry-history-link {
+    width: 100%;
+    position: relative;
+    display: grid;
+    grid-template-columns: 156px minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
+    border: 1px solid rgba(32, 37, 45, 0.08);
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(248, 249, 250, 0.66)),
+        linear-gradient(135deg, rgba(127, 89, 35, 0.03), rgba(255, 255, 255, 0));
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition:
+        transform var(--transition-fast),
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.law-entry-history-link:hover {
+    transform: translateY(-1px);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 244, 236, 0.82)),
+        linear-gradient(135deg, rgba(127, 89, 35, 0.05), rgba(255, 255, 255, 0));
+    border-color: rgba(127, 89, 35, 0.18);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.06);
+}
+
+.law-entry-history-link-rail {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 8px 0 4px;
+}
+
+.law-entry-history-link-year {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 58px;
+    padding-right: 18px;
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 0.72rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgba(32, 37, 45, 0.52);
+}
+
+.law-entry-history-link-year::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 44px;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        rgba(127, 89, 35, 0.26),
+        rgba(127, 89, 35, 0.03)
+    );
+    transform: translateY(-50%);
+}
+
+.law-entry-history-link-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 14px 16px 14px 2px;
+}
+
+.law-entry-history-link-title {
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #20252d;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgba(127, 89, 35, 0.44);
+}
+
+.law-entry-history-link-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.law-entry-history-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.law-entry-history-badge--archived {
+    background: rgba(57, 103, 160, 0.12);
+    color: #345b8d;
+}
+
+.law-entry-history-badge--repealed {
+    background: rgba(170, 73, 64, 0.14);
+    color: #933e38;
+}
+
+.law-entry-history-badge--draft {
+    background: rgba(158, 118, 45, 0.14);
+    color: #75531e;
+}
+
+.law-entry-history-link-era {
+    font-size: 0.78rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    color: rgba(32, 37, 45, 0.52);
+}
+
+@keyframes law-history-drawer-item {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.law-entry-history-link--repealed .law-entry-history-link-era {
+    color: #9b423c;
+}
+
+.law-entry-history-link--draft .law-entry-history-link-era {
+    color: #866428;
+}
+
+.law-history-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px 22px 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(32, 37, 45, 0.08);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(243, 244, 246, 0.7)),
+        repeating-linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.012) 0,
+            rgba(0, 0, 0, 0.012) 1px,
+            transparent 1px,
+            transparent 40px
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.62),
+        0 22px 36px rgba(0, 0, 0, 0.08);
+}
+
+.law-history-card.animate-in {
+    animation: law-entry-settle 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.law-history-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.law-history-card-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.law-history-card-status--archived {
+    background: rgba(57, 103, 160, 0.12);
+    color: #345b8d;
+}
+
+.law-history-card-status--repealed {
+    background: rgba(170, 73, 64, 0.14);
+    color: #933e38;
+}
+
+.law-history-card-status--draft {
+    background: rgba(158, 118, 45, 0.14);
+    color: #75531e;
+}
+
+.law-history-card-era {
+    font-size: 0.84rem;
+    color: rgba(32, 37, 45, 0.58);
+}
+
+.law-history-card-summary {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: rgba(32, 37, 45, 0.78);
+}
+
+.law-history-card-copy {
+    color: rgba(32, 37, 45, 0.82);
+    line-height: 1.82;
+}
+
+.law-history-card-note {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(32, 37, 45, 0.06);
+    color: rgba(32, 37, 45, 0.66);
+    line-height: 1.72;
+}
+
+.law-history-card-effects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.law-history-card-effect {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.law-detail-frame {
+    min-height: min(820px, calc(100vh - 150px));
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(360px, 0.84fr);
+}
+
+.law-detail-copy {
+    position: relative;
+    z-index: 1;
+    padding: 40px 36px 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.law-detail-header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(32, 37, 45, 0.08);
+}
+
+.law-detail-domain {
+    font-size: 0.76rem;
+    color: rgba(32, 37, 45, 0.54);
+}
+
+.law-detail-title {
+    margin: 0;
+    font-size: clamp(2.1rem, 4vw, 3.5rem);
+    line-height: 0.98;
+    color: #20252d;
+}
+
+.law-detail-subtitle {
+    color: rgba(32, 37, 45, 0.6);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.law-detail-status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.law-detail-status {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(32, 37, 45, 0.12);
+    color: #20252d;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.law-detail-status-copy {
+    color: rgba(32, 37, 45, 0.58);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.law-detail-enacted {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 18px 16px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.46);
+    border: 1px solid rgba(32, 37, 45, 0.08);
+}
+
+.law-detail-enacted-label {
+    font-size: 0.76rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(32, 37, 45, 0.52);
+}
+
+.law-detail-enacted-copy {
+    color: rgba(32, 37, 45, 0.82);
+    line-height: 1.82;
+}
+
+.law-detail-effects,
+.law-clause-effects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.law-effect-pill,
+.law-clause-effect {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.law-effect-pill--positive,
+.law-clause-effect--positive,
+.law-history-card-effect--positive {
+    background: rgba(32, 136, 75, 0.1);
+    color: #236344;
+}
+
+.law-effect-pill--negative,
+.law-clause-effect--negative,
+.law-history-card-effect--negative {
+    background: rgba(178, 58, 41, 0.1);
+    color: #8a3326;
+}
+
+.law-effect-pill--neutral,
+.law-clause-effect--neutral,
+.law-history-card-effect--neutral {
+    background: rgba(32, 37, 45, 0.08);
+    color: rgba(32, 37, 45, 0.68);
+}
+
+.law-clause-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.law-clause-card {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 16px;
+    align-items: stretch;
+    padding: 18px 16px 18px 0;
+    border-top: 1px solid rgba(32, 37, 45, 0.08);
+}
+
+.law-clause-line {
+    position: relative;
+}
+
+.law-clause-line::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12px;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(32, 37, 45, 0.24), rgba(32, 37, 45, 0.04));
+}
+
+.law-clause-line::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #20252d;
+    box-shadow: 0 0 0 6px rgba(32, 37, 45, 0.08);
+}
+
+.law-clause-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.law-clause-kicker {
+    font-size: 0.72rem;
+    color: rgba(32, 37, 45, 0.48);
+}
+
+.law-clause-title {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #20252d;
+}
+
+.law-clause-subtitle {
+    color: rgba(32, 37, 45, 0.56);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.law-clause-text {
+    color: rgba(32, 37, 45, 0.8);
+    line-height: 1.8;
+}
+
+.law-detail-visual {
+    position: relative;
+    min-height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+}
+
+/* 法律详情内部的栏目、细则卡和宪章法板块统一走柔和上浮动画。 */
+.law-detail-copy.animate-in,
+.law-detail-visual.animate-in,
+.law-clause-card.animate-in,
+.law-charter-track.animate-in,
+.law-charter-center.animate-in,
+.law-charter-focus.animate-in {
+    animation: law-panel-settle 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/*
+ * 宪章法终局节点单独使用专用动画。
+ * 原因：外层本身带有 translateX 用于中线校正，如果复用通用动画会把这段横向偏移覆盖掉，
+ * 进而出现“初次进入位置正常，点击后重新渲染又向左跳一次”的问题。
+ */
+.law-charter-final-wrap.animate-in {
+    animation: law-charter-final-settle 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.law-detail-image-wrap,
+.law-detail-overlay,
+.law-detail-quote {
+    position: absolute;
+    inset: 0;
+}
+
+.law-detail-image-wrap {
+    overflow: hidden;
+}
+
+.law-detail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) contrast(0.92) brightness(0.84);
+    transform: scale(1.04);
+}
+
+/* 右侧插画用更慢一点的镜头推进，形成“画面落稳”的感觉。 */
+#law-hub-view.active-view .law-column-visual-image,
+#law-detail-view.active-view .law-detail-image {
+    animation: law-image-settle 1.15s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.law-detail-overlay {
+    background:
+        linear-gradient(90deg, rgba(244, 244, 242, 0.98) 0%, rgba(244, 244, 242, 0.82) 18%, rgba(244, 244, 242, 0.2) 44%, rgba(244, 244, 242, 0.68) 100%),
+        radial-gradient(circle at 75% 50%, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.76));
+}
+
+.law-detail-quote {
+    inset: auto 34px 34px 34px;
+    padding: 18px 20px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.52);
+    border: 1px solid rgba(32, 37, 45, 0.08);
+    color: rgba(32, 37, 45, 0.72);
+    font-size: 0.95rem;
+    line-height: 1.82;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.law-empty-copy {
+    color: rgba(32, 37, 45, 0.5);
+    font-style: italic;
+}
+
+/* 整张法律页底板：轻微上浮 + 去模糊。 */
+@keyframes law-frame-reveal {
+    0% {
+        opacity: 0;
+        transform: translateY(26px) scale(0.985);
+        filter: blur(18px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* 顶部切换条：从上方轻轻落下。 */
+@keyframes law-topbar-float {
+    0% {
+        opacity: 0;
+        transform: translateY(-18px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 标题和摘要：比底板稍慢一拍出现。 */
+@keyframes law-copy-reveal {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+        filter: blur(12px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+/* 分栏与法典列表：整体从下方抬起。 */
+@keyframes law-column-rise {
+    0% {
+        opacity: 0;
+        transform: translateY(34px) scale(0.992);
+        filter: blur(14px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* 单条法令：短距离滑入，避免列表一股脑闪现。 */
+@keyframes law-entry-settle {
+    0% {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 法条详情卡、宪章法左右轨道与中心说明卡的通用入场。 */
+@keyframes law-panel-settle {
+    0% {
+        opacity: 0;
+        transform: translateY(26px);
+        filter: blur(14px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+/* 右侧大图：轻微放大后回落，模拟镜头对焦。 */
+@keyframes law-image-settle {
+    0% {
+        opacity: 0;
+        transform: scale(1.12);
+        filter: grayscale(100%) contrast(0.88) brightness(0.74) blur(12px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.04);
+        filter: grayscale(100%) contrast(0.92) brightness(0.84) blur(0);
+    }
+}
+
+/*
+ * 宪章法终局节点专用：在保留横向居中修正量的前提下，只做纵向抬升和去模糊。
+ * 这样首次进入和点击后重新渲染的坐标基准保持一致，不会再出现横向跳动。
+ */
+@keyframes law-charter-final-settle {
+    0% {
+        opacity: 0;
+        transform: translate3d(var(--law-charter-final-shift), 26px, 0);
+        filter: blur(14px);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(var(--law-charter-final-shift), 0, 0);
+        filter: blur(0);
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Charter Law detail view                                                    */
+/* -------------------------------------------------------------------------- */
+
+.law-charter-frame {
+    width: min(100%, 1380px);
+    min-height: calc(100vh - 150px);
+    margin: 0 auto;
+    padding: 26px 26px 34px;
+    border-radius: 28px;
+    position: relative;
+    overflow: hidden;
+    color: #2a2520;
+    background:
+        linear-gradient(180deg, rgba(247, 243, 236, 0.98), rgba(231, 224, 213, 0.96)),
+        radial-gradient(circle at top center, rgba(255, 255, 255, 0.82), transparent 42%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(131, 101, 64, 0.035) 0,
+            rgba(131, 101, 64, 0.035) 1px,
+            transparent 1px,
+            transparent 88px
+        );
+    border: 1px solid rgba(122, 93, 55, 0.18);
+    box-shadow:
+        0 30px 68px rgba(0, 0, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.law-charter-frame::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(122, 93, 55, 0.12);
+    pointer-events: none;
+}
+
+.law-charter-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+    padding: 8px 0 18px;
+}
+
+.law-charter-kicker {
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(101, 75, 43, 0.7);
+}
+
+.law-charter-title {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+    font-size: clamp(2.2rem, 4vw, 3.7rem);
+    line-height: 0.98;
+    color: #2c2118;
+}
+
+.law-charter-board {
+    position: relative;
+    z-index: 1;
+    min-height: 790px;
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(360px, 420px) minmax(280px, 1fr);
+    gap: 52px;
+    align-items: start;
+    padding: 34px 44px 188px;
+}
+
+.law-charter-track {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 640px;
+    align-content: start;
+}
+
+.law-charter-track--left {
+    grid-template-columns: minmax(0, 1fr) 56px;
+}
+
+.law-charter-track--right {
+    grid-template-columns: 56px minmax(0, 1fr);
+}
+
+.law-charter-track-label {
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(101, 75, 43, 0.64);
+    text-align: center;
+    margin-bottom: 18px;
+    padding-inline: 10px;
+}
+
+.law-charter-track-line {
+    position: relative;
+    grid-row: 2;
+    width: 1px;
+    height: 100%;
+    justify-self: center;
+    align-self: stretch;
+    background: linear-gradient(180deg, rgba(146, 111, 62, 0.7), rgba(146, 111, 62, 0.14));
+}
+
+.law-charter-track--left .law-charter-track-line {
+    grid-column: 2;
+}
+
+.law-charter-track--right .law-charter-track-line {
+    grid-column: 1;
+}
+
+.law-charter-track-nodes {
+    grid-row: 2;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 30px;
+    min-height: 560px;
+    padding: 10px 0 92px;
+}
+
+.law-charter-track--left .law-charter-track-nodes {
+    grid-column: 1;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.law-charter-track--right .law-charter-track-nodes {
+    grid-column: 2;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.law-charter-node {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    width: min(100%, 320px);
+    min-height: 80px;
+    padding: 14px 18px;
+    border: 1px solid transparent;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        opacity var(--transition-fast);
+}
+
+.law-charter-track--left .law-charter-node {
+    flex-direction: row-reverse;
+    margin-right: 6px;
+}
+
+.law-charter-track--right .law-charter-node {
+    margin-left: 6px;
+}
+
+.law-charter-node::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 44px;
+    height: 1px;
+    background: rgba(146, 111, 62, 0.54);
+    transform: translateY(-50%);
+}
+
+.law-charter-track--left .law-charter-node::before {
+    right: -44px;
+}
+
+.law-charter-track--right .law-charter-node::before {
+    left: -44px;
+}
+
+.law-charter-node-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(126, 92, 49, 0.5);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 6px rgba(157, 122, 73, 0.08);
+}
+
+.law-charter-node-icon::before {
+    content: "◇";
+    font-size: 0.92rem;
+    color: rgba(126, 92, 49, 0.84);
+}
+
+.law-charter-node-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.law-charter-node-title {
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+    font-size: 1.24rem;
+    color: #2f241a;
+}
+
+.law-charter-node-state {
+    font-size: 0.94rem;
+    color: rgba(79, 61, 39, 0.76);
+}
+
+.law-charter-node--signed .law-charter-node-icon {
+    background: rgba(193, 158, 98, 0.16);
+    border-color: rgba(137, 103, 55, 0.72);
+}
+
+.law-charter-node--signed .law-charter-node-icon::before {
+    content: "◆";
+    color: #8c6a3c;
+}
+
+.law-charter-node--available .law-charter-node-icon {
+    border-color: rgba(160, 123, 71, 0.86);
+    box-shadow: 0 0 0 6px rgba(196, 163, 97, 0.12);
+}
+
+.law-charter-node--locked {
+    opacity: 0.58;
+}
+
+.law-charter-node--locked .law-charter-node-icon {
+    border-style: dashed;
+}
+
+.law-charter-node.is-selected,
+.law-charter-node:hover {
+    background: rgba(255, 255, 255, 0.54);
+    box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+.law-charter-node:focus-visible {
+    outline: none;
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow:
+        0 0 0 2px rgba(152, 115, 60, 0.18),
+        0 14px 28px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.law-charter-node--empty {
+    cursor: default;
+    opacity: 0.74;
+}
+
+.law-charter-node--empty::before {
+    display: none;
+}
+
+.law-charter-node--empty:hover {
+    transform: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.law-charter-center {
+    align-self: stretch;
+    justify-self: center;
+    width: min(100%, 420px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
+    padding: 72px 0 0;
+    text-align: center;
+}
+
+.law-charter-center-copy {
+    max-width: 34ch;
+    margin: 0 auto;
+    color: rgba(67, 52, 34, 0.8);
+    font-size: 1rem;
+    line-height: 1.9;
+}
+
+.law-charter-center-copy p {
+    margin: 0;
+}
+
+.law-charter-center-copy p + p {
+    margin-top: 14px;
+}
+
+.law-charter-focus {
+    width: min(100%, 420px);
+    margin: 0 auto;
+    padding: 22px 22px 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(132, 99, 57, 0.16);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(245, 238, 226, 0.72)),
+        linear-gradient(135deg, rgba(198, 162, 102, 0.08), rgba(255, 255, 255, 0));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.72),
+        0 18px 34px rgba(0, 0, 0, 0.08);
+    text-align: left;
+}
+
+.law-charter-focus-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.law-charter-focus-track {
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(96, 72, 42, 0.68);
+}
+
+.law-charter-focus-state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.law-charter-focus-state--signed {
+    background: rgba(157, 123, 72, 0.16);
+    color: #7d5c30;
+}
+
+.law-charter-focus-state--available {
+    background: rgba(41, 99, 73, 0.14);
+    color: #275941;
+}
+
+.law-charter-focus-state--locked {
+    background: rgba(58, 64, 72, 0.12);
+    color: rgba(58, 64, 72, 0.78);
+}
+
+.law-charter-focus-title {
+    margin: 14px 0 6px;
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+    font-size: 1.9rem;
+    color: #312317;
+}
+
+.law-charter-focus-subtitle {
+    color: rgba(77, 60, 39, 0.7);
+    font-size: 0.98rem;
+    line-height: 1.7;
+}
+
+.law-charter-focus-copy {
+    margin-top: 14px;
+    color: rgba(56, 44, 30, 0.84);
+    line-height: 1.82;
+}
+
+.law-charter-focus-hint {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(132, 99, 57, 0.12);
+    color: rgba(86, 66, 42, 0.74);
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+.law-charter-effects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+}
+
+.law-charter-effect {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.law-charter-effect--positive {
+    background: rgba(40, 126, 84, 0.12);
+    color: #256246;
+}
+
+.law-charter-effect--negative {
+    background: rgba(169, 67, 45, 0.12);
+    color: #893627;
+}
+
+.law-charter-effect--neutral {
+    background: rgba(72, 60, 42, 0.1);
+    color: rgba(72, 60, 42, 0.82);
+}
+
+.law-charter-final-wrap {
+    --law-charter-final-shift: -58px;
+    position: absolute;
+    left: 68px;
+    right: 68px;
+    bottom: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 108px;
+    z-index: 1;
+    transform: translateX(var(--law-charter-final-shift));
+}
+
+.law-charter-final-rail {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: 12px;
+    height: 62px;
+    border-bottom: 1px solid rgba(146, 111, 62, 0.74);
+    border-left: 1px solid rgba(146, 111, 62, 0.32);
+    border-right: 1px solid rgba(146, 111, 62, 0.32);
+    border-radius: 0 0 40px 40px;
+}
+
+.law-charter-node--final {
+    position: relative;
+    z-index: 1;
+    min-width: 300px;
+    max-width: 360px;
+    padding-top: 20px;
+    padding-bottom: 18px;
+    justify-content: center;
+    text-align: center;
+}
+
+.law-charter-node--final::before {
+    display: none;
+}
+
+:root[data-theme="dark"] .law-hub-frame,
+:root[data-theme="dark"] .law-detail-frame {
+    border-color: rgba(140, 146, 152, 0.2);
+    color: #20252d;
+    background-color: #e8ebee;
+    background:
+        linear-gradient(180deg, rgba(241, 242, 240, 0.95), rgba(224, 227, 231, 0.94)),
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.72), transparent 42%);
+    box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+:root[data-theme="dark"] .law-hub-frame::before,
+:root[data-theme="dark"] .law-detail-frame::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 18%),
+        radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.34), transparent 24%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.012) 0,
+            rgba(0, 0, 0, 0.012) 1px,
+            transparent 1px,
+            transparent 56px
+        );
+}
+
+:root[data-theme="dark"] .law-hub-title,
+:root[data-theme="dark"] .law-detail-title,
+:root[data-theme="dark"] .law-column-copy h2,
+:root[data-theme="dark"] .law-clause-title,
+:root[data-theme="dark"] .law-entry-title,
+:root[data-theme="dark"] .law-detail-status {
+    color: #171b22;
+}
+
+:root[data-theme="dark"] .law-hub-kicker,
+:root[data-theme="dark"] .law-detail-domain,
+:root[data-theme="dark"] .law-column-index,
+:root[data-theme="dark"] .law-clause-kicker,
+:root[data-theme="dark"] .law-detail-enacted-label,
+:root[data-theme="dark"] .law-entry-subtitle,
+:root[data-theme="dark"] .law-column-copy p,
+:root[data-theme="dark"] .law-detail-subtitle,
+:root[data-theme="dark"] .law-detail-status-copy,
+:root[data-theme="dark"] .law-empty-copy,
+:root[data-theme="dark"] .law-column-note,
+:root[data-theme="dark"] .law-hub-note,
+:root[data-theme="dark"] .law-detail-quote {
+    color: rgba(32, 37, 45, 0.68);
+}
+
+:root[data-theme="dark"] .law-hub-topbar {
+    background: linear-gradient(180deg, rgba(241, 242, 240, 0.92), rgba(241, 242, 240, 0.62) 72%, rgba(241, 242, 240, 0));
+}
+
+:root[data-theme="dark"] .law-hub-tabrail,
+:root[data-theme="dark"] .law-column-board,
+:root[data-theme="dark"] .law-column-visual,
+:root[data-theme="dark"] .law-hub-page-status,
+:root[data-theme="dark"] .law-hub-note,
+:root[data-theme="dark"] .law-detail-enacted,
+:root[data-theme="dark"] .law-detail-quote {
+    background: rgba(255, 255, 255, 0.48);
+    border-color: rgba(89, 98, 106, 0.16);
+}
+
+:root[data-theme="dark"] .law-entry:hover {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 12px 22px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+:root[data-theme="dark"] .law-detail-overlay {
+    background:
+        linear-gradient(90deg, rgba(241, 242, 240, 0.98) 0%, rgba(241, 242, 240, 0.84) 18%, rgba(241, 242, 240, 0.14) 46%, rgba(241, 242, 240, 0.68) 100%),
+        radial-gradient(circle at 75% 50%, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.46));
+}
+
+:root[data-theme="dark"] .law-detail-image {
+    filter: grayscale(100%) contrast(0.94) brightness(0.82);
+}
+
+/* Stronger dark-theme treatment for the legal codex pages.
+   These overrides intentionally switch from pale paper to deep slate panels
+   so the law views feel distinct when the global theme is dark. */
+:root[data-theme="dark"] #law-hub-view,
+:root[data-theme="dark"] #law-detail-view {
+    background:
+        radial-gradient(circle at top right, rgba(120, 138, 160, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(6, 10, 14, 0.86), rgba(10, 14, 18, 0.94));
+}
+
+:root[data-theme="dark"] .law-hub-frame,
+:root[data-theme="dark"] .law-detail-frame {
+    color: #d9e0e7;
+    border-color: rgba(152, 168, 186, 0.16);
+    background:
+        linear-gradient(180deg, rgba(14, 18, 24, 0.98), rgba(20, 25, 31, 0.97)),
+        radial-gradient(circle at top left, rgba(113, 132, 155, 0.16), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(88, 102, 120, 0.12), transparent 28%);
+    box-shadow:
+        0 32px 72px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+:root[data-theme="dark"] .law-hub-frame::before,
+:root[data-theme="dark"] .law-detail-frame::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 18%),
+        radial-gradient(circle at 16% 0%, rgba(145, 166, 190, 0.09), transparent 22%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.018) 0,
+            rgba(255, 255, 255, 0.018) 1px,
+            transparent 1px,
+            transparent 56px
+        );
+}
+
+:root[data-theme="dark"] .law-hub-topbar {
+    background: linear-gradient(180deg, rgba(13, 18, 24, 0.96), rgba(13, 18, 24, 0.72) 72%, rgba(13, 18, 24, 0));
+}
+
+:root[data-theme="dark"] .law-hub-header::after {
+    background: linear-gradient(90deg, rgba(196, 163, 97, 0.38), rgba(196, 163, 97, 0));
+}
+
+:root[data-theme="dark"] .law-hub-title,
+:root[data-theme="dark"] .law-detail-title,
+:root[data-theme="dark"] .law-column-copy h2,
+:root[data-theme="dark"] .law-clause-title,
+:root[data-theme="dark"] .law-entry-title,
+:root[data-theme="dark"] .law-hub-page-name {
+    color: #f1f4f7;
+}
+
+:root[data-theme="dark"] .law-hub-kicker,
+:root[data-theme="dark"] .law-detail-domain,
+:root[data-theme="dark"] .law-clause-kicker,
+:root[data-theme="dark"] .law-detail-enacted-label,
+:root[data-theme="dark"] .law-hub-page-badge,
+:root[data-theme="dark"] .law-hub-page-count {
+    color: rgba(177, 190, 204, 0.66);
+}
+
+:root[data-theme="dark"] .law-entry-subtitle,
+:root[data-theme="dark"] .law-column-copy p,
+:root[data-theme="dark"] .law-detail-subtitle,
+:root[data-theme="dark"] .law-detail-status-copy,
+:root[data-theme="dark"] .law-empty-copy,
+:root[data-theme="dark"] .law-column-note,
+:root[data-theme="dark"] .law-hub-note,
+:root[data-theme="dark"] .law-detail-quote,
+:root[data-theme="dark"] .law-detail-enacted-copy,
+:root[data-theme="dark"] .law-clause-subtitle,
+:root[data-theme="dark"] .law-clause-text,
+:root[data-theme="dark"] .law-hub-summary {
+    color: rgba(206, 216, 226, 0.78);
+}
+
+:root[data-theme="dark"] .law-hub-tabrail,
+:root[data-theme="dark"] .law-column-board,
+:root[data-theme="dark"] .law-hub-page-status,
+:root[data-theme="dark"] .law-hub-note,
+:root[data-theme="dark"] .law-detail-enacted,
+:root[data-theme="dark"] .law-detail-quote {
+    background:
+        linear-gradient(180deg, rgba(15, 20, 26, 0.92), rgba(20, 25, 31, 0.9)),
+        linear-gradient(135deg, rgba(115, 132, 151, 0.08), rgba(255, 255, 255, 0));
+    border-color: rgba(143, 159, 176, 0.16);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 18px 34px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme="dark"] .law-hub-note {
+    border-left-color: rgba(195, 163, 97, 0.44);
+}
+
+:root[data-theme="dark"] .law-column-visual-overlay {
+    background:
+        linear-gradient(180deg, rgba(7, 10, 14, 0.08) 0%, rgba(7, 10, 14, 0.18) 30%, rgba(7, 10, 14, 0.88) 100%),
+        linear-gradient(90deg, rgba(7, 10, 14, 0.02) 0%, rgba(7, 10, 14, 0.12) 44%, rgba(7, 10, 14, 0.58) 100%);
+}
+
+:root[data-theme="dark"] .law-column-visual-kicker {
+    color: rgba(230, 210, 167, 0.92);
+}
+
+:root[data-theme="dark"] .law-column-visual-caption {
+    background: rgba(12, 17, 22, 0.72);
+    border-color: rgba(198, 166, 103, 0.18);
+    color: rgba(223, 212, 188, 0.84);
+}
+
+:root[data-theme="dark"] .law-column-index {
+    background: rgba(196, 208, 220, 0.08);
+    color: rgba(221, 229, 237, 0.82);
+}
+
+:root[data-theme="dark"] .law-hub-tab {
+    color: rgba(168, 182, 197, 0.68);
+}
+
+:root[data-theme="dark"] .law-hub-tab-index {
+    color: rgba(166, 178, 191, 0.42);
+}
+
+:root[data-theme="dark"] .law-hub-tab:hover,
+:root[data-theme="dark"] .law-hub-tab.is-active {
+    background:
+        linear-gradient(180deg, rgba(36, 45, 56, 0.96), rgba(24, 31, 39, 0.94)),
+        linear-gradient(135deg, rgba(196, 163, 97, 0.18), rgba(255, 255, 255, 0));
+    color: #f4f6f8;
+    box-shadow:
+        0 14px 26px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 0 0 1px rgba(196, 163, 97, 0.14);
+}
+
+:root[data-theme="dark"] .law-entry {
+    border: 1px solid transparent;
+}
+
+:root[data-theme="dark"] .law-entry-history-toggle {
+    background: rgba(19, 24, 31, 0.84);
+    border-color: rgba(196, 163, 97, 0.14);
+    color: rgba(224, 212, 187, 0.82);
+}
+
+:root[data-theme="dark"] .law-entry-history-toggle:hover,
+:root[data-theme="dark"] .law-entry-history-toggle.is-open {
+    background:
+        linear-gradient(180deg, rgba(28, 24, 18, 0.92), rgba(19, 24, 31, 0.96)),
+        linear-gradient(135deg, rgba(196, 163, 97, 0.08), rgba(255, 255, 255, 0));
+    border-color: rgba(196, 163, 97, 0.26);
+    color: #f0d7a4;
+}
+
+:root[data-theme="dark"] .law-entry-history-toggle-meta {
+    color: rgba(224, 212, 187, 0.6);
+}
+
+:root[data-theme="dark"] .law-entry-history-toggle-count {
+    background: rgba(196, 163, 97, 0.14);
+    color: #f0d7a4;
+}
+
+:root[data-theme="dark"] .law-entry-history-panel::before {
+    background: linear-gradient(
+        180deg,
+        rgba(196, 163, 97, 0.24),
+        rgba(196, 163, 97, 0.04)
+    );
+}
+
+:root[data-theme="dark"] .law-entry-history-link-year::after {
+    background: linear-gradient(
+        90deg,
+        rgba(196, 163, 97, 0.24),
+        rgba(196, 163, 97, 0.04)
+    );
+}
+
+:root[data-theme="dark"] .law-entry-history-link {
+    background: rgba(16, 21, 28, 0.82);
+    border-color: rgba(196, 163, 97, 0.08);
+}
+
+:root[data-theme="dark"] .law-entry-history-link:hover {
+    background:
+        linear-gradient(180deg, rgba(26, 33, 41, 0.96), rgba(20, 26, 32, 0.94)),
+        linear-gradient(135deg, rgba(196, 163, 97, 0.06), rgba(255, 255, 255, 0));
+    border-color: rgba(196, 163, 97, 0.18);
+}
+
+:root[data-theme="dark"] .law-entry-history-link-title {
+    color: #edf1f5;
+    text-decoration-color: rgba(196, 163, 97, 0.52);
+}
+
+:root[data-theme="dark"] .law-entry-history-link-meta {
+    color: rgba(224, 212, 187, 0.62);
+}
+
+:root[data-theme="dark"] .law-entry-history-link-year,
+:root[data-theme="dark"] .law-entry-history-link-era {
+    color: rgba(224, 212, 187, 0.56);
+}
+
+:root[data-theme="dark"] .law-entry-history-badge--archived {
+    background: rgba(76, 124, 185, 0.18);
+    color: #a8c9ff;
+}
+
+:root[data-theme="dark"] .law-entry-history-badge--repealed {
+    background: rgba(190, 83, 76, 0.18);
+    color: #f0a49d;
+}
+
+:root[data-theme="dark"] .law-entry-history-badge--draft {
+    background: rgba(196, 163, 97, 0.18);
+    color: #f0d89c;
+}
+
+:root[data-theme="dark"] .law-history-card {
+    background:
+        linear-gradient(180deg, rgba(16, 20, 27, 0.96), rgba(12, 16, 22, 0.94)),
+        repeating-linear-gradient(
+            180deg,
+            rgba(201, 166, 97, 0.015) 0,
+            rgba(201, 166, 97, 0.015) 1px,
+            transparent 1px,
+            transparent 44px
+        );
+    border-color: rgba(196, 163, 97, 0.12);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 22px 36px rgba(0, 0, 0, 0.24);
+}
+
+:root[data-theme="dark"] .law-history-card-era,
+:root[data-theme="dark"] .law-history-card-summary,
+:root[data-theme="dark"] .law-history-card-copy,
+:root[data-theme="dark"] .law-history-card-note {
+    color: rgba(224, 212, 187, 0.8);
+}
+
+:root[data-theme="dark"] .law-history-card-note {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="dark"] .law-history-card-status--archived {
+    background: rgba(76, 124, 185, 0.18);
+    color: #a8c9ff;
+}
+
+:root[data-theme="dark"] .law-history-card-status--repealed {
+    background: rgba(190, 83, 76, 0.18);
+    color: #f0a49d;
+}
+
+:root[data-theme="dark"] .law-history-card-status--draft {
+    background: rgba(196, 163, 97, 0.18);
+    color: #f0d89c;
+}
+
+:root[data-theme="dark"] .law-entry--charter {
+    background:
+        linear-gradient(180deg, rgba(25, 20, 13, 0.9), rgba(16, 18, 23, 0.96)),
+        linear-gradient(135deg, rgba(196, 163, 97, 0.12), rgba(255, 255, 255, 0));
+    border-color: rgba(196, 163, 97, 0.18);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        inset 0 0 0 1px rgba(196, 163, 97, 0.08);
+}
+
+:root[data-theme="dark"] .law-entry--charter .law-entry-symbol {
+    color: #f0d7a4;
+}
+
+:root[data-theme="dark"] .law-entry-symbol {
+    color: rgba(228, 234, 240, 0.72);
+}
+
+:root[data-theme="dark"] .law-entry-status,
+:root[data-theme="dark"] .law-detail-status {
+    background: rgba(196, 163, 97, 0.16);
+    color: #f0d7a4;
+    border: 1px solid rgba(196, 163, 97, 0.24);
+}
+
+:root[data-theme="dark"] .law-entry:hover {
+    background:
+        linear-gradient(180deg, rgba(26, 33, 41, 0.96), rgba(20, 26, 32, 0.94)),
+        linear-gradient(135deg, rgba(196, 163, 97, 0.08), rgba(255, 255, 255, 0));
+    border-color: rgba(196, 163, 97, 0.14);
+    box-shadow:
+        0 14px 26px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="dark"] .law-effect-pill--positive,
+:root[data-theme="dark"] .law-clause-effect--positive,
+:root[data-theme="dark"] .law-history-card-effect--positive {
+    background: rgba(56, 154, 109, 0.18);
+    color: #8de0b0;
+}
+
+:root[data-theme="dark"] .law-effect-pill--negative,
+:root[data-theme="dark"] .law-clause-effect--negative,
+:root[data-theme="dark"] .law-history-card-effect--negative {
+    background: rgba(190, 83, 76, 0.18);
+    color: #f0a49d;
+}
+
+:root[data-theme="dark"] .law-effect-pill--neutral,
+:root[data-theme="dark"] .law-clause-effect--neutral,
+:root[data-theme="dark"] .law-history-card-effect--neutral {
+    background: rgba(181, 193, 206, 0.12);
+    color: rgba(220, 228, 236, 0.82);
+}
+
+:root[data-theme="dark"] .law-clause-card {
+    border-top-color: rgba(151, 164, 179, 0.12);
+}
+
+:root[data-theme="dark"] .law-clause-line::before {
+    background: linear-gradient(180deg, rgba(196, 163, 97, 0.42), rgba(196, 163, 97, 0.04));
+}
+
+:root[data-theme="dark"] .law-clause-line::after {
+    background: #d6b36f;
+    box-shadow: 0 0 0 6px rgba(196, 163, 97, 0.12);
+}
+
+:root[data-theme="dark"] .law-detail-overlay {
+    background:
+        linear-gradient(90deg, rgba(12, 16, 22, 0.98) 0%, rgba(12, 16, 22, 0.86) 18%, rgba(12, 16, 22, 0.22) 44%, rgba(12, 16, 22, 0.74) 100%),
+        radial-gradient(circle at 75% 50%, rgba(196, 163, 97, 0.04), rgba(14, 18, 24, 0.38));
+}
+
+:root[data-theme="dark"] .law-detail-image {
+    filter: grayscale(100%) contrast(1.02) brightness(0.56);
+}
+
+:root[data-theme="dark"] .law-detail-quote {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+:root[data-theme="dark"] #law-hub-view::-webkit-scrollbar,
+:root[data-theme="dark"] #law-detail-view::-webkit-scrollbar {
+    width: 12px;
+}
+
+:root[data-theme="dark"] #law-hub-view::-webkit-scrollbar-track,
+:root[data-theme="dark"] #law-detail-view::-webkit-scrollbar-track {
+    background: rgba(10, 14, 18, 0.94);
+}
+
+:root[data-theme="dark"] #law-hub-view::-webkit-scrollbar-thumb,
+:root[data-theme="dark"] #law-detail-view::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(196, 163, 97, 0.72), rgba(120, 96, 52, 0.78));
+    border: 2px solid rgba(10, 14, 18, 0.94);
+    border-radius: 999px;
+}
+
+:root[data-theme="dark"] .law-charter-frame {
+    color: #e2d2b1;
+    background:
+        linear-gradient(180deg, rgba(8, 12, 18, 0.98), rgba(13, 17, 24, 0.97)),
+        radial-gradient(circle at top center, rgba(189, 149, 82, 0.08), transparent 34%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(201, 166, 97, 0.018) 0,
+            rgba(201, 166, 97, 0.018) 1px,
+            transparent 1px,
+            transparent 88px
+        );
+    border-color: rgba(201, 166, 97, 0.18);
+    box-shadow:
+        0 38px 78px rgba(0, 0, 0, 0.54),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme="dark"] .law-charter-frame::before {
+    border-color: rgba(201, 166, 97, 0.14);
+}
+
+:root[data-theme="dark"] .law-charter-kicker,
+:root[data-theme="dark"] .law-charter-track-label,
+:root[data-theme="dark"] .law-charter-focus-track {
+    color: rgba(215, 185, 123, 0.74);
+}
+
+:root[data-theme="dark"] .law-charter-title,
+:root[data-theme="dark"] .law-charter-node-title,
+:root[data-theme="dark"] .law-charter-focus-title {
+    color: #f4e8cc;
+}
+
+:root[data-theme="dark"] .law-charter-center-copy,
+:root[data-theme="dark"] .law-charter-node-state,
+:root[data-theme="dark"] .law-charter-focus-subtitle,
+:root[data-theme="dark"] .law-charter-focus-copy,
+:root[data-theme="dark"] .law-charter-focus-hint {
+    color: rgba(224, 212, 187, 0.82);
+}
+
+:root[data-theme="dark"] .law-charter-track-line {
+    background: linear-gradient(180deg, rgba(194, 156, 91, 0.72), rgba(194, 156, 91, 0.08));
+}
+
+:root[data-theme="dark"] .law-charter-node::before,
+:root[data-theme="dark"] .law-charter-final-rail {
+    border-color: rgba(194, 156, 91, 0.52);
+    background: rgba(194, 156, 91, 0.72);
+}
+
+:root[data-theme="dark"] .law-charter-node {
+    color: #f1e4c8;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(194, 156, 91, 0.08);
+}
+
+:root[data-theme="dark"] .law-charter-node-icon {
+    background: rgba(18, 24, 32, 0.9);
+    border-color: rgba(194, 156, 91, 0.6);
+    box-shadow: 0 0 0 6px rgba(194, 156, 91, 0.08);
+}
+
+:root[data-theme="dark"] .law-charter-node-icon::before {
+    color: rgba(223, 190, 126, 0.9);
+}
+
+:root[data-theme="dark"] .law-charter-node--signed .law-charter-node-icon {
+    background: rgba(194, 156, 91, 0.18);
+}
+
+:root[data-theme="dark"] .law-charter-node.is-selected,
+:root[data-theme="dark"] .law-charter-node:hover {
+    background:
+        linear-gradient(180deg, rgba(34, 27, 17, 0.72), rgba(20, 24, 30, 0.92)),
+        linear-gradient(135deg, rgba(194, 156, 91, 0.12), rgba(255, 255, 255, 0));
+    box-shadow:
+        0 18px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(194, 156, 91, 0.12);
+}
+
+:root[data-theme="dark"] .law-charter-node:focus-visible {
+    outline: none;
+    background:
+        linear-gradient(180deg, rgba(40, 31, 20, 0.78), rgba(20, 24, 30, 0.94)),
+        linear-gradient(135deg, rgba(194, 156, 91, 0.16), rgba(255, 255, 255, 0));
+    box-shadow:
+        0 0 0 2px rgba(194, 156, 91, 0.18),
+        0 18px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(194, 156, 91, 0.14);
+}
+
+:root[data-theme="dark"] .law-charter-focus {
+    background:
+        linear-gradient(180deg, rgba(19, 24, 31, 0.96), rgba(13, 17, 24, 0.94)),
+        linear-gradient(135deg, rgba(194, 156, 91, 0.08), rgba(255, 255, 255, 0));
+    border-color: rgba(194, 156, 91, 0.14);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 18px 38px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="dark"] .law-charter-focus-state--signed {
+    background: rgba(194, 156, 91, 0.18);
+    color: #f0d89c;
+}
+
+:root[data-theme="dark"] .law-charter-focus-state--available {
+    background: rgba(64, 140, 101, 0.18);
+    color: #a5e4c1;
+}
+
+:root[data-theme="dark"] .law-charter-focus-state--locked {
+    background: rgba(122, 132, 144, 0.16);
+    color: rgba(224, 212, 187, 0.74);
+}
+
+:root[data-theme="dark"] .law-charter-effect--positive {
+    background: rgba(56, 154, 109, 0.18);
+    color: #8de0b0;
+}
+
+:root[data-theme="dark"] .law-charter-effect--negative {
+    background: rgba(190, 83, 76, 0.18);
+    color: #f0a49d;
+}
+
+:root[data-theme="dark"] .law-charter-effect--neutral {
+    background: rgba(214, 187, 135, 0.12);
+    color: rgba(238, 225, 196, 0.86);
+}
+
+@media (max-width: 1180px) {
+    .law-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .law-column-visual {
+        position: relative;
+        top: auto;
+        min-height: 420px;
+    }
+
+    .law-detail-frame {
+        grid-template-columns: 1fr;
+    }
+
+    .law-detail-visual {
+        min-height: 420px;
+    }
+
+    .law-charter-board {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding: 24px 20px 146px;
+    }
+
+    .law-charter-track,
+    .law-charter-track--left,
+    .law-charter-track--right {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .law-charter-track-line,
+    .law-charter-node::before {
+        display: none;
+    }
+
+    .law-charter-track-nodes,
+    .law-charter-track--left .law-charter-track-nodes,
+    .law-charter-track--right .law-charter-track-nodes {
+        grid-column: 1;
+        align-items: stretch;
+        text-align: left;
+        min-height: auto;
+        padding: 10px 0 0;
+        justify-content: flex-start;
+    }
+
+    .law-charter-track-label {
+        text-align: left;
+        padding-inline: 0;
+    }
+
+    .law-charter-track--left .law-charter-node {
+        flex-direction: row;
+        margin-right: 0;
+    }
+
+    .law-charter-track--right .law-charter-node {
+        margin-left: 0;
+    }
+
+    .law-charter-node {
+        width: 100%;
+    }
+
+    .law-charter-center {
+        width: 100%;
+        padding-top: 0;
+    }
+
+    .law-charter-center-copy {
+        max-width: none;
+        text-align: left;
+    }
+
+    .law-charter-focus {
+        width: 100%;
+    }
+
+    .law-charter-final-wrap {
+        --law-charter-final-shift: -24px;
+        left: 24px;
+        right: 24px;
+        padding-top: 86px;
+        transform: translateX(var(--law-charter-final-shift));
+    }
+
+    .law-charter-final-rail {
+        left: 0;
+        right: 0;
+        top: 8px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    #law-hub-view,
+    #law-detail-view {
+        padding-top: 84px;
+    }
+
+    .law-hub-frame {
+        padding: 22px 18px 18px;
+        border-radius: 26px;
+    }
+
+    .law-column-visual {
+        min-height: 300px;
+        border-radius: 20px;
+    }
+
+    .law-column-visual-copy {
+        padding: 20px 18px;
+    }
+
+    .law-column-visual-title {
+        font-size: 2rem;
+    }
+
+    .law-hub-page-status {
+        grid-template-columns: 1fr;
+        justify-items: start;
+    }
+
+    .law-hub-header {
+        gap: 14px;
+    }
+
+    .law-hub-header::after {
+        width: 100%;
+    }
+
+    .law-column-board {
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .law-entry {
+        padding: 12px 12px 11px;
+        grid-template-columns: auto 1fr;
+    }
+
+    .law-entry-history {
+        padding-left: 0;
+    }
+
+    .law-entry-history-link {
+        grid-template-columns: 1fr;
+    }
+
+    .law-entry-history-link-rail {
+        padding: 12px 14px 0;
+    }
+
+    .law-entry-history-link-year {
+        min-height: auto;
+        padding-right: 0;
+    }
+
+    .law-entry-history-link-year::after {
+        display: none;
+    }
+
+    .law-entry-history-link-body {
+        padding: 8px 14px 14px;
+    }
+
+    .law-entry-history-toggle {
+        padding: 12px 14px;
+    }
+
+    .law-entry-history-toggle-copy {
+        min-width: 0;
+    }
+
+    .law-entry-status {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .law-detail-copy {
+        padding: 22px 18px 18px;
+    }
+
+    .law-detail-frame {
+        border-radius: 26px;
+    }
+
+    .law-detail-visual {
+        min-height: 300px;
+    }
+
+    .law-detail-quote {
+        inset: auto 18px 18px 18px;
+        padding: 14px 16px;
+    }
+
+    .law-charter-frame {
+        padding: 18px 16px 24px;
+        border-radius: 26px;
+    }
+
+    .law-charter-board {
+        min-height: auto;
+        padding: 18px 6px 126px;
+        gap: 18px;
+    }
+
+    .law-charter-focus {
+        padding: 18px 16px;
+    }
+
+    .law-charter-focus-title {
+        font-size: 1.56rem;
+    }
+
+    .law-charter-final-wrap {
+        --law-charter-final-shift: 0px;
+        left: 8px;
+        right: 8px;
+        bottom: 18px;
+        padding-top: 72px;
+        transform: translateX(var(--law-charter-final-shift));
+    }
+
+    .law-charter-final-rail {
+        top: 6px;
+        height: 38px;
+        left: 0;
+        right: 0;
+    }
+
+.law-charter-node--final {
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #law-hub-view.active-view .law-hub-frame,
+    #law-detail-view.active-view .law-detail-frame,
+    #law-hub-view.active-view .law-hub-topbar,
+    #law-hub-view.active-view .law-hub-header,
+    #law-hub-view.active-view .law-hub-page-status,
+    #law-detail-view.active-view .law-detail-header,
+    #law-hub-view.active-view .law-column-visual-image,
+    #law-detail-view.active-view .law-detail-image,
+    .law-column.animate-in,
+    .law-entry.animate-in,
+    .law-detail-copy.animate-in,
+    .law-detail-visual.animate-in,
+    .law-clause-card.animate-in,
+    .law-charter-track.animate-in,
+    .law-charter-center.animate-in,
+    .law-charter-final-wrap.animate-in,
+    .law-charter-focus.animate-in {
+        animation: none !important;
+        filter: none !important;
+        transform: none !important;
+    }
+}
+

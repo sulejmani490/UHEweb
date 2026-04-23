@@ -1,0 +1,29 @@
+✅ CMS server is running at http://localhost:4000
+   GET  /api/website-data
+   GET  /content-api/website-data
+   GET  /api/novels/manifest
+   GET  /content-api/novels/manifest
+   GET  /api/novels/:id
+   GET  /content-api/novels/:id
+   POST /api/admin/website-data
+   POST /content-api/admin/website-data
+   GET  /api/admin/security
+   GET  /content-api/admin/security
+   POST /api/admin/security/token
+   POST /content-api/admin/security/token
+   POST /api/admin/novels/upload
+   POST /api/admin/novels/upload-docx
+   POST /api/admin/novels/upload-txt
+   POST /content-api/admin/novels/upload
+   POST /content-api/admin/novels/upload-docx
+   POST /content-api/admin/novels/upload-txt
+   POST /api/admin/novels/:id
+   POST /content-api/admin/novels/:id
+   POST /api/admin/novels/:id/delete
+   POST /content-api/admin/novels/:id/delete
+   POST /api/admin/novels/manifest
+   POST /content-api/admin/novels/manifest
+   POST /content-api/admin/upload-image
+   GET  /admin
+   GET  /images/...
+   Admin token source: .env file

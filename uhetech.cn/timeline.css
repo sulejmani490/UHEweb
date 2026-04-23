@@ -1,0 +1,490 @@
+/* --- timeline.css - V6.0: Layout Fix & Industrial Fluid --- */
+
+/* 引入机械感/硬朗字体 (若网络受限会自动回退到系统字体) */
+@import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Share+Tech+Mono&display=swap');
+
+:root {
+    /* --- 调色板：苏维埃红 + 形式主义黑白 + 太阳朋克琥珀 --- */
+    --soviet-red: #D80000;
+    --ink-black: #121212;     
+    --paper-white: #F4F4F0;   /* 略带陈旧感的纸张白 */
+    --tech-blue: #0033CC;     /* 纯正的工业蓝 */
+    --solar-amber: #FFB000;   /* 太阳能源核心色 */
+    
+    /* 字体栈 */
+    --font-title: 'Russo One', 'Impact', 'Arial Black', sans-serif;
+    --font-tech: 'Share Tech Mono', 'Courier New', monospace;
+
+    /* 尺寸变量 */
+    --timeline-height: 450px; /* 增加整体高度，确保文字和节点完全分离 */
+    --tape-bottom-pos: 60px;  /* 磁带距离底部的距离 */
+    --node-size: 28px;
+}
+/* --- timeline.css - V7.0: Boot Sequence Added --- */
+
+/* ... (保留之前的 :root, .timeline-container, .timeline 等布局代码) ... */
+
+
+/* === 遮罩幕布：系统启动终端 === */
+.timeline-curtain {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--ink-black); /* 纯黑背景 */
+    z-index: 100; /* 确保最顶层 */
+    transform: translateX(0); 
+    pointer-events: none;
+    
+    /* 1. CRT 扫描线纹理 */
+    background-image: 
+        linear-gradient(rgba(18, 18, 18, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 6px 100%;
+    
+    /* 布局：左上角对齐 */
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* 启动时的滑动退出动画 (保持不变) */
+.timeline-container.is-wiping .timeline-curtain {
+    transform: translateX(105%);
+    transition: transform 1.2s cubic-bezier(0.7, 0, 0.3, 1); /* 重型舱门滑开感 */
+}
+
+/* 2. 命令行文字内容动画 */
+.timeline-curtain::after {
+    /* 初始内容 */
+    content: "> SYSTEM_BOOT_"; 
+    
+    /* 字体设置：终端风格 */
+    font-family: var(--font-tech); 
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--solar-amber); /* 琥珀色显示器 */
+    white-space: pre; /* 关键：允许 \A 换行 */
+    text-shadow: 0 0 5px var(--solar-amber); /* 荧光辉光 */
+    
+    /* 执行动画：2秒内完成启动序列 */
+    animation: boot-sequence 2.5s steps(5, end) forwards;
+}
+
+/* 3. 装饰性的闪烁光标效果 (可选，加在右下角) */
+.timeline-curtain::before {
+    content: "REC ●";
+    position: absolute; bottom: 30px; right: 40px;
+    color: var(--soviet-red);
+    font-family: var(--font-title);
+    font-size: 1rem;
+    animation: blink-red 1s infinite;
+}
+
+/* === 动画关键帧定义 === */
+
+/* 核心：通过改变 content 字符串模拟命令行输出 */
+/* 注意：\A 在 CSS 字符串中代表换行 */
+@keyframes boot-sequence {
+    0% {
+        content: "> POWER_ON...";
+    }
+    20% {
+        content: "> POWER_ON...\A > CHECK_MEM: 64KB OK";
+    }
+    40% {
+        content: "> POWER_ON...\A > CHECK_MEM: 64KB OK\A > MOUNT_TAPE: DRIVE_A";
+    }
+    60% {
+        content: "> POWER_ON...\A > CHECK_MEM: 64KB OK\A > MOUNT_TAPE: DRIVE_A\A > LOAD_KERNEL: SUCCESS";
+    }
+    80% {
+        content: "> POWER_ON...\A > CHECK_MEM: 64KB OK\A > MOUNT_TAPE: DRIVE_A\A > LOAD_KERNEL: SUCCESS\A > INIT_TIMELINE_V9.0...";
+    }
+    100% {
+        content: "> POWER_ON...\A > CHECK_MEM: 64KB OK\A > MOUNT_TAPE: DRIVE_A\A > LOAD_KERNEL: SUCCESS\A > INIT_TIMELINE_V9.0...\A > ACCESS_GRANTED_";
+    }
+}
+
+@keyframes blink-red {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* ... (其余 .timeline, .timeline-era 等代码保持 V6.0 不变) ... */
+/* === 容器：绘图纸背景 === */
+.timeline-container {
+    width: 100%; 
+    height: 100%; 
+    min-height: var(--timeline-height);
+    display: flex; 
+    align-items: flex-start; /* 关键：改为顶部对齐，方便控制高度 */
+    overflow-x: auto; 
+    overflow-y: hidden;
+    padding-left: 5vw; 
+    padding-right: 100px;
+    box-sizing: border-box; 
+    position: relative; 
+    background-color: var(--paper-white);
+    
+    /* 背景：蓝图网格 */
+    background-image: 
+        linear-gradient(rgba(0, 51, 204, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 51, 204, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* 滚动条：复古厚重感 */
+.timeline-container::-webkit-scrollbar { height: 14px; background: #e0e0e0; border-top: 2px solid var(--ink-black); }
+.timeline-container::-webkit-scrollbar-thumb { background: var(--ink-black); border: 2px solid #e0e0e0; }
+
+/* === 遮罩幕布：滑动门 === */
+.timeline-curtain {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--ink-black);
+    z-index: 20; transform: translateX(0); pointer-events: none;
+    /* 装饰纹理 */
+    background-image: repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 10px, #111 10px, #111 20px);
+}
+.timeline-container.is-wiping .timeline-curtain {
+    transform: translateX(105%);
+    /* 贝塞尔曲线：如液压门般顺滑开启 */
+    transition: transform 1.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* === 时间轴主体 === */
+.timeline {
+    display: flex; 
+    position: relative; 
+    height: 100%; 
+    align-items: flex-start; /* 顶部对齐 */
+    padding-top: 40px;       /* 顶部留白 */
+    margin-left: 20px;
+}
+
+/* 磁带轨道：固定在底部，绝不干扰文字 */
+.timeline::before {
+    content: ''; 
+    position: absolute; 
+    bottom: var(--tape-bottom-pos); left: 0;
+    width: 100%; height: 32px; /* 磁带厚度 */
+    
+    /* 磁带视觉：黑色带体 + 上下金属触点 */
+    background: var(--ink-black);
+    border-top: 2px solid var(--solar-amber);
+    border-bottom: 2px solid var(--solar-amber);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.15);
+    
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+}
+.timeline.timeline--settled::before { transform: scaleX(1); }
+
+/* === 年代块 (Era) === */
+.timeline-era {
+    position: relative;
+    /* 布局变为纵向，高度撑满 */
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start; /* 文字靠上 */
+    width: 240px;  /* 固定宽度确保整齐 */
+    flex-shrink: 0;
+    height: 100%;  
+    padding-bottom: var(--tape-bottom-pos); /* 底部留出磁带位置 */
+    cursor: pointer;
+    
+    /* 入场动画初始状态 */
+    opacity: 0; transform: translateY(30px);
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.timeline-era.is-activating { opacity: 1; transform: translateY(0); }
+
+/* --- 1. 顶部：文字标题区 (说明书风格) --- */
+.era-title {
+    font-family: var(--font-title);
+    font-size: 1.4rem; 
+    color: var(--ink-black);
+    text-transform: uppercase;
+    line-height: 1.2;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    
+    /* 盒子样式：白底黑框，像粘贴的标签 */
+    background: #fff;
+    border: 2px solid var(--ink-black);
+    padding: 10px 15px;
+    margin: 0 15px; /* 两侧留白 */
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.15); /* 软硬投影 */
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+/* 自动编号 Fig.XX (通过 CSS 计数器，不需要改 JS) */
+.timeline { counter-reset: era-counter; }
+.timeline-era .era-title::before {
+    counter-increment: era-counter;
+    content: "Era_" counter(era-counter, decimal-leading-zero); /* 自动生成 Era_01 */
+    display: block;
+    font-family: var(--font-tech);
+    font-size: 0.7rem;
+    color: var(--tech-blue);
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 5px;
+    padding-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+/* --- 2. 中间：长引线 (连接文字和节点) --- */
+.timeline-era::after {
+    content: '';
+    position: absolute;
+    top: 50px; /* 从标题下方开始 */
+    bottom: var(--tape-bottom-pos); /* 一直连到磁带位置 */
+    left: 50%;
+    width: 2px;
+    background: var(--ink-black);
+    /* 虚线样式：模拟电路或数据线 */
+    background-image: repeating-linear-gradient(to bottom, var(--ink-black) 0, var(--ink-black) 4px, transparent 4px, transparent 8px);
+    z-index: 0;
+    opacity: 0.3;
+}
+
+/* --- 3. 底部：节点 (物理按键) --- */
+.event-node {
+    /* 强制绝对定位到底部的磁带上 */
+    position: absolute !important;
+    bottom: calc(var(--tape-bottom-pos) + 16px - var(--node-size)/2); /* 垂直居中于磁带 */
+    left: 50%;
+    transform: translateX(-50%); /* 水平居中 */
+    
+    width: var(--node-size); height: var(--node-size);
+    /* 样式：凸起的机械方块按钮 */
+    background: #e6e6e6;
+    border: 2px solid var(--ink-black);
+    border-radius: 2px; /* 极小的圆角，硬朗 */
+    box-shadow: 
+        inset 2px 2px 0 #fff,
+        inset -2px -2px 0 #999,
+        0 0 0 2px var(--ink-black); /* 双层边框 */
+        
+    z-index: 5;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+/* 节点中心的指示灯 */
+.event-node::after {
+    content: ''; position: absolute;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
+    background: #333;
+    border-radius: 1px;
+    transition: background-color 0.2s;
+}
+
+/* --- 交互状态 --- */
+.timeline-era:hover .era-title {
+    transform: translateY(-5px);
+    box-shadow: 5px 5px 0 var(--soviet-red);
+    border-color: var(--soviet-red);
+    background: var(--ink-black);
+    color: var(--paper-white);
+}
+.timeline-era:hover .era-title::before { color: var(--solar-amber); border-color: #555; }
+.timeline-era:hover .timeline-era::after { opacity: 1; background-image: none; background-color: var(--soviet-red); } /* 引线变实变红 */
+.timeline-era:hover .event-node {
+    transform: translateX(-50%) scale(1.1);
+    border-color: var(--soviet-red);
+    box-shadow: 0 0 10px var(--soviet-red);
+}
+.timeline-era:hover .event-node::after { background: var(--soviet-red); }
+
+/* --- 分支线样式 (Branches) --- */
+.timeline-branch {
+    position: absolute; 
+    /* 确保分支线也在底部附近，和主节点对齐 */
+    bottom: calc(var(--tape-bottom-pos) + 16px); 
+    transform: translateY(calc(-50% + var(--branch-offset-y)));
+    z-index: 1; pointer-events: none;
+}
+/* 分支线的水平轨道 */
+.timeline-branch-line {
+    position: absolute; top: 50%; left: 0; right: 0;
+    height: 3px; transform: translateY(-50%);
+    background: var(--tech-blue);
+    z-index: 1;
+}
+/* 分支节点 */
+.timeline-branch-node {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 14px; height: 14px;
+    background: var(--paper-white);
+    border: 3px solid var(--tech-blue);
+    cursor: pointer; pointer-events: auto; z-index: 3;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.timeline-branch-label {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-tech); font-size: 0.7rem;
+    background: var(--tech-blue); color: #fff;
+    padding: 2px 4px; white-space: nowrap;
+}
+.timeline-branch[data-position="below"] .timeline-branch-label { top: 18px; }
+.timeline-branch[data-position="above"] .timeline-branch-label { bottom: 18px; }
+
+/* --- 特殊状态：太阳朋克核心 (Fiery) --- */
+/* 无需改 JS，CSS 匹配 fiery 类名 */
+.timeline-era--fiery .era-title { border-color: var(--solar-amber); }
+.timeline-era--fiery .era-title::before { content: "CORE_EVENT"; color: var(--solar-amber); }
+.event-node--fiery { border-color: var(--solar-amber); }
+.event-node--fiery::after {
+    background: var(--solar-amber);
+    box-shadow: 0 0 10px var(--solar-amber);
+    animation: blink-amber 1.5s infinite alternate;
+}
+@keyframes blink-amber { from { opacity: 0.5; } to { opacity: 1; box-shadow: 0 0 20px var(--solar-amber); } }
+
+/* === 箭头 (SVG) - 位置修正版 === */
+.timeline-arrow {
+    /* 使用 sticky 确保它始终吸附在屏幕最右侧，随页面滚动 */
+    position: sticky; 
+    right: 30px; /* 距离右边距稍微多一点，留出呼吸感 */
+    
+    /* 垂直居中设置 */
+    top: 50%;
+    bottom: auto; /* 清除之前的底部对齐 */
+    
+    /* 初始状态：垂直居中 + 向左隐匿 + 透明 */
+    transform: translateY(-50%) translateX(-30px);
+    
+    /* 尺寸与外观 */
+    width: 50px; /* 稍微加大一点，作为指引 */
+    height: 50px;
+    fill: var(--ink-black);
+    
+    z-index: 90; /* 略低于遮罩层，但高于普通线条 */
+    pointer-events: none; /* 关键：让鼠标可以穿透箭头点击下面的内容 */
+    opacity: 0;
+    
+    /* 增加滤镜，让它看起来像浮在纸面上的墨迹 */
+    filter: drop-shadow(2px 4px 0 rgba(0,0,0,0.1));
+    
+    transition: 
+        opacity 0.8s ease-out, 
+        transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 带一点回弹效果 */
+}
+
+/* 激活状态：完全显现 */
+.timeline-arrow.is-revealing {
+    opacity: 1;
+    /* 保持垂直居中，水平归位 */
+    transform: translateY(-50%) translateX(0);
+    
+    /* 可选：添加一个缓慢的悬浮动画，提示向右滚动 */
+    animation: arrow-float 2s ease-in-out infinite alternate;
+}
+
+/* 悬浮提示动画 */
+@keyframes arrow-float {
+    from { transform: translateY(-50%) translateX(0); }
+    to { transform: translateY(-50%) translateX(10px); }
+}
+/* --- 分支线样式 (Branches) - 修正版：与主线机械风格统一 --- */
+
+.timeline-branch {
+    position: absolute; 
+    /* 调整位置：位于底部磁带上方，不与主节点重叠 */
+    bottom: calc(var(--tape-bottom-pos) + 25px); 
+    transform: translateY(calc(-50% + var(--branch-offset-y)));
+    z-index: 1; 
+    pointer-events: none; /* 让鼠标穿透容器 */
+}
+
+/* 1. 分支连线：改为“工程图纸虚线” */
+.timeline-branch-line {
+    position: absolute; 
+    top: 50%; left: 0; right: 0;
+    height: 2px; 
+    transform: translateY(-50%);
+    
+    background: transparent; /* 去掉实心背景 */
+    /* 使用 dashed 虚线，颜色统一为工业蓝 */
+    border-bottom: 2px dashed var(--tech-blue);
+    opacity: 0.7; /* 稍微降低透明度，作为辅助线存在 */
+    z-index: 1;
+}
+
+/* 2. 分支节点：微缩版机械方块 */
+.timeline-branch-node {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    
+    /* 尺寸比主节点小一圈 */
+    width: 14px; height: 14px;
+    
+    /* 样式：白色底 + 蓝色粗框 (统一色调) */
+    background: var(--paper-white);
+    border: 2px solid var(--tech-blue);
+    
+    /* 取消圆角，保持硬朗 */
+    border-radius: 0; 
+    
+    /* 添加硬阴影，增加厚度感 */
+    box-shadow: 2px 2px 0 rgba(0, 51, 204, 0.2);
+    
+    cursor: pointer; pointer-events: auto; z-index: 3;
+    transition: all 0.2s ease;
+}
+
+/* 悬停交互：变为主色调红 */
+.timeline-branch-node:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+    background: var(--soviet-red);
+    border-color: var(--ink-black);
+    box-shadow: 3px 3px 0 var(--ink-black); /* 悬停时阴影变黑 */
+}
+
+/* 3. 分支标签：说明书标签风格 */
+.timeline-branch-label {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-tech); 
+    font-size: 0.7rem;
+    
+    /* 样式：蓝底白字方块 */
+    background: var(--tech-blue); 
+    color: #fff;
+    padding: 3px 6px; 
+    white-space: nowrap;
+    
+    /* 边框和阴影 */
+    border: 1px solid var(--ink-black);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    
+    transition: all 0.2s;
+    pointer-events: none; /* 防止挡住点击 */
+}
+
+/* 悬停节点时，标签也跟着变红 */
+.timeline-branch-node:hover .timeline-branch-label {
+    background: var(--soviet-red);
+    border-color: var(--ink-black);
+}
+
+/* 标签位置微调 */
+.timeline-branch[data-position="below"] .timeline-branch-label { top: 20px; }
+.timeline-branch[data-position="above"] .timeline-branch-label { bottom: 20px; }
+
+
+/* 4. 特殊状态适配 (Fiery/Core) - 太阳朋克核心 */
+/* 保持和其他 Fiery 元素一致的琥珀色 */
+.timeline-branch-node.timeline-branch-node--fiery {
+    border-color: var(--solar-amber);
+    box-shadow: 0 0 5px var(--solar-amber);
+}
+.timeline-branch-node.timeline-branch-node--fiery:hover {
+    background: var(--solar-amber);
+    box-shadow: 0 0 10px var(--solar-amber);
+}
+.timeline-branch-node.timeline-branch-node--fiery .timeline-branch-label {
+    background: var(--solar-amber);
+    color: var(--ink-black);
+    font-weight: bold;
+}

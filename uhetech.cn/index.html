@@ -1,0 +1,470 @@
+<!-- START OF FILE index.html -->
+
+<!DOCTYPE html>    <!-- 人类帝国中央档案库 - 严禁未经授权的访问 -->
+<html lang="zh-CN" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>人类帝国 - 档案库</title>
+    <!-- 【【【 FIX: Added root-relative paths to prevent MIME type errors on deep links 】】】 -->
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/timeline.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+</head>
+<body>
+
+    <!-- 整页滚动容器 -->
+    <div class="page-scroller">
+
+        <!-- 第一屏：原始主应用 -->
+        <section class="page-section" id="main-app-section">
+            <!-- L1: 主页视图 (Landing View) -->
+            <div id="landing-view" class="view-container active-view">
+                <div id="library-icon" title="打开小说库">
+                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM4 4h4v16H4V4zm6 0h4v7h-4V4zm0 9h4v7h-4v-7zm6-9h4v16h-4V4z"></path></svg>
+                </div>                
+                <img src="/images/empire_logo.png" alt="人类帝国徽标" class="empire-logo" id="logo">
+                <div class="intro-text" id="intro">
+                    <p>在帝国纪元前，世界随着丧尸病毒爆发而产生大范围动乱和衰退，部分人类逃亡大洋洲，在帝国纪元元年，第一任领导上台，完成统一澳大利亚本土势力和外来人员的任务，建立起人类最后的堡垒---人类帝国。</p>
+                    <p>人类帝国的的宗旨是不断援救各地人类，并完成人类复兴这一重任。</p>
+                </div>
+                <div class="sponsor-info">
+                    <label>赞助人：</label>
+                    <span id="sponsor-name">中轴线</span>
+                </div>
+              
+                <!-- 主 HTML（音乐播放器） -->
+                <div id="music-player" class="music-player">
+                    <span id="current-song">未播放</span>
+
+                    <div class="controls">
+                        <!-- 上一首 -->
+                        <button id="prev-btn" class="control-btn" title="上一首">
+                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 4v16h2V4H6zm3 8l9 6V6l-9 6z"/>
+                            </svg>
+                        </button>
+
+                        <!-- 播放/暂停 -->
+                        <button id="play-pause-btn" class="control-btn play-pause-btn" title="播放/暂停">▶</button>
+
+                        <!-- 下一首 -->
+                        <button id="next-btn" class="control-btn" title="下一首">
+                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 4v16h2V4h-2zM6 6v12l9-6-9-6z"/>
+                            </svg>
+                        </button>
+
+                        <!-- 循环播放 -->
+                        <button id="loop-btn" class="control-btn loop-btn" title="循环播放">
+                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 17H7V7h10v10zm-2-8v6H9V9h6zM22 12l-4-4v3H6V8l-4 4 4 4v-3h12v3l4-4z"/>
+                            </svg>
+                        </button>
+
+                        <!-- 展开/折叠（保留在 controls 内，但最小化时仍然可见） -->
+                        <button id="toggle-btn" class="control-btn toggle-btn" title="展开/折叠">
+                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 16l-6-6h12z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- 可展开的部分 -->
+                    <div class="extra-controls" id="extra-controls">
+                        <input type="range" id="progress-bar" value="0" min="0" step="1">
+                        <span id="time-display">00:00 / 00:00</span>
+                    </div>
+
+                    <!-- 音乐源 -->
+                    <audio id="audio-source"></audio>
+                </div>
+
+
+                 <!-- 滚动提示 -->
+                <div class="scroll-down-hint">探索人物图谱</div>
+            </div>
+
+            <!-- 【【【 核心修正 】】】 L_NEW: 图书馆视图 (Library View) - 已移至此处，成为 Landing View 的兄弟节点 -->
+            <div id="library-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="library-content">
+                    <h1 class="library-title">帝国中央文库</h1>
+                    <div class="novel-grid">
+                        <!-- 小说卡片将动态生成在这里 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- L2: 分类视图 (Category View) -->
+            <div id="category-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav> 
+                <div class="category-gateway"></div>
+            </div>
+
+            <!-- L3: 列表/树状视图 (List/Tree View) -->
+            <!-- 帝国法律总览与详情视图 -->
+            <div id="law-hub-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="law-hub-shell"></div>
+            </div>
+
+            <div id="law-detail-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="law-detail-shell"></div>
+            </div>
+
+            <div id="list-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="view-mode-toggle">
+                    <button data-mode="list" class="toggle-button active" title="列表视图"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"></path></svg></button>
+                    <button data-mode="tree" class="toggle-button" title="树状视图"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 1 3 3v1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4v2a3 3 0 0 1-6 0v-2H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4V5a3 3 0 0 1 3-3zm1 14h-2a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2zm-6 0H5a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2zm10 0h-2a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2z"></path></svg></button>
+                </div>
+                <div class="view-content-container">
+                    <div class="list-wrapper view-content active"></div>
+                    <div class="tree-wrapper view-content"><div id="g6-tree-container"></div></div>
+                </div>
+            </div>
+
+            <!-- L5: 时间轴视图 (Timeline View) -->
+            <div id="timeline-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="timeline-container"></div>
+            </div>
+
+            <!-- L4: 详情视图 (Detail View) -->
+            <div id="detail-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="detail-content">
+                    <div class="detail-left"><img src="" alt="详情图片" id="detail-image" loading="lazy"></div>
+                    <div class="detail-right"><h1 id="detail-title"></h1><div id="detail-text"></div></div>
+                </div>
+            </div>
+
+            <!-- L6: 小说阅读器视图 (Reader View) -->
+            <div id="reader-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="reader-controls">
+                    <button id="reader-theme-toggle" title="切换主题">☀️</button>
+                    <button id="reader-font-decrease" title="减小字号">A-</button>
+                    <button id="reader-font-increase" title="增大字号">A+</button>
+                    <button id="reader-toc-toggle" title="目录">☰</button>
+                </div>
+                <div class="reader-toc-panel">
+                    <!-- 目录将动态生成在这里 -->
+                </div>
+                <div class="reader-content-wrapper">
+                    <div id="reader-content"></div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 第二屏：关系图谱 -->
+        <section class="page-section" id="graph-section">
+            <div id="relationship-graph-container"></div>
+            <div class="scroll-down-hint">探索人物档案</div>
+        </section>
+
+        <!-- 第三屏：人物档案 -->
+        <section class="page-section" id="character-section">
+            <div class="character-archive" id="character-archive">
+                <div class="character-header">
+                    <div class="character-title-row">
+                        <h2>人物档案</h2>
+                        <div class="character-tip">向上滚动返回关系图</div>
+                    </div>
+                    <div class="character-controls">
+                        <input id="character-search" type="search" placeholder="搜索人物（标题 / 正文）" autocomplete="off">
+                        <button id="character-clear" type="button" class="character-btn" title="清空搜索">清空</button>
+                    </div>
+                </div>
+
+                <div class="character-body">
+                    <div class="character-list">
+                        <div class="character-grid" id="character-grid">
+                            <!-- 占位符：JS 进入该页后再渲染 -->
+                            <div class="character-card placeholder">
+                                <div class="character-avatar placeholder"></div>
+                                <div class="character-meta">
+                                    <div class="character-name">加载中…</div>
+                                    <div class="character-snippet">人物档案将从 website-data.json 的 characters 分类读取</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="character-empty" id="character-empty" hidden>暂无人物档案</div>
+                    </div>
+
+                    <div class="character-detail" id="character-detail">
+                        <div class="character-detail-placeholder">
+                            <div class="character-detail-title">选择一个人物</div>
+                            <div class="character-detail-text">该页面遵循与其他页面一致的数据结构（title / details / image / subItems），可直接在后台 CMS 中编辑。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- AI 助手 UI, 放在 page-scroller 外部以保证全局悬浮 -->
+    <div id="ai-fab" title="AI 助手">
+        <span>AI</span>
+    </div>
+    
+    <div id="ai-chat-window" class="hidden">
+        <div class="chat-header">
+            <span class="new-chat" id="new-chat-btn" title="新对话">＋</span>
+            <h3>智能档案库</h3>
+            <span class="close-chat">&times;</span>
+        </div>
+        <div class="chat-messages">
+            <div class="message ai-response">你好！我是“人类帝国”世界的专家。你可以问我关于人物、事件或世界观的任何问题。</div>
+        </div>
+        <div class="chat-input-area">
+            <textarea id="chat-input" placeholder="例如：第四次远征为什么会失败？" rows="1"></textarea>
+            <button id="chat-send">发送</button>
+        </div>
+    </div>
+
+
+    <!-- 脚本加载区：顺序至关重要 -->
+    <!-- 【【【 FIX: Added root-relative paths to all scripts 】】】 -->
+    <script src="/config.js" defer></script>     
+   <!-- <script src="/data.js"></script>-->
+    <script src="/color-palette.js" defer></script>
+    <script src="/timeline.js" defer></script>
+    <script type="text/plain" data-src="/graph-data.js"></script>
+    <script type="text/plain" data-src="/graph.js"></script>
+    <script src="/app-modules.js" defer></script>
+    
+    <!-- 主逻辑最后加载，确保其他模块的 window 对象已准备好 -->
+    <script>
+    // 音乐播放器逻辑
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        const audio = document.getElementById('audio-source');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const loopBtn = document.getElementById('loop-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const currentSongDisplay = document.getElementById('current-song');
+        const progressBar = document.getElementById('progress-bar');
+        const timeDisplay = document.getElementById('time-display');
+        const extraControls = document.getElementById('extra-controls');
+        const musicPlayer = document.getElementById('music-player');
+
+        // 播放列表
+        let playlist = [
+            { name: "Inner Spark", src: "/music/Kirara Magic - Inner Spark.MP3" },
+            { name: "Your Apartment", src: "/music/138BPM - Your Apartment（感觉至上）.flac" },
+            { name: "Your Apartment", src: "/music/138BPM - Your Apartment（感觉至上）.flac" }
+        ];
+        let currentIndex = 0;
+
+        // 初始化
+        loadSong(currentIndex);
+
+        const contentApiBase = window.appConfig?.CONTENT_API_BASE || '';
+        const playlistEndpoint = `${contentApiBase}/content-api/website-data`;
+
+        const normalizePlaylist = (items) => {
+            if (!Array.isArray(items)) return [];
+            return items
+                .filter(item => item && typeof item === 'object')
+                .map((item, index) => {
+                    const rawSrc = String(item.src || item.path || '').trim();
+                    const normalizedSrc = /^(?:[a-z]+:)?\/\//i.test(rawSrc)
+                        ? rawSrc
+                        : rawSrc.startsWith('/')
+                            ? rawSrc
+                            : `/${rawSrc.replace(/^\.?\//, '')}`;
+                    const fallbackName = normalizedSrc
+                        ? decodeURIComponent((normalizedSrc.split('/').pop() || '').replace(/\.[^.]+$/, ''))
+                        : `Track ${index + 1}`;
+
+                    return {
+                        name: String(item.name || item.title || fallbackName).trim() || fallbackName,
+                        src: normalizedSrc
+                    };
+                })
+                .filter(item => item.src);
+        };
+
+        const loadConfiguredPlaylist = async () => {
+            const embedded = normalizePlaylist(window.__websiteData?.musicPlaylist);
+            if (embedded.length) return embedded;
+
+            const endpoints = [playlistEndpoint];
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                endpoints.push('/website-data.json');
+            }
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint, { cache: 'no-cache' });
+                    if (!response.ok) continue;
+                    const data = await response.json();
+                    const loaded = normalizePlaylist(data?.musicPlaylist);
+                    if (loaded.length) return loaded;
+                } catch (_error) {
+                }
+            }
+
+            return normalizePlaylist(playlist);
+        };
+
+        loadConfiguredPlaylist()
+            .then((loadedPlaylist) => {
+                if (loadedPlaylist.length) {
+                    playlist = loadedPlaylist;
+                }
+                loadSong(currentIndex);
+            })
+            .catch(() => {
+                playlist = normalizePlaylist(playlist);
+                loadSong(currentIndex);
+            });
+
+        function loadSong(index) {
+            const song = playlist[index];
+            if (!song) {
+                audio.removeAttribute('src');
+                currentSongDisplay.textContent = '暂无歌曲';
+                progressBar.value = 0;
+                timeDisplay.textContent = "00:00 / 00:00";
+                return;
+            }
+            audio.src = song.src;
+            currentSongDisplay.textContent = song.name;
+            progressBar.value = 0;
+            timeDisplay.textContent = "00:00 / 00:00";
+            playPauseBtn.innerHTML = "▶"; // 恢复播放符号
+        }
+
+        function playSong() {
+            audio.play();
+            playPauseBtn.innerHTML = "⏸";
+        }
+
+        function pauseSong() {
+            audio.pause();
+            playPauseBtn.innerHTML = "▶";
+        }
+
+        // 播放/暂停
+        playPauseBtn.addEventListener('click', () => {
+            if (audio.paused) playSong();
+            else pauseSong();
+        });
+
+        // 上一首
+        prevBtn.addEventListener('click', () => {
+            if (!playlist.length) return;
+            currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentIndex);
+            playSong();
+        });
+
+        // 下一首
+        nextBtn.addEventListener('click', () => {
+            if (!playlist.length) return;
+            currentIndex = (currentIndex + 1) % playlist.length;
+            loadSong(currentIndex);
+            playSong();
+        });
+
+        // 循环
+        audio.loop = false;
+        loopBtn.addEventListener('click', () => {
+            audio.loop = !audio.loop;
+            loopBtn.classList.toggle("active", audio.loop);
+            loopBtn.title = audio.loop ? "取消循环播放" : "循环播放";
+        });
+
+        // 模式切换：展开 → 折叠 → 极简
+        let mode = 1; // 0=展开, 1=折叠, 2=极简
+        toggleBtn.addEventListener('click', () => {
+            mode = (mode + 1) % 3;
+
+            if (mode === 0) {
+                // 展开
+                musicPlayer.classList.remove("minimized");
+                extraControls.classList.add("active");
+                toggleBtn.innerHTML = "▲";
+            } else if (mode === 1) {
+                // 折叠（有按钮，无进度条）
+                musicPlayer.classList.remove("minimized");
+                extraControls.classList.remove("active");
+                toggleBtn.innerHTML = "▼";
+            } else if (mode === 2) {
+                // 极简（只显示歌名）
+                musicPlayer.classList.add("minimized");
+                extraControls.classList.remove("active");
+            }
+        });
+
+        // 播放进度
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                progressBar.max = Math.floor(audio.duration);
+                progressBar.value = Math.floor(audio.currentTime);
+                timeDisplay.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+            }
+        });
+
+        // 拖动进度条
+        progressBar.addEventListener('input', () => {
+            audio.currentTime = progressBar.value;
+        });
+
+        // 播放结束 → 自动下一首（如果不是单曲循环）
+        audio.addEventListener('ended', () => {
+            if (!audio.loop && playlist.length) {
+                currentIndex = (currentIndex + 1) % playlist.length;
+                loadSong(currentIndex);
+                playSong();
+            }
+        });
+
+        // 音频加载完成
+        audio.addEventListener('loadedmetadata', () => {
+            progressBar.max = Math.floor(audio.duration);
+            timeDisplay.textContent = "00:00 / " + formatTime(audio.duration);
+        });
+
+        function formatTime(sec) {
+            if (isNaN(sec)) return "00:00";
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = Math.floor(sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+    });
+    </script>
+    <script src="/script.js" defer></script> <!-- 4. 主逻辑脚本 (保持最后加载) -->
+  <!--背景按钮 -->
+  <button id="background-toggle" class="background-toggle-button">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" stroke="#333" fill="none" />
+        <line x1="7" y1="12" x2="17" y2="12" stroke="#333" />
+        <line x1="12" y1="7" x2="12" y2="17" stroke="#333" />
+    </svg>
+</button>
+
+ <!-- 明暗主题切换按钮 -->
+    <button id="theme-toggle" class="theme-toggle-button" aria-label="切换明暗主题">
+      <span class="theme-toggle-icon">☾</span>
+    </button>
+
+
+</body>
+</html> 

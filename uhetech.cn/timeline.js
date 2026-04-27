@@ -73,6 +73,42 @@ const Timeline = (() => {
   };
 
   // ========= 分支时间线渲染 =========
+  const setBranchesActive = (timeline, immediate = false) => {
+    if (!timeline) return;
+
+    timeline.querySelectorAll('.timeline-branch').forEach((branchEl) => {
+      if (immediate) {
+        branchEl.classList.add('is-immediate');
+      }
+      branchEl.classList.add('is-activating');
+    });
+  };
+
+  const scheduleBranchReveal = (
+    timeline,
+    curtainStartLeft,
+    timelineWidth,
+    totalWipeDuration,
+    colorSnapDelay
+  ) => {
+    if (!timeline) return;
+
+    const usableWidth = Math.max(1, timelineWidth - curtainStartLeft);
+
+    timeline.querySelectorAll('.timeline-branch').forEach((branchEl) => {
+      const revealPoint = Number(branchEl.dataset.revealPoint || 0);
+      const revealTime =
+        ((revealPoint - curtainStartLeft) / usableWidth) *
+        totalWipeDuration *
+        0.9;
+
+      setTimeout(
+        () => branchEl.classList.add('is-activating'),
+        Math.max(0, revealTime) + colorSnapDelay + 120
+      );
+    });
+  };
+
   const renderBranches = (
     categoryData,
     catIndex,
@@ -103,6 +139,7 @@ const Timeline = (() => {
       branchEl.className = 'timeline-branch';
       branchEl.dataset.branchId = branch.id || `branch-${branchIndex}`;
       branchEl.dataset.position = branch.position === 'above' ? 'above' : 'below';
+      branchEl.dataset.revealPoint = String(startCenter);
 
       const laneIndex = Number.isFinite(branch.laneIndex)
         ? branch.laneIndex
@@ -146,6 +183,7 @@ if (evt.marker === 'fiery') {
 
         const ratio = count === 1 ? 0.5 : eventIndex / (count - 1);
         node.style.left = `${ratio * 100}%`;
+        node.style.setProperty('--branch-node-delay', `${220 + eventIndex * 90}ms`);
 
         const label = document.createElement('div');
         label.className = 'timeline-branch-label';
@@ -296,6 +334,14 @@ if (evt.marker === 'fiery') {
               }
             }
 
+            scheduleBranchReveal(
+              timeline,
+              curtainStartLeft,
+              timelineWidth,
+              totalWipeDuration,
+              colorSnapDelay
+            );
+
             const lineAnimationDuration = 2500;
             setTimeout(
               () => container.querySelector('.timeline-arrow')?.classList.add('is-revealing'),
@@ -325,6 +371,7 @@ if (evt.marker === 'fiery') {
       });
 
       timeline.classList.add('timeline--settled');
+      setBranchesActive(timeline, true);
       container.classList.add('is-ready');
       timeline.querySelector('.timeline-arrow')?.classList.add('is-revealing');
       container.style.overflow = 'auto';

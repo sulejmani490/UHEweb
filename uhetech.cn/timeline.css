@@ -20,6 +20,47 @@
     --tape-bottom-pos: 60px;  /* 磁带距离底部的距离 */
     --node-size: 28px;
 }
+:root {
+    --timeline-container-bg: var(--paper-white);
+    --timeline-grid-color: rgba(0, 51, 204, 0.1);
+    --timeline-scroll-track: #e0e0e0;
+    --timeline-scroll-thumb: var(--ink-black);
+    --timeline-track-bg: var(--ink-black);
+    --timeline-track-border: var(--solar-amber);
+    --timeline-title-bg: #fff;
+    --timeline-title-color: var(--ink-black);
+    --timeline-title-border: var(--ink-black);
+    --timeline-title-shadow: 5px 5px 0 rgba(0,0,0,0.15);
+    --timeline-node-bg: #e6e6e6;
+    --timeline-node-core: #333;
+    --timeline-node-inset-light: #fff;
+    --timeline-node-inset-dark: #999;
+    --timeline-branch-shadow: rgba(0, 51, 204, 0.2);
+}
+
+:root[data-theme="dark"] {
+    --soviet-red: #ff4d5f;
+    --ink-black: #dce6f2;
+    --paper-white: #0a0f16;
+    --tech-blue: #5da8ff;
+    --solar-amber: #d7aa5c;
+    --timeline-container-bg: #070b10;
+    --timeline-grid-color: rgba(96, 148, 210, 0.13);
+    --timeline-scroll-track: #05070b;
+    --timeline-scroll-thumb: #d7aa5c;
+    --timeline-track-bg: #0e1520;
+    --timeline-track-border: #d7aa5c;
+    --timeline-title-bg: #101722;
+    --timeline-title-color: #e8eef7;
+    --timeline-title-border: rgba(215, 170, 92, 0.72);
+    --timeline-title-shadow: 5px 5px 0 rgba(0,0,0,0.65);
+    --timeline-node-bg: #172130;
+    --timeline-node-core: #d7aa5c;
+    --timeline-node-inset-light: rgba(255,255,255,0.14);
+    --timeline-node-inset-dark: rgba(0,0,0,0.62);
+    --timeline-branch-shadow: rgba(93, 168, 255, 0.22);
+}
+
 /* --- timeline.css - V7.0: Boot Sequence Added --- */
 
 /* ... (保留之前的 :root, .timeline-container, .timeline 等布局代码) ... */
@@ -124,18 +165,19 @@
     padding-right: 100px;
     box-sizing: border-box; 
     position: relative; 
-    background-color: var(--paper-white);
+    background-color: var(--timeline-container-bg);
     
     /* 背景：蓝图网格 */
     background-image: 
-        linear-gradient(rgba(0, 51, 204, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 51, 204, 0.1) 1px, transparent 1px);
+        linear-gradient(var(--timeline-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--timeline-grid-color) 1px, transparent 1px);
     background-size: 40px 40px;
+    transition: background-color 0.45s ease, color 0.3s ease;
 }
 
 /* 滚动条：复古厚重感 */
-.timeline-container::-webkit-scrollbar { height: 14px; background: #e0e0e0; border-top: 2px solid var(--ink-black); }
-.timeline-container::-webkit-scrollbar-thumb { background: var(--ink-black); border: 2px solid #e0e0e0; }
+.timeline-container::-webkit-scrollbar { height: 14px; background: var(--timeline-scroll-track); border-top: 2px solid var(--ink-black); }
+.timeline-container::-webkit-scrollbar-thumb { background: var(--timeline-scroll-thumb); border: 2px solid var(--timeline-scroll-track); }
 
 /* === 遮罩幕布：滑动门 === */
 .timeline-curtain {
@@ -169,9 +211,9 @@
     width: 100%; height: 32px; /* 磁带厚度 */
     
     /* 磁带视觉：黑色带体 + 上下金属触点 */
-    background: var(--ink-black);
-    border-top: 2px solid var(--solar-amber);
-    border-bottom: 2px solid var(--solar-amber);
+    background: var(--timeline-track-bg);
+    border-top: 2px solid var(--timeline-track-border);
+    border-bottom: 2px solid var(--timeline-track-border);
     box-shadow: 0 10px 15px rgba(0,0,0,0.15);
     
     transform: scaleX(0); transform-origin: left;
@@ -212,11 +254,12 @@
     z-index: 2;
     
     /* 盒子样式：白底黑框，像粘贴的标签 */
-    background: #fff;
-    border: 2px solid var(--ink-black);
+    background: var(--timeline-title-bg);
+    border: 2px solid var(--timeline-title-border);
     padding: 10px 15px;
     margin: 0 15px; /* 两侧留白 */
     box-shadow: 5px 5px 0 rgba(0,0,0,0.15); /* 软硬投影 */
+    box-shadow: var(--timeline-title-shadow);
     transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
@@ -260,12 +303,12 @@
     
     width: var(--node-size); height: var(--node-size);
     /* 样式：凸起的机械方块按钮 */
-    background: #e6e6e6;
+    background: var(--timeline-node-bg);
     border: 2px solid var(--ink-black);
     border-radius: 2px; /* 极小的圆角，硬朗 */
     box-shadow: 
-        inset 2px 2px 0 #fff,
-        inset -2px -2px 0 #999,
+        inset 2px 2px 0 var(--timeline-node-inset-light),
+        inset -2px -2px 0 var(--timeline-node-inset-dark),
         0 0 0 2px var(--ink-black); /* 双层边框 */
         
     z-index: 5;
@@ -276,7 +319,7 @@
 .event-node::after {
     content: ''; position: absolute;
     top: 6px; left: 6px; right: 6px; bottom: 6px;
-    background: #333;
+    background: var(--timeline-node-core);
     border-radius: 1px;
     transition: background-color 0.2s;
 }
@@ -428,7 +471,7 @@
     border-radius: 0; 
     
     /* 添加硬阴影，增加厚度感 */
-    box-shadow: 2px 2px 0 rgba(0, 51, 204, 0.2);
+    box-shadow: 2px 2px 0 var(--timeline-branch-shadow);
     
     cursor: pointer; pointer-events: auto; z-index: 3;
     transition: all 0.2s ease;
@@ -485,6 +528,82 @@
 }
 .timeline-branch-node.timeline-branch-node--fiery .timeline-branch-label {
     background: var(--solar-amber);
-    color: var(--ink-black);
+    color: var(--timeline-title-color);
     font-weight: bold;
+}
+
+/* 支线入场：默认先收起，等主时间线擦除动画扫到对应位置再展开。 */
+.timeline-branch {
+    opacity: 0;
+    transform:
+        translateY(calc(-50% + var(--branch-offset-y)))
+        translateX(-12px);
+    transition:
+        opacity 0.5s ease,
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.timeline-branch.is-activating {
+    opacity: 1;
+    transform:
+        translateY(calc(-50% + var(--branch-offset-y)))
+        translateX(0);
+}
+
+.timeline-branch-line {
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.timeline-branch.is-activating .timeline-branch-line {
+    transform: translateY(-50%) scaleX(1);
+}
+
+.timeline-branch-node {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.55);
+    transition:
+        opacity 0.35s ease var(--branch-node-delay, 220ms),
+        transform 0.45s cubic-bezier(0.2, 1.4, 0.35, 1) var(--branch-node-delay, 220ms),
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.timeline-branch.is-activating .timeline-branch-node {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.timeline-branch.is-activating .timeline-branch-node:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+}
+
+.timeline-branch-label {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+    transition:
+        opacity 0.32s ease,
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    transition-delay: var(--branch-node-delay, 220ms);
+}
+
+.timeline-branch[data-position="above"] .timeline-branch-label {
+    transform: translateX(-50%) translateY(-6px);
+}
+
+.timeline-branch.is-activating .timeline-branch-label {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.timeline-branch.is-immediate,
+.timeline-branch.is-immediate .timeline-branch-line,
+.timeline-branch.is-immediate .timeline-branch-node,
+.timeline-branch.is-immediate .timeline-branch-label {
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
 }

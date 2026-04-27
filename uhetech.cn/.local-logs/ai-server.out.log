@@ -1,0 +1,7 @@
+✅ Configuration loaded successfully.
+   - Mode: Development
+   - Allowed Origins: https://uhetech.cn, http://localhost:5488, http://127.0.0.1:5488, http://localhost:4000, http://127.0.0.1:4000
+Mirrored AI runtime artifacts to C:\Users\SULEJM~1\AppData\Local\Temp\uhetech-runtime
+Loading existing V5 index from C:\Users\SULEJM~1\AppData\Local\Temp\uhetech-runtime\vector_index_v5.bin...
+✅ Index and 213 documents loaded.
+✅ AI backend server running at http://localhost:3000

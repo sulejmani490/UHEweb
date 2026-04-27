@@ -198,6 +198,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // 内容数据文件
 const WEBSITE_DATA_PATH = path.join(__dirname, 'website-data.json');
+const IMAGE_DIR = path.join(__dirname, 'images');
 const MUSIC_DIR = path.join(__dirname, 'music');
 
 // ====== 0.1 小说数据目录（仅新增，不影响 website-data 现有逻辑） ======
@@ -1181,42 +1182,94 @@ function ensureDirectory(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
 
+function normalizeUploadOriginalName(originalName) {
+  const rawName = String(originalName || 'upload').replace(/\\/g, '/');
+  const fileName = path.basename(rawName);
+
+  try {
+    const decoded = Buffer.from(fileName, 'latin1').toString('utf8');
+    if (decoded && !decoded.includes('\uFFFD')) {
+      return decoded;
+    }
+  } catch (_error) {
+    // Keep the original multer name if decoding is not applicable.
+  }
+
+  return fileName;
+}
+
 function buildSafeFilename(originalName) {
-  const ext = path.extname(originalName);
-  const base = path.basename(originalName, ext);
-  const safeBase = base.replace(/[^\w\-\u4e00-\u9fa5]/g, '_');
-  return `${safeBase}${ext}`;
+  const normalizedName = normalizeUploadOriginalName(originalName);
+  const ext = path.extname(normalizedName).toLowerCase();
+  const base = path.basename(normalizedName, ext);
+  const safeBase = base
+    .normalize('NFKC')
+    .replace(/[^\w\-\u4e00-\u9fa5]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return `${safeBase || 'upload'}${ext || ''}`;
+}
+
+function buildUniqueFilename(targetDir, originalName) {
+  const safeName = buildSafeFilename(originalName);
+  const ext = path.extname(safeName);
+  const base = path.basename(safeName, ext);
+  let filename = safeName;
+  let counter = 1;
+
+  while (fs.existsSync(path.join(targetDir, filename))) {
+    filename = `${base}-${Date.now().toString(36)}-${counter}${ext}`;
+    counter += 1;
+  }
+
+  return filename;
 }
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: function (req, file, cb) {
-      // 目标目录：当前 cms-server.js 同级的 /images
-      const imageDir = path.join(__dirname, 'images');
-      ensureDirectory(imageDir);
-      cb(null, imageDir);
+    destination: function (_req, _file, cb) {
+      // All backend image uploads are saved in the site-level /images folder.
+      ensureDirectory(IMAGE_DIR);
+      cb(null, IMAGE_DIR);
     },
-    filename: function (req, file, cb) {
-  // 原始文件名，比如 "对外殖民管理局.png"
-  const ext = path.extname(file.originalname);                  // .png
-  const base = path.basename(file.originalname, ext);          // 对外殖民管理局
-
-  // 简单做个清洗：去掉非常奇怪的符号，保留中英文、数字、下划线、横杠、点
-  const safeBase = base.replace(/[^\w\-\u4e00-\u9fa5]/g, '_');
-
-  // 最终文件名：对外殖民管理局.png
-  const filename = `${safeBase}${ext}`;
-
-  cb(null, filename);
-}
+    filename: function (_req, file, cb) {
+      const filename = buildUniqueFilename(IMAGE_DIR, file.originalname);
+      cb(null, filename);
+    }
 
   }),
+  fileFilter: function (_req, file, cb) {
+    const ext = path.extname(normalizeUploadOriginalName(file.originalname)).toLowerCase();
+    const allowedExt = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif']);
+    const mimetype = String(file.mimetype || '').toLowerCase();
+    if (!mimetype.startsWith('image/') && !allowedExt.has(ext)) {
+      cb(new Error(`仅支持图片文件（当前类型：${ext || mimetype || 'unknown'}）`));
+      return;
+    }
+    cb(null, true);
+  },
   limits: {
     fileSize: 20 * 1024 * 1024  // 20MB
   }
 });
 
 const ALLOWED_AUDIO_EXTENSIONS = new Set(['.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac']);
+
+function withUploadErrorHandling(uploadMiddleware, handler) {
+  return (req, res, next) => {
+    uploadMiddleware(req, res, (error) => {
+      if (error) {
+        const isMulterLimit =
+          error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE';
+        const message = isMulterLimit
+          ? '上传文件超过 20MB 限制'
+          : error.message || 'Upload failed';
+        return res.status(400).json({ ok: false, error: message });
+      }
+      return handler(req, res, next);
+    });
+  };
+}
 
 const audioUpload = multer({
   storage: multer.diskStorage({
@@ -1260,16 +1313,14 @@ function handleUploadImage(req, res) {
 app.post(
   '/api/admin/upload-image',
   requireAdmin,
-  upload.single('file'),
-  handleUploadImage
+  withUploadErrorHandling(upload.single('file'), handleUploadImage)
 );
 
 // 兼容：/content-api/admin/upload-image
 app.post(
   '/content-api/admin/upload-image',
   requireAdmin,
-  upload.single('file'),
-  handleUploadImage
+  withUploadErrorHandling(upload.single('file'), handleUploadImage)
 );
 
 function handleUploadAudio(req, res) {

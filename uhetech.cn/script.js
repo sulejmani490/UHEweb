@@ -71,6 +71,8 @@ const appState = {
     isG6Loaded: false,
     isCharacterArchiveLoaded: false,
     hasInitialized: false,
+    landingIntroTimer: null,
+    imageLightbox: null,
     timelineFocusByCategory: {},
     activeCharterSelections: {},
     activeLawHistoryPanels: {},
@@ -930,6 +932,20 @@ const KNOWN_VIEW_IDS = [
 const LAW_CATEGORY_ID = 'laws';
 const DEFAULT_ROUTE_STATE = { viewId: '#landing-view', history: [] };
 
+function revealLandingIntro(delayMs = 100) {
+    const intro = document.getElementById('intro');
+    if (!intro) return;
+
+    if (appState.landingIntroTimer) {
+        clearTimeout(appState.landingIntroTimer);
+    }
+
+    appState.landingIntroTimer = setTimeout(() => {
+        intro.classList.add('visible');
+        appState.landingIntroTimer = null;
+    }, delayMs);
+}
+
 // Centralized boot-time tuning values.
 // Keep frequently adjusted startup behavior here so you can tune perceived speed
 // without searching through the rest of the file.
@@ -1196,6 +1212,62 @@ const buildTimelineBranchEventState = (catIndex, branchIndex, eventIndex) => ({
     ],
 });
 
+const getTimelineBranchEntryTargets = (stateHistory = []) => {
+    const categoryCrumb = stateHistory.find((crumb) => crumb.type === 'category');
+    const itemCrumb = stateHistory.find((crumb) => crumb.type === 'item');
+    if (!categoryCrumb || !itemCrumb) return [];
+
+    const catIndex = categoryCrumb.catIndex;
+    const category = websiteData.categories[catIndex];
+    if (!category || !Array.isArray(category.eras) || !Array.isArray(category.branches)) {
+        return [];
+    }
+
+    const itemIndex = Number(String(itemCrumb.itemPath || '').split('.')[0]);
+    if (!Number.isInteger(itemIndex)) return [];
+
+    return category.branches
+        .map((branch, branchIndex) => ({ branch, branchIndex }))
+        .filter(({ branch }) => Number(branch?.fromEraIndex ?? -1) === itemIndex)
+        .map(({ branch, branchIndex }) => {
+            const events = Array.isArray(branch.events) ? branch.events : [];
+            const firstEvent = events[0] || null;
+            if (!firstEvent && !branch?.details) return null;
+
+            return {
+                branchIndex,
+                eventIndex: 0,
+                branchTitle: branch.title || '时间支线',
+                eventTitle: firstEvent?.title || branch.title || '进入支线',
+                eventCount: Math.max(events.length, 1),
+                state: buildTimelineBranchEventState(catIndex, branchIndex, 0),
+            };
+        })
+        .filter(Boolean);
+};
+
+const getTimelineBranchReturnTarget = (stateHistory = []) => {
+    const categoryCrumb = stateHistory.find((crumb) => crumb.type === 'category');
+    const branchCrumb = stateHistory.find((crumb) => crumb.type === 'branchEvent');
+    if (!categoryCrumb || !branchCrumb) return null;
+
+    const catIndex = categoryCrumb.catIndex;
+    const category = websiteData.categories[catIndex];
+    const branch = Array.isArray(category?.branches)
+        ? category.branches[branchCrumb.branchIndex]
+        : null;
+    const fromEraIndex = Number(branch?.fromEraIndex);
+    if (!Number.isInteger(fromEraIndex) || !category?.eras?.[fromEraIndex]) {
+        return null;
+    }
+
+    return {
+        label: category.eras[fromEraIndex].title || '重大事件',
+        branchTitle: branch.title || '时间支线',
+        state: buildTimelineItemState(catIndex, fromEraIndex),
+    };
+};
+
 const getTimelineDetailNavTargets = (stateHistory = []) => {
     const categoryCrumb = stateHistory.find((crumb) => crumb.type === 'category');
     if (!categoryCrumb || !Number.isInteger(categoryCrumb.catIndex)) {
@@ -1341,6 +1413,197 @@ const renderTimelineDetailNavigator = (view, navTargets) => {
     `;
 
     view.appendChild(nav);
+};
+
+const removeTimelineBranchControls = (view) => {
+    if (!view) return;
+    view.classList.remove('has-timeline-branch-controls');
+    view.querySelector('.timeline-main-return')?.remove();
+    view.querySelector('.timeline-branch-links')?.remove();
+};
+
+const renderTimelineBranchControls = (view, stateHistory = []) => {
+    removeTimelineBranchControls(view);
+    if (!view) return;
+
+    const detailRight = view.querySelector('.detail-right');
+    const detailTitle = view.querySelector('#detail-title');
+    const detailText = view.querySelector('#detail-text');
+    if (!detailRight || !detailText) return;
+
+    const returnTarget = getTimelineBranchReturnTarget(stateHistory);
+    if (returnTarget && detailTitle) {
+        const returnButton = document.createElement('button');
+        returnButton.type = 'button';
+        returnButton.className = 'timeline-main-return';
+        returnButton.innerHTML = `
+            <span class="timeline-main-return-kicker">返回重大事件</span>
+            <strong>${parseAndColorText(stripColorTags(returnTarget.label))}</strong>
+        `;
+        detailRight.insertBefore(returnButton, detailTitle);
+        view.classList.add('has-timeline-branch-controls');
+    }
+
+    const branchTargets = getTimelineBranchEntryTargets(stateHistory);
+    if (!branchTargets.length) return;
+
+    const links = document.createElement('section');
+    links.className = 'timeline-branch-links';
+    links.innerHTML = `
+        <div class="timeline-branch-links-title">关联时间支线</div>
+        <div class="timeline-branch-links-grid">
+            ${branchTargets
+                .map(
+                    (target) => `
+                        <button
+                            type="button"
+                            class="timeline-branch-entry"
+                            data-branch-index="${target.branchIndex}"
+                            data-event-index="${target.eventIndex}">
+                            <span class="timeline-branch-entry-kicker">进入支线</span>
+                            <strong>${parseAndColorText(stripColorTags(target.eventTitle))}</strong>
+                            <span>${parseAndColorText(stripColorTags(target.branchTitle))} / ${target.eventCount} 个节点</span>
+                        </button>
+                    `
+                )
+                .join('')}
+        </div>
+    `;
+    detailText.insertAdjacentElement('afterend', links);
+    view.classList.add('has-timeline-branch-controls');
+};
+
+const getImageLightboxTargetRect = (sourceImage) => {
+    const viewportPadding = window.innerWidth <= 768 ? 18 : 64;
+    const maxWidth = Math.max(160, window.innerWidth - viewportPadding * 2);
+    const maxHeight = Math.max(160, window.innerHeight - viewportPadding * 2);
+    const naturalWidth =
+        sourceImage?.naturalWidth || sourceImage?.getBoundingClientRect().width || 1;
+    const naturalHeight =
+        sourceImage?.naturalHeight || sourceImage?.getBoundingClientRect().height || 1;
+    const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight, 2.2);
+    const width = Math.max(1, naturalWidth * scale);
+    const height = Math.max(1, naturalHeight * scale);
+
+    return {
+        left: (window.innerWidth - width) / 2,
+        top: (window.innerHeight - height) / 2,
+        width,
+        height,
+    };
+};
+
+const setLightboxImageRect = (image, rect) => {
+    if (!image || !rect) return;
+    image.style.left = `${rect.left}px`;
+    image.style.top = `${rect.top}px`;
+    image.style.width = `${rect.width}px`;
+    image.style.height = `${rect.height}px`;
+};
+
+const closeImageLightbox = () => {
+    const lightbox = appState.imageLightbox;
+    if (!lightbox) return;
+
+    const { overlay, image, sourceImage, onKeydown, onResize } = lightbox;
+    appState.imageLightbox = null;
+    window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('resize', onResize);
+
+    const sourceRect =
+        sourceImage && sourceImage.isConnected
+            ? sourceImage.getBoundingClientRect()
+            : null;
+
+    overlay.classList.remove('is-open');
+    if (sourceRect) {
+        setLightboxImageRect(image, sourceRect);
+    } else {
+        image.classList.add('is-fading-out');
+    }
+
+    const cleanup = () => {
+        sourceImage?.classList.remove('is-lightbox-source');
+        document.body.classList.remove('image-lightbox-open');
+        overlay.remove();
+    };
+
+    image.addEventListener('transitionend', cleanup, { once: true });
+    setTimeout(cleanup, 720);
+};
+
+const openImageLightbox = (sourceImage) => {
+    if (!sourceImage || !sourceImage.classList.contains('is-zoomable')) return;
+    const imageSrc = sourceImage.currentSrc || sourceImage.src;
+    if (!imageSrc) return;
+
+    if (appState.imageLightbox) {
+        closeImageLightbox();
+        return;
+    }
+
+    const sourceRect = sourceImage.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.className = 'image-lightbox';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', '放大查看重大事件配图');
+
+    const image = document.createElement('img');
+    image.className = 'image-lightbox-image';
+    image.src = imageSrc;
+    image.alt = sourceImage.alt || '重大事件配图';
+
+    const caption = document.createElement('div');
+    caption.className = 'image-lightbox-caption';
+    caption.textContent = sourceImage.alt || '重大事件配图';
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'image-lightbox-close';
+    closeButton.setAttribute('aria-label', '关闭图片预览');
+    closeButton.textContent = '×';
+
+    overlay.append(image, caption, closeButton);
+    document.body.appendChild(overlay);
+    document.body.classList.add('image-lightbox-open');
+    sourceImage.classList.add('is-lightbox-source');
+    setLightboxImageRect(image, sourceRect);
+
+    const onKeydown = (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeImageLightbox();
+        }
+    };
+
+    const onResize = () => {
+        if (!appState.imageLightbox) return;
+        setLightboxImageRect(image, getImageLightboxTargetRect(sourceImage));
+    };
+
+    appState.imageLightbox = {
+        overlay,
+        image,
+        sourceImage,
+        onKeydown,
+        onResize,
+    };
+
+    closeButton.addEventListener('click', closeImageLightbox);
+    image.addEventListener('click', closeImageLightbox);
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            closeImageLightbox();
+        }
+    });
+    window.addEventListener('keydown', onKeydown);
+    window.addEventListener('resize', onResize);
+
+    requestAnimationFrame(() => {
+        overlay.classList.add('is-open');
+        setLightboxImageRect(image, getImageLightboxTargetRect(sourceImage));
+    });
 };
 
 const buildListHtml = (items, pathPrefix = '', level = 0) => {
@@ -3044,6 +3307,7 @@ const render = (state) => {
             }
         } else if (viewId === '#detail-view') {
             removeTimelineDetailNavigator(view);
+            removeTimelineBranchControls(view);
             // ===== 详情页：兼容主线 item 和支线 branchEvent =====
             const itemCrumb = stateHistory.find((h) => h.type === 'item');
             const branchCrumb = stateHistory.find(
@@ -3053,8 +3317,10 @@ const render = (state) => {
             let title = '';
             let image = '';
             let details = '';
+            let isTimelineDetail = false;
 
             if (branchCrumb) {
+                isTimelineDetail = true;
                 // 支线事件优先
                 const cat = websiteData.categories[branchCrumb.catIndex];
                 const branch =
@@ -3086,6 +3352,7 @@ const render = (state) => {
             } else if (itemCrumb) {
                 // 原来的主线逻辑
                 const { catIndex, itemPath } = itemCrumb;
+                isTimelineDetail = Array.isArray(websiteData.categories[catIndex]?.eras);
                 const item = getItemByPath(itemPath, catIndex);
                 if (item) {
                     title = item.title || '';
@@ -3106,6 +3373,17 @@ const render = (state) => {
             const imgEl = view.querySelector('#detail-image');
             if (imgEl) {
                 imgEl.src = resolveAssetPath(image);
+                imgEl.alt = stripColorTags(title || '重大事件配图');
+                imgEl.classList.toggle('is-zoomable', isTimelineDetail);
+                if (isTimelineDetail) {
+                    imgEl.setAttribute('role', 'button');
+                    imgEl.setAttribute('tabindex', '0');
+                    imgEl.setAttribute('aria-label', '点击放大重大事件配图');
+                } else {
+                    imgEl.removeAttribute('role');
+                    imgEl.removeAttribute('tabindex');
+                    imgEl.removeAttribute('aria-label');
+                }
                 imgEl.onerror = () => {
                     imgEl.src = DEFAULT_PLACEHOLDER_IMAGE;
                 };
@@ -3131,6 +3409,7 @@ const render = (state) => {
                 view,
                 getTimelineDetailNavTargets(stateHistory)
             );
+            renderTimelineBranchControls(view, stateHistory);
             rememberTimelineDetailFocus(stateHistory);
         }
     } catch (error) {
@@ -3140,6 +3419,64 @@ const render = (state) => {
 
 
 // --- 3. 视图切换与动画控制器 ---
+const syncGlobalControlsForView = (viewId) => {
+    const libraryViewIds = new Set([
+        '#library-view',
+        '#category-view',
+        '#law-hub-view',
+        '#law-detail-view',
+        '#list-view',
+        '#detail-view',
+        '#reader-view'
+    ]);
+
+    const inLibrary = libraryViewIds.has(viewId);
+
+    if (themeToggleButton) {
+        if (inLibrary) {
+            themeToggleButton.style.opacity = '0';
+            themeToggleButton.style.pointerEvents = 'none';
+            themeToggleButton.style.transform = 'translateY(-20px)';
+        } else {
+            themeToggleButton.style.opacity = '';
+            themeToggleButton.style.pointerEvents = '';
+            themeToggleButton.style.transform = '';
+        }
+    }
+
+    if (viewId === '#landing-view' && logo) {
+        logo.style.visibility = 'visible';
+        revealLandingIntro();
+    }
+};
+
+const animateViewEntryElements = (view, viewId) => {
+    if (!view) return;
+
+    const commonElements = view.querySelectorAll('.back-button, .breadcrumb, .view-mode-toggle, .reader-controls');
+    commonElements.forEach(el => {
+        el.classList.remove('animate-in');
+        void el.offsetWidth;
+        el.classList.add('animate-in');
+    });
+
+    if (viewId !== '#library-view') {
+        const animatedContent = view.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .reader-content-wrapper');
+        animatedContent.forEach((el) => {
+             const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right');
+             if (childrenToAnimate.length > 0){
+                void el.offsetWidth;
+                childrenToAnimate.forEach((child, index) => {
+                    if(index > 20) return;
+                    child.classList.remove('animate-in');
+                    child.style.animationDelay = `${index * 50}ms`;
+                    child.classList.add('animate-in');
+                });
+             }
+        });
+    }
+};
+
 const showView = (state) => {
     const nextView = views[state.viewId];
     const currentView = views[currentViewId];
@@ -3186,6 +3523,7 @@ const showView = (state) => {
         // 【【【 CORE FIX: Ensure logo is visible when returning to the landing page 】】】
         if (state.viewId === '#landing-view') {
             logo.style.visibility = 'visible';
+            revealLandingIntro();
         }
 
         const commonElements = nextView.querySelectorAll('.back-button, .breadcrumb, .view-mode-toggle, .reader-controls');
@@ -3255,6 +3593,48 @@ const navigate = (state, isReplacing = false) => {
 // --- 5. 事件处理 ---
 document.body.addEventListener('click', (e) => {
     if (appState.isNavigating) { e.preventDefault(); return; }
+
+    const zoomableDetailImage = e.target.closest('#detail-image.is-zoomable');
+    if (zoomableDetailImage && currentViewId === '#detail-view') {
+        e.preventDefault();
+        openImageLightbox(zoomableDetailImage);
+        return;
+    }
+
+    const timelineMainReturn = e.target.closest('.timeline-main-return');
+    if (timelineMainReturn && currentViewId === '#detail-view') {
+        e.preventDefault();
+        const target = getTimelineBranchReturnTarget(currentHistory);
+        if (target?.state) {
+            navigate(target.state, true);
+        }
+        return;
+    }
+
+    const timelineBranchEntry = e.target.closest(
+        '.timeline-branch-entry[data-branch-index]'
+    );
+    if (timelineBranchEntry && currentViewId === '#detail-view') {
+        e.preventDefault();
+        const categoryCrumb = currentHistory.find((crumb) => crumb.type === 'category');
+        const branchIndex = Number(timelineBranchEntry.dataset.branchIndex);
+        const eventIndex = Number(timelineBranchEntry.dataset.eventIndex || 0);
+        if (
+            categoryCrumb &&
+            Number.isInteger(categoryCrumb.catIndex) &&
+            Number.isInteger(branchIndex) &&
+            Number.isInteger(eventIndex)
+        ) {
+            navigate(
+                buildTimelineBranchEventState(
+                    categoryCrumb.catIndex,
+                    branchIndex,
+                    eventIndex
+                )
+            );
+        }
+        return;
+    }
 
     const timelineDetailNavButton = e.target.closest(
         '.timeline-detail-nav-button[data-direction]'
@@ -3480,6 +3860,20 @@ document.body.addEventListener('click', (e) => {
     }
 });
 
+document.addEventListener('keydown', (event) => {
+    if (appState.isNavigating) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    const activeElement = document.activeElement;
+    if (
+        currentViewId === '#detail-view' &&
+        activeElement?.matches?.('#detail-image.is-zoomable')
+    ) {
+        event.preventDefault();
+        openImageLightbox(activeElement);
+    }
+});
+
 const listView = document.getElementById('list-view');
 if (listView) {
     const toggleContainer = listView.querySelector('.view-mode-toggle');
@@ -3643,6 +4037,12 @@ function prefetchNovelManifestIdle() {
 
 // --- 初始化流程 ---
 async function initializeApp() {
+    const bootRouteState =
+        parseRouteStateFromLocation() || history.state || DEFAULT_ROUTE_STATE;
+    if (bootRouteState.viewId === '#landing-view') {
+        revealLandingIntro();
+    }
+
     // ① 先从后端拿 website-data
     await loadWebsiteData();
 
@@ -3682,11 +4082,16 @@ async function initializeApp() {
     render(initialState);
 
     if (initialState.viewId === '#landing-view') {
-        const intro = document.getElementById('intro');
-        if (intro) setTimeout(() => intro.classList.add('visible'), 100);
+        syncGlobalControlsForView('#landing-view');
     } else {
-        views['#landing-view'].classList.remove('active-view');
-        if (views[initialState.viewId]) views[initialState.viewId].classList.add('active-view');
+        Object.values(views).forEach((view) => {
+            if (view) view.classList.remove('active-view');
+        });
+        if (views[initialState.viewId]) {
+            views[initialState.viewId].classList.add('active-view');
+            syncGlobalControlsForView(initialState.viewId);
+            animateViewEntryElements(views[initialState.viewId], initialState.viewId);
+        }
         currentViewId = initialState.viewId;
     }
 
@@ -3754,9 +4159,8 @@ if (toggleButton) {
 window.addEventListener('DOMContentLoaded', () => {
     if (!appState.hasInitialized) return;
     // 首屏文案动画不应被数据请求阻塞
-    const intro = document.getElementById('intro');
-    if (intro && currentViewId === '#landing-view') {
-        setTimeout(() => intro.classList.add('visible'), 100);
+    if (currentViewId === '#landing-view') {
+        revealLandingIntro();
     }
     // 覆盖浏览器刷新的默认路由状态
     const resolvedState =

@@ -4743,7 +4743,9 @@ function renderEditor() {
         body: formData,
       });
 
-      const result = await res.json();
+      const result = await res.json().catch(async () => ({
+        error: await res.text().catch(() => "上传失败"),
+      }));
 
       if (res.status === 401 || result.error === "Invalid admin token") {
         handleAdminAuthFailure();
@@ -4751,8 +4753,9 @@ function renderEditor() {
       }
 
       if (!res.ok || !result.ok) {
-        setStatus("图片上传失败", "error");
-        alert(result.error || "上传失败");
+        const message = result.error || `上传失败（HTTP ${res.status}）`;
+        setStatus(`图片上传失败：${message}`, "error");
+        alert(message);
         return;
       }
 
@@ -4765,8 +4768,9 @@ function renderEditor() {
       setStatus("图片上传成功（记得点击“应用修改”并保存）", "ok");
     } catch (err) {
       console.error(err);
-      setStatus("图片上传失败（网络或服务器错误）", "error");
-      alert("上传过程中出错");
+      const message = err && err.message ? err.message : "上传过程中出错";
+      setStatus(`图片上传失败：${message}`, "error");
+      alert(message);
     }
   };
 

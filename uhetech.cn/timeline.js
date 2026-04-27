@@ -54,6 +54,24 @@ const Timeline = (() => {
   const easeInOutCubic = t =>
     t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
+  const focusEraInContainer = (container, timeline, allEras, focusEraIndex) => {
+    if (!container || !timeline || !allEras?.length) return;
+    if (!Number.isInteger(focusEraIndex)) return;
+
+    const targetEra = allEras[focusEraIndex];
+    if (!targetEra) return;
+
+    requestAnimationFrame(() => {
+      const targetCenter =
+        timeline.offsetLeft + targetEra.offsetLeft + targetEra.offsetWidth / 2;
+      const nextScrollLeft = Math.max(
+        0,
+        targetCenter - container.clientWidth / 2
+      );
+      container.scrollTo({ left: nextScrollLeft, behavior: 'auto' });
+    });
+  };
+
   // ========= 分支时间线渲染 =========
   const renderBranches = (
     categoryData,
@@ -167,7 +185,14 @@ if (evt.marker === 'fiery') {
   };
 
   // ========= init =========
-  const init = (view, catIndex, navigateCallback, parseAndColorText, playAnimation = true) => {
+  const init = (
+    view,
+    catIndex,
+    navigateCallback,
+    parseAndColorText,
+    playAnimation = true,
+    options = {}
+  ) => {
     const container = view.querySelector('.timeline-container');
     container.innerHTML = '';
     container.scrollLeft = 0;
@@ -303,6 +328,12 @@ if (evt.marker === 'fiery') {
       container.classList.add('is-ready');
       timeline.querySelector('.timeline-arrow')?.classList.add('is-revealing');
       container.style.overflow = 'auto';
+      focusEraInContainer(
+        container,
+        timeline,
+        allEras,
+        options.focusEraIndex
+      );
     }
 
     timeline.addEventListener('click', (e) => {

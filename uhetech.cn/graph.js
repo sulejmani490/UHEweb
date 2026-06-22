@@ -34,8 +34,81 @@ const RelationshipGraph = (() => {
             subText: isDark ? '#8d95a8' : '#555555',   // 次级文字/图例
             tooltipBg: isDark ? 'rgba(10,12,18,0.95)' : 'rgba(255,255,255,0.95)',
             tooltipBorder: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-            lineColor: isDark ? 'rgba(255,255,255,0.35)' : '#aaaaaa', // 默认连线颜色
+            lineColor: isDark ? 'rgba(230,236,255,0.28)' : 'rgba(65,78,95,0.34)', // 默认连线颜色
+            nodeBorder: isDark ? 'rgba(255,255,255,0.52)' : 'rgba(22,31,44,0.24)',
+            labelBg: isDark ? 'rgba(7,10,17,0.72)' : 'rgba(255,255,255,0.78)',
+            labelBorder: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(22,31,44,0.08)',
         };
+    };
+
+    // 分类视觉只改变图标外观，不改变 graph-data.js 中的人物/组织/事件内容。
+    const categoryVisuals = [
+        { symbol: 'circle', borderWidth: 3 },
+        { symbol: 'roundRect', borderWidth: 2 },
+        { symbol: 'triangle', borderWidth: 2 },
+        { symbol: 'rect', borderWidth: 2 },
+        { symbol: 'diamond', borderWidth: 2 },
+        { symbol: 'diamond', borderWidth: 3 },
+    ];
+
+    // 关系图固定布局：把原本随机的 force 布局改为按阵营分区的稳定坐标。
+    // 坐标只用于减少连线交错和提升可读性，节点与连线的内容仍完全读取原数据。
+    const stableLayoutPresets = {
+        allCharacters: {
+            // 核心与最高委员会：放在画面中轴，委员会成员围绕权力核心展开。
+            '人类帝国': [0, 0],
+            '最高委员会': [0, -285],
+            '刘宜鑫': [0, -455],
+            '郭世上': [-220, -375],
+            '李臻一': [225, -375],
+            '黄睿': [115, -525],
+            '殷实': [-125, -525],
+            '楚沛锦': [360, -255],
+            '吴宪人': [460, -90],
+            '吴秦丞': [-455, -90],
+            '李俊毅': [-360, -255],
+            '赵纯浩': [330, -525],
+
+            // 帝国机构：集中在右侧，避免与左侧敌对势力互相穿线。
+            '第一领导': [-230, 115],
+            '对外殖民管理局': [360, -25],
+            '帝国情报局': [500, 115],
+            '海事警戒局': [375, 245],
+            '科技部': [180, 365],
+            '复活中心': [0, 235],
+            '头号法布尔': [-335, 115],
+
+            // 外部势力：按魔法侧、法布尔、哲党分区，敌对连线从核心向外发散。
+            '羊主': [-560, -125],
+            '戴一博': [-665, -300],
+            '狼主': [-660, 55],
+            '姜王': [-555, 265],
+            '法布尔': [-405, 410],
+            '第四法布尔': [-245, 545],
+            '哲党四杰': [0, 505],
+            '潘锦睿': [-235, 655],
+            '王政': [-75, 690],
+            '范广睿': [90, 690],
+            '徐睿': [245, 655],
+
+            // 关键事件：放在右下和右上，保留事件与相关人物的空间关系。
+            '郭世上平行中心案': [565, -300],
+            '新西兰法布尔事件': [565, 330],
+            '第四次远征失败': [245, 545],
+        },
+        soviet: {
+            // 最高委员会内部图按政治阵营左右分区，主席置顶，减少核心对手线穿插。
+            '刘宜鑫': [0, -270],
+            '李臻一': [-255, 0],
+            '楚沛锦': [-455, 175],
+            '吴宪人': [-285, 285],
+            '赵纯浩': [-90, 270],
+            '殷实': [-155, 105],
+            '郭世上': [255, 0],
+            '李俊毅': [455, 175],
+            '黄睿': [95, 270],
+            '吴秦丞': [285, 285],
+        },
     };
 
     // 移动端检测和配置 (Merged: V10 structure with V12 force values)
@@ -120,7 +193,7 @@ const RelationshipGraph = (() => {
         visibleNodes.forEach(({ layout, data }) => {
             const [x, y] = layout;
             
-            const symbolSize = (data.symbolSize || 30) * config.nodeScale;
+            const symbolSize = data.symbolSize || 30;
             const radius = (Array.isArray(symbolSize) ? Math.max(symbolSize[0], symbolSize[1]) : symbolSize) / 2;
             
             nodeBounds.minX = Math.min(nodeBounds.minX, x - radius);
@@ -129,13 +202,37 @@ const RelationshipGraph = (() => {
             nodeBounds.maxY = Math.max(nodeBounds.maxY, y + radius);
             
             const labelText = data.name || '';
-            const realTextWidth = measureTextWidth(labelText, fontSize);
-            const textHeight = fontSize;
-            
-            const labelStartX = x + radius + 5;
-            const labelEndX = labelStartX + realTextWidth;
-            const labelTopY = y - textHeight / 2;
-            const labelBottomY = y + textHeight / 2;
+            const labelPadding = Array.isArray(data.label?.padding) ? data.label.padding : [0, 0];
+            const labelPaddingY = Number(labelPadding[0]) || 0;
+            const labelPaddingX = Number(labelPadding[1]) || 0;
+            const realTextWidth = measureTextWidth(labelText, fontSize) + labelPaddingX * 2;
+            const textHeight = fontSize + labelPaddingY * 2;
+            const labelOffset = 10;
+            const labelPosition = data.label?.position || 'right';
+            let labelStartX = x + radius + labelOffset;
+            let labelEndX = labelStartX + realTextWidth;
+            let labelTopY = y - textHeight / 2;
+            let labelBottomY = y + textHeight / 2;
+
+            if (labelPosition === 'left') {
+                labelEndX = x - radius - labelOffset;
+                labelStartX = labelEndX - realTextWidth;
+            } else if (labelPosition === 'top') {
+                labelStartX = x - realTextWidth / 2;
+                labelEndX = x + realTextWidth / 2;
+                labelBottomY = y - radius - labelOffset;
+                labelTopY = labelBottomY - textHeight;
+            } else if (labelPosition === 'bottom') {
+                labelStartX = x - realTextWidth / 2;
+                labelEndX = x + realTextWidth / 2;
+                labelTopY = y + radius + labelOffset;
+                labelBottomY = labelTopY + textHeight;
+            } else if (labelPosition === 'inside') {
+                labelStartX = x - realTextWidth / 2;
+                labelEndX = x + realTextWidth / 2;
+                labelTopY = y - textHeight / 2;
+                labelBottomY = y + textHeight / 2;
+            }
             
             labelBounds.minX = Math.min(labelBounds.minX, labelStartX);
             labelBounds.maxX = Math.max(labelBounds.maxX, labelEndX);
@@ -271,28 +368,216 @@ const RelationshipGraph = (() => {
         }, layoutDelay);
     };
 
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+    const hexToRgba = (hex, alpha) => {
+        const raw = String(hex || '').trim().replace('#', '');
+        if (!/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(raw)) {
+            return `rgba(53, 182, 255, ${alpha})`;
+        }
+
+        const normalized = raw.length === 3
+            ? raw.split('').map((char) => char + char).join('')
+            : raw;
+        const value = parseInt(normalized, 16);
+        const red = (value >> 16) & 255;
+        const green = (value >> 8) & 255;
+        const blue = value & 255;
+        return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+    };
+
+    const getReadableTextColor = (hex) => {
+        const raw = String(hex || '').trim().replace('#', '');
+        if (!/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(raw)) return '#ffffff';
+
+        const normalized = raw.length === 3
+            ? raw.split('').map((char) => char + char).join('')
+            : raw;
+        const red = parseInt(normalized.slice(0, 2), 16) / 255;
+        const green = parseInt(normalized.slice(2, 4), 16) / 255;
+        const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+        const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        return luminance > 0.62 ? '#17202d' : '#ffffff';
+    };
+
+    const getCategoryColor = (categoryIndex, fallback = '#35b6ff') => {
+        const category = window.graphCategories && window.graphCategories[categoryIndex];
+        return category?.itemStyle?.color || fallback;
+    };
+
+    const getNodeColor = (node, fallback) => (
+        node?.itemStyle?.color ||
+        getCategoryColor(node?.category, fallback)
+    );
+
+    const getCurrentGraphData = () => {
+        const registry = {
+            allCharacters: window.allCharactersData,
+            soviet: window.sovietData,
+            intel: window.intelData,
+            navy: window.navyData,
+            science: window.scienceData,
+            ...(window.allGraphData || {}),
+        };
+        return registry[currentGraphId] || window.allCharactersData;
+    };
+
+    const hasStableLayout = (graphId) => Boolean(stableLayoutPresets[graphId]);
+
+    const buildNodePositions = (data) => {
+        const preset = stableLayoutPresets[data.id] || {};
+        const buckets = new Map();
+        const categoryCenters = [
+            [0, -260],
+            [260, 0],
+            [-470, -120],
+            [-430, 260],
+            [0, 470],
+            [470, 260],
+        ];
+
+        data.nodes.forEach((node) => {
+            const category = Number.isFinite(Number(node.category)) ? Number(node.category) : 0;
+            if (!buckets.has(category)) buckets.set(category, []);
+            buckets.get(category).push(node.id);
+        });
+
+        const positions = {};
+        data.nodes.forEach((node) => {
+            if (preset[node.id]) {
+                const [x, y] = preset[node.id];
+                positions[node.id] = { x, y };
+                return;
+            }
+
+            const category = Number.isFinite(Number(node.category)) ? Number(node.category) : 0;
+            const categoryNodes = buckets.get(category) || [];
+            const index = Math.max(0, categoryNodes.indexOf(node.id));
+            const total = Math.max(1, categoryNodes.length);
+            const [centerX, centerY] = categoryCenters[category] || [0, 0];
+            const radius = 110 + Math.min(120, total * 12);
+            const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
+
+            positions[node.id] = {
+                x: centerX + Math.cos(angle) * radius,
+                y: centerY + Math.sin(angle) * radius,
+            };
+        });
+
+        return positions;
+    };
+
+    const getLabelPosition = (node, position) => {
+        const size = node.symbolSize || 30;
+        if (size >= 90 || node.id === '人类帝国') return 'inside';
+        if (position.x < -120) return 'left';
+        if (position.x > 120) return 'right';
+        if (position.y > 120) return 'bottom';
+        return 'top';
+    };
+
+    const buildProcessedNodes = (data, config, colors, nodePositions) => {
+        return data.nodes.map((node) => {
+            const position = nodePositions[node.id] || { x: 0, y: 0 };
+            const visual = categoryVisuals[node.category] || categoryVisuals[1];
+            const nodeColor = getNodeColor(node, colors.baseText);
+            const labelPosition = getLabelPosition(node, position);
+            const isInsideLabel = labelPosition === 'inside';
+            const dataLabel = node.label || {};
+
+            const baseLabel = {
+                show: !config.isMobile || (node.symbolSize || 30) > 55,
+                fontSize: Math.floor(12 * config.labelScale),
+                position: labelPosition,
+                color: isInsideLabel ? getReadableTextColor(nodeColor) : colors.baseText,
+                fontWeight: drillDownNodeIds.has(node.id) || node.id === '人类帝国' ? 'bold' : 'normal',
+                ...(isInsideLabel ? {} : {
+                    backgroundColor: colors.labelBg,
+                    borderColor: colors.labelBorder,
+                    borderWidth: 1,
+                    borderRadius: 7,
+                    padding: [3, 7],
+                }),
+            };
+
+            return {
+                ...node,
+                x: position.x,
+                y: position.y,
+                fixed: hasStableLayout(data.id),
+                symbol: node.symbol || visual.symbol,
+                symbolSize: (node.symbolSize || 30) * config.nodeScale,
+                itemStyle: {
+                    color: nodeColor,
+                    borderColor: colors.nodeBorder,
+                    borderWidth: visual.borderWidth,
+                    shadowBlur: config.isMobile ? 5 : 12,
+                    shadowColor: hexToRgba(nodeColor, config.isMobile ? 0.20 : 0.32),
+                    ...(node.itemStyle || {}),
+                },
+                label: {
+                    ...baseLabel,
+                    ...dataLabel,
+                    color: dataLabel.color || baseLabel.color,
+                },
+            };
+        });
+    };
+
+    const buildProcessedLinks = (data, nodePositions, colors) => {
+        return data.links.map((link, index) => {
+            const source = nodePositions[link.source];
+            const target = nodePositions[link.target];
+            let curveness = 0.06;
+
+            if (source && target) {
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const cross = source.x * target.y - source.y * target.x;
+                const direction = cross >= 0 ? 1 : -1;
+
+                curveness = clamp(distance / 5200, 0.035, 0.18) * direction;
+                if (link.source === '人类帝国' || link.source === '最高委员会') {
+                    curveness *= 0.45;
+                }
+                if (Math.abs(dx) < 80 || Math.abs(dy) < 80) {
+                    curveness *= 0.65;
+                }
+            } else {
+                curveness *= index % 2 === 0 ? 1 : -1;
+            }
+
+            return {
+                ...link,
+                lineStyle: {
+                    color: colors.lineColor,
+                    width: 1.25,
+                    opacity: 0.62,
+                    curveness,
+                    ...(link.lineStyle || {}),
+                },
+            };
+        });
+    };
+
     // 新版 getOption：根据主题生成配色
     const getOption = (data, title, themeName) => {
         const config = deviceConfig();
         const theme = themeName || getCurrentTheme();
         const colors = getThemeColors(theme);
+        const nodePositions = buildNodePositions(data);
+        const processedNodes = buildProcessedNodes(data, config, colors, nodePositions);
+        const processedLinks = buildProcessedLinks(data, nodePositions, colors);
+        const usesStableLayout = hasStableLayout(data.id);
 
         console.log(`[getOption] Building config for ${config.isMobile ? 'Mobile' : config.isTablet ? 'Tablet' : 'Desktop'} device, theme=${theme}`);
 
-        const processedNodes = data.nodes.map((node) => ({
-            ...node,
-            symbolSize: node.symbolSize * config.nodeScale,
-            label: { 
-                ...(node.label || {}), 
-                show: !config.isMobile || node.symbolSize > 60,
-                fontSize: Math.floor(12 * config.labelScale),
-                position: 'right',
-                color: colors.baseText,
-                fontWeight: node.id === '最高委员会' ? 'bold' : 'normal'
-            }
-        }));
-
         return {
+            animationDuration: 900,
+            animationDurationUpdate: 750,
+            animationEasing: 'cubicOut',
+            animationEasingUpdate: 'cubicInOut',
             title: { 
                 text: title, 
                 top: config.isMobile ? 15 : 20, 
@@ -345,31 +630,32 @@ const RelationshipGraph = (() => {
             backgroundColor: 'transparent',
             series: [{
                 type: 'graph', 
-                layout: 'force', 
+                layout: usesStableLayout ? 'none' : 'force',
                 data: processedNodes, 
-                links: data.links, 
+                links: processedLinks, 
                 categories: window.graphCategories || [],
                 roam: true, 
                 draggable: !config.isMobile,
                 focusNodeAdjacency: true,
-                blur: { lineStyle: { opacity: 0.1 }, itemStyle: { opacity: 0.3 } },
-                labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
+                blur: { lineStyle: { opacity: 0.08 }, itemStyle: { opacity: 0.24 } },
+                labelLayout: { hideOverlap: true, moveOverlap: 'shiftY', draggable: true },
                 lineStyle: { 
                     color: colors.lineColor,
-                    curveness: 0, // V10: Using straight lines for clarity
-                    width: config.isMobile ? 1 : 1.5, 
-                    opacity: 0.7 
+                    curveness: usesStableLayout ? 0.08 : 0,
+                    width: config.isMobile ? 0.9 : 1.25, 
+                    opacity: 0.62 
                 },
                 // V12 Feature: Adding arrows to edges
                 edgeSymbol: ['none', 'arrow'],
-                edgeSymbolSize: config.isMobile ? 6 : 8,
+                edgeSymbolSize: config.isMobile ? 4 : 6,
                 force: {
                     repulsion: config.repulsion, 
                     edgeLength: config.edgeLength, 
                     gravity: 0.05, 
                     friction: 0.7,
-                    layoutAnimation: false,
+                    layoutAnimation: !usesStableLayout,
                 },
+                scaleLimit: { min: config.minZoom, max: config.maxZoom },
                 emphasis: { 
                     focus: 'adjacency', 
                     label: { show: true }, 
@@ -378,8 +664,8 @@ const RelationshipGraph = (() => {
                         opacity: 1 
                     }
                 },
-                left: config.isMobile ? '5%' : '0%', 
-                right: config.isMobile ? '5%' : '0%', 
+                left: config.isMobile ? '5%' : '8%', 
+                right: config.isMobile ? '5%' : '5%', 
                 top: config.isMobile ? '20%' : '10%', 
                 bottom: config.isMobile ? '20%' : '10%',
             }]
@@ -477,6 +763,11 @@ const RelationshipGraph = (() => {
         
         myChart.on('legendselectchanged', (params) => {
             console.log('[legendselectchanged] Detected:', params.name);
+            if (hasStableLayout(currentGraphId)) {
+                ultraIntelligentFitView(myChart, true);
+                return;
+            }
+
             forceRelayout(myChart, () => {
                 ultraIntelligentFitView(myChart, true);
             });
@@ -502,9 +793,7 @@ const RelationshipGraph = (() => {
             }
             themeUnsubscribe = AppTheme.subscribe((newTheme) => {
                 if (!myChart) return;
-                const data =
-                    (window.allGraphData && window.allGraphData[currentGraphId]) ||
-                    window.allCharactersData;
+                const data = getCurrentGraphData();
                 if (!data) return;
 
                 console.log('[RelationshipGraph] Theme changed to', newTheme, ', updating graph colors...');
@@ -526,7 +815,7 @@ const RelationshipGraph = (() => {
             init(containerId); 
         } else {
             myChart.resize();
-            const currentData = (window.allGraphData && window.allGraphData[currentGraphId]) || window.allCharactersData;
+            const currentData = getCurrentGraphData();
             if (currentData) { 
                 renderGraph(currentData, currentTitle || '人类帝国全人物关系图', { fitView: false }); 
             }
@@ -535,6 +824,11 @@ const RelationshipGraph = (() => {
 
     const refreshView = () => {
         if (myChart) {
+            if (hasStableLayout(currentGraphId)) {
+                ultraIntelligentFitView(myChart, true);
+                return;
+            }
+
             forceRelayout(myChart, () => {
                 ultraIntelligentFitView(myChart, true);
             });

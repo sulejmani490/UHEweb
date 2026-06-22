@@ -769,6 +769,7 @@ body.is-navigating { pointer-events: none; }
 body.landing-portal-mode #landing-view .intro-text,
 body.landing-portal-mode #landing-view .sponsor-info,
 body.landing-portal-mode #landing-view .music-player,
+body.landing-portal-mode #landing-view .icp-footer,
 body.landing-portal-mode #landing-view .scroll-down-hint {
     opacity: 0;
     filter: blur(2px);
@@ -862,6 +863,41 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
     content: '▼';
     display: block;
     margin-top: 5px;
+}
+
+#landing-view .scroll-down-hint {
+    bottom: 58px;
+}
+
+#landing-view .icp-footer {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 6;
+    width: min(90vw, 620px);
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(32, 37, 45, 0.58);
+}
+
+#landing-view .icp-footer[hidden] {
+    display: none;
+}
+
+#landing-view .icp-footer a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+#landing-view .icp-footer a:hover {
+    color: var(--accent);
+}
+
+:root[data-theme="dark"] #landing-view .icp-footer {
+    color: rgba(229, 235, 245, 0.62);
 }
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
@@ -1149,7 +1185,36 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
 
 /* 图谱所在整屏，背景跟随主题主背景 */
 #graph-section {
-    background-color: var(--bg-main);
+    background:
+        radial-gradient(circle at 50% 48%, rgba(0, 174, 255, 0.10), transparent 30%),
+        radial-gradient(circle at 18% 22%, rgba(255, 215, 0, 0.10), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(234, 242, 248, 0.74)),
+        var(--bg-main);
+    isolation: isolate;
+}
+
+#graph-section::before,
+#graph-section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+#graph-section::before {
+    z-index: 0;
+    background-image:
+        linear-gradient(rgba(32, 37, 45, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(32, 37, 45, 0.04) 1px, transparent 1px);
+    background-size: 42px 42px;
+    -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+    mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+}
+
+#graph-section::after {
+    z-index: 0;
+    background:
+        radial-gradient(circle at center, transparent 46%, rgba(10, 14, 20, 0.10) 100%);
 }
 
 /* ECharts 容器本身透明，只负责占位 */
@@ -1158,6 +1223,20 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
     height: 100vh;
     min-height: 500px;
     position: relative;
+    z-index: 1;
+}
+
+#relationship-graph-container::before {
+    content: "";
+    position: absolute;
+    inset: 34px 48px;
+    border: 1px solid rgba(32, 37, 45, 0.08);
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.22), transparent 38%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
+    box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.30);
+    pointer-events: none;
 }
 
 /* 图谱返回按钮：用统一 Token 做磨砂小胶囊 */
@@ -1187,6 +1266,35 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
     background-color: var(--bg-elevated);
     box-shadow: var(--shadow-strong);
     transform: scale(1.05);
+}
+
+:root[data-theme="dark"] #graph-section {
+    background:
+        radial-gradient(circle at 50% 48%, rgba(53, 182, 255, 0.12), transparent 32%),
+        radial-gradient(circle at 18% 22%, rgba(255, 215, 0, 0.10), transparent 26%),
+        linear-gradient(135deg, rgba(6, 8, 13, 1), rgba(13, 18, 28, 0.96)),
+        var(--bg-main);
+}
+
+:root[data-theme="dark"] #graph-section::before {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+
+:root[data-theme="dark"] #graph-section::after {
+    background:
+        radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+:root[data-theme="dark"] #relationship-graph-container::before {
+    border-color: rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at 50% 50%, rgba(53, 182, 255, 0.08), transparent 42%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.008));
+    box-shadow:
+        inset 0 0 90px rgba(53, 182, 255, 0.06),
+        inset 0 0 140px rgba(0, 0, 0, 0.28);
 }
 
 

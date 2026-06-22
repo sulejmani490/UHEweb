@@ -56,6 +56,8 @@ let novelsState = {
   dirty: {},  // { [id]: true }
 };
 const MUSIC_ROOT_NODE = { id: "__music_root", title: "音乐库" };
+const SITE_SETTINGS_ROOT_NODE = { id: "__site_settings", title: "站点设置" };
+const DEFAULT_ICP_URL = "https://beian.miit.gov.cn/";
 
 // 拖拽状态
 let dragSrcPath = null;
@@ -596,6 +598,33 @@ function getNovelIdFromPath(path) {
 
 function isMusicPath(path) {
   return Array.isArray(path) && path[0] === "__music";
+}
+
+function isSiteSettingsPath(path) {
+  return Array.isArray(path) && path[0] === "__siteSettings";
+}
+
+function normalizeExternalUrl(value, fallback = DEFAULT_ICP_URL) {
+  const rawValue = String(value || "").trim();
+  if (!rawValue) return fallback;
+  if (/^(?:https?:)?\/\//i.test(rawValue)) return rawValue;
+  return `https://${rawValue.replace(/^\/+/, "")}`;
+}
+
+function ensureSiteSettings(data = websiteData) {
+  if (!data || typeof data !== "object") return {};
+  if (!data.siteSettings || typeof data.siteSettings !== "object" || Array.isArray(data.siteSettings)) {
+    data.siteSettings = {};
+  }
+
+  if (data.siteSettings.icpNumber == null) {
+    data.siteSettings.icpNumber = "";
+  }
+  if (data.siteSettings.icpUrl == null) {
+    data.siteSettings.icpUrl = DEFAULT_ICP_URL;
+  }
+
+  return data.siteSettings;
 }
 
 function normalizeMusicSrc(value) {
@@ -1641,6 +1670,12 @@ function initColorToolbar(container) {
 
 // ====== 工具函数：节点操作 ======
 function getNode(root, path) {
+  if (isSiteSettingsPath(path)) {
+    return {
+      ...ensureSiteSettings(root),
+      title: SITE_SETTINGS_ROOT_NODE.title,
+    };
+  }
   if (isNovelsPath(path)) {
     let cur = novelsState;
     for (let k of path.slice(1)) cur = cur[k];
@@ -1675,7 +1710,7 @@ function isSamePath(a, b) {
 }
 
 function getSortableInfo(path) {
-  if (!Array.isArray(path) || path.length < 2 || isNovelsPath(path)) return null;
+  if (!Array.isArray(path) || path.length < 2 || isNovelsPath(path) || isSiteSettingsPath(path)) return null;
 
   if (isMusicPath(path)) {
     if (path[1] !== "playlist") return null;
@@ -1727,6 +1762,7 @@ function decorateDropTarget(el, placement) {
 
 function getNodeType(path) {
   if (!path) return "node";
+  if (isSiteSettingsPath(path)) return "siteSettings";
   // 小说树（独立于 websiteData）
   if (isNovelsPath(path)) {
     if (path[1] === "root") return "novelsRoot";
@@ -1865,6 +1901,7 @@ function getDisplayTypeLabel(type) {
       era: "时间线",
       branch: "分支",
       branchEvent: "分支事件",
+      siteSettings: "站点设置",
       musicRoot: "音乐库",
       musicTrack: "歌曲",
       musicNode: "音乐节点",
@@ -1880,6 +1917,10 @@ function getDisplayTypeLabel(type) {
 
 function getPathDisplay(path) {
   if (!Array.isArray(path) || !path.length) return "未选择节点";
+
+  if (isSiteSettingsPath(path)) {
+    return SITE_SETTINGS_ROOT_NODE.title;
+  }
 
   if (isMusicPath(path)) {
     const parts = [MUSIC_ROOT_NODE.title];
@@ -1937,6 +1978,11 @@ function getPathDisplay(path) {
 function getTreeNodeSubtitle(node, path, type) {
   if (!node || typeof node !== "object") return "";
 
+  if (type === "siteSettings") {
+    const settings = ensureSiteSettings(websiteData);
+    return settings.icpNumber ? `ICP备案：${settings.icpNumber}` : "ICP备案未填写";
+  }
+
   if (type === "musicRoot") {
     const total = ensureMusicPlaylist(websiteData).length;
     return total > 0 ? `${total} 首歌曲` : "暂无歌曲";
@@ -1978,10 +2024,22 @@ function getTreeNodeSubtitle(node, path, type) {
 
 function getNodeMetaChips(path, node, type, sectionCount = 0) {
   const chips = [{ text: getDisplayTypeLabel(type), tone: "type" }];
-  const childCount = type === "musicRoot" ? ensureMusicPlaylist(websiteData).length : countNodeChildren(node);
+  const childCount =
+    type === "musicRoot"
+      ? ensureMusicPlaylist(websiteData).length
+      : type === "siteSettings"
+        ? 0
+        : countNodeChildren(node);
 
   if (childCount > 0) {
     chips.push({ text: `${childCount} 子节点`, tone: "count" });
+  }
+
+  if (type === "siteSettings") {
+    chips.push({
+      text: node?.icpNumber ? "ICP备案已设置" : "ICP备案待填写",
+      tone: node?.icpNumber ? "asset" : "warn",
+    });
   }
 
   if (node?.image) {
@@ -2144,7 +2202,7 @@ function updateEditorChrome(context = {}) {
   const type = context.type || "";
   const sectionCount = Number(context.sectionCount || 0);
   const hasSelection = Array.isArray(path) && path.length > 0;
-  const canChangeTree = hasSelection && !isNovelsPath(path);
+  const canChangeTree = hasSelection && !isNovelsPath(path) && !isSiteSettingsPath(path);
   const canApplyCurrent = !!editor?.querySelector("#apply-edit");
 
   if (pathEl) pathEl.textContent = hasSelection ? getPathDisplay(path) : "未选择节点";
@@ -2282,6 +2340,27 @@ function searchNodes(keyword, typeFilter = "all") {
   cats.forEach((cat, idx) => {
     traverseForSearch(cat, ["categories", idx], kw, typeFilter, results);
   });
+
+  const settings = ensureSiteSettings(websiteData);
+  const siteSettingsHaystack = [
+    SITE_SETTINGS_ROOT_NODE.title,
+    "ICP ICP备案 备案号 工信部",
+    settings.icpNumber,
+    settings.icpUrl,
+  ]
+    .join(" ")
+    .toLowerCase();
+  if (
+    (typeFilter === "all" || typeFilter === "siteSettings") &&
+    siteSettingsHaystack.includes(kw)
+  ) {
+    results.push({
+      path: ["__siteSettings", "root"],
+      title: SITE_SETTINGS_ROOT_NODE.title,
+      type: "siteSettings",
+      snippet: settings.icpNumber || "ICP备案未填写",
+    });
+  }
 
   const playlist = ensureMusicPlaylist(websiteData);
   const musicRootHaystack = [MUSIC_ROOT_NODE.title, "音乐 歌曲 播放列表"]
@@ -2494,6 +2573,7 @@ async function loadData() {
     }
 
     ensureMusicPlaylist(websiteData);
+    ensureSiteSettings(websiteData);
 
     // 额外加载小说清单（失败也不影响 website-data）
     await loadNovelsManifest();
@@ -2514,6 +2594,7 @@ async function saveData() {
   }
 
   ensureMusicPlaylist(websiteData);
+  ensureSiteSettings(websiteData);
   setStatus("正在保存 website-data…", "warn");
 
   try {
@@ -2554,6 +2635,8 @@ function renderTree() {
     return;
   }
 
+  renderSiteSettingsTree(container);
+
   websiteData.categories.forEach((cat, i) => {
     renderTreeNode(container, cat, ["categories", i], 0);
   });
@@ -2578,6 +2661,12 @@ function renderTree() {
         await handleNovelNodeClick(path);
         return;
       }
+      if (isSiteSettingsPath(path)) {
+        selectedPath = path;
+        renderTree();
+        renderEditor();
+        return;
+      }
       if (isMusicPath(path)) {
         expandTreeAncestors(path);
         selectedPath = path;
@@ -2599,6 +2688,18 @@ function renderTree() {
       el.addEventListener("dragend", onDragEnd);
     }
   });
+}
+
+function renderSiteSettingsTree(container) {
+  renderMusicTreeLine(
+    container,
+    SITE_SETTINGS_ROOT_NODE,
+    ["__siteSettings", "root"],
+    0,
+    "⚙",
+    getDisplayTypeLabel("siteSettings"),
+    false
+  );
 }
 
 function renderTreeNode(container, node, path, depth) {
@@ -3714,6 +3815,53 @@ function renderNovelEditor(editor, path) {
   `;
 }
 
+function renderSiteSettingsEditor(editor, settings) {
+  const icpNumber = String(settings?.icpNumber || "");
+  const icpUrl = String(settings?.icpUrl || DEFAULT_ICP_URL);
+  const previewText = icpNumber.trim() || "前台未显示备案号";
+  const previewUrl = normalizeExternalUrl(icpUrl);
+
+  editor.innerHTML = `
+    <div class="editor-section">
+      <h2>首页备案信息</h2>
+
+      <div class="field-row">
+        <label>ICP备案号</label>
+        <input id="site-icp-number" type="text" value="${escapeEditorValue(icpNumber)}">
+        <div class="field-hint">显示在网站首页底部。留空时前台会自动隐藏备案号。</div>
+      </div>
+
+      <div class="field-row">
+        <label>备案链接</label>
+        <input id="site-icp-url" type="text" value="${escapeEditorValue(icpUrl)}">
+        <div class="field-hint">默认链接到工信部备案查询页；也可以填完整 URL。</div>
+      </div>
+
+      <div class="field-row" style="flex-direction:column;align-items:flex-start;">
+        <label>前台预览</label>
+        <a href="${escapeEditorValue(previewUrl)}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:none;">
+          ${escapeHtml(previewText)}
+        </a>
+      </div>
+
+      <div class="field-row">
+        <label>快捷操作</label>
+        <button id="apply-edit" class="primary" type="button">应用修改</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("apply-edit")?.addEventListener("click", () => {
+    const nextSettings = ensureSiteSettings(websiteData);
+    nextSettings.icpNumber = String(document.getElementById("site-icp-number")?.value || "").trim();
+    nextSettings.icpUrl = normalizeExternalUrl(document.getElementById("site-icp-url")?.value || DEFAULT_ICP_URL);
+
+    setStatus("已修改站点设置（未保存）", "warn");
+    renderTree();
+    renderEditor();
+  });
+}
+
 function renderMusicEditor(editor, path) {
   const type = getNodeType(path);
   const playlist = ensureMusicPlaylist(websiteData);
@@ -3969,6 +4117,17 @@ function renderEditor() {
       </div>
     `;
     finalizeEditorRender(editor);
+    return;
+  }
+
+  if (isSiteSettingsPath(selectedPath)) {
+    const settings = ensureSiteSettings(websiteData);
+    renderSiteSettingsEditor(editor, settings);
+    finalizeEditorRender(editor, {
+      path: selectedPath,
+      node: getNode(websiteData, selectedPath),
+      type: getNodeType(selectedPath),
+    });
     return;
   }
 
@@ -4814,6 +4973,11 @@ function addChild() {
     return;
   }
 
+  if (isSiteSettingsPath(selectedPath)) {
+    setStatus("站点设置不支持新增子节点，请直接编辑右侧表单。", "warn");
+    return;
+  }
+
   // 小说库节点不走“新增子节点”逻辑（避免误操作影响既有结构）
   if (isNovelsPath(selectedPath)) {
     setStatus("小说库不支持使用左下角“新增子节点”。请在右侧使用小说上传/编辑按钮。", "warn");
@@ -4945,6 +5109,11 @@ function addChild() {
 async function deleteNode() {
   if (!selectedPath) {
     alert("尚未选择要删除的节点");
+    return;
+  }
+
+  if (isSiteSettingsPath(selectedPath)) {
+    setStatus("站点设置不能删除。", "warn");
     return;
   }
 

@@ -58,6 +58,38 @@ let novelsState = {
 const MUSIC_ROOT_NODE = { id: "__music_root", title: "音乐库" };
 const SITE_SETTINGS_ROOT_NODE = { id: "__site_settings", title: "站点设置" };
 const DEFAULT_ICP_URL = "https://beian.miit.gov.cn/";
+const DEFAULT_SITE_EVENT_SLIDE = {
+  image: "/images/总理府活动.png",
+  text: "这是你的梦想吗？",
+  durationMs: 4400,
+  camera: "focus-zoom",
+};
+const SITE_EVENT_CAMERA_OPTIONS = [
+  { value: "focus-zoom", label: "聚焦缓慢放大" },
+  { value: "slow-zoom", label: "缓慢推进" },
+  { value: "pan-left", label: "向左横移" },
+  { value: "pan-right", label: "向右横移" },
+  { value: "drift-up", label: "向上抬升" },
+  { value: "still", label: "轻微静帧" },
+];
+const DEFAULT_SITE_EVENT = {
+  enabled: true,
+  homepageOnly: true,
+  image: DEFAULT_SITE_EVENT_SLIDE.image,
+  text: DEFAULT_SITE_EVENT_SLIDE.text,
+  imageMs: DEFAULT_SITE_EVENT_SLIDE.durationMs,
+  exitMs: 720,
+  homeRevealMs: 2850,
+  frostFrameEnabled: true,
+  frostInMs: 2700,
+  slideTransitionMs: 1100,
+  homeIntroText: "帝国纪元70年，人类帝国随着第三委员上台进入了新的时期，但复活中心的损坏带来的动荡继续蔓延，委员会的矛盾正在扩大，欢迎来到70年代，绝望与希望并存的时代。",
+  gameEntryEnabled: true,
+  gameUrl: "/event-game/",
+  gameEntryKicker: "限时活动",
+  gameEntryTitle: "进入小游戏",
+  slides: [{ ...DEFAULT_SITE_EVENT_SLIDE }],
+};
 
 // 拖拽状态
 let dragSrcPath = null;
@@ -611,6 +643,14 @@ function normalizeExternalUrl(value, fallback = DEFAULT_ICP_URL) {
   return `https://${rawValue.replace(/^\/+/, "")}`;
 }
 
+function normalizeSitePath(value, fallback = "/") {
+  const rawValue = String(value || "").trim();
+  if (!rawValue) return fallback;
+  if (/^(?:[a-z]+:)?\/\//i.test(rawValue)) return rawValue;
+  if (rawValue.startsWith("#")) return rawValue;
+  return rawValue.startsWith("/") ? rawValue : `/${rawValue.replace(/^\.?\//, "")}`;
+}
+
 function ensureSiteSettings(data = websiteData) {
   if (!data || typeof data !== "object") return {};
   if (!data.siteSettings || typeof data.siteSettings !== "object" || Array.isArray(data.siteSettings)) {
@@ -625,6 +665,84 @@ function ensureSiteSettings(data = websiteData) {
   }
 
   return data.siteSettings;
+}
+
+function normalizeSiteEventCamera(value) {
+  const camera = String(value || "").trim();
+  return SITE_EVENT_CAMERA_OPTIONS.some((option) => option.value === camera)
+    ? camera
+    : DEFAULT_SITE_EVENT_SLIDE.camera;
+}
+
+function normalizeSiteEventSlide(slide, fallback = DEFAULT_SITE_EVENT_SLIDE) {
+  const source =
+    slide && typeof slide === "object" && !Array.isArray(slide) ? slide : {};
+  const fallbackSlide = { ...DEFAULT_SITE_EVENT_SLIDE, ...fallback };
+  const image = String(source.image || source.src || fallbackSlide.image || DEFAULT_SITE_EVENT_SLIDE.image).trim();
+  const text = String(source.text ?? source.caption ?? fallbackSlide.text ?? DEFAULT_SITE_EVENT_SLIDE.text).trim();
+  return {
+    image: image || DEFAULT_SITE_EVENT_SLIDE.image,
+    text: text || DEFAULT_SITE_EVENT_SLIDE.text,
+    durationMs: Math.max(
+      1400,
+      Number(source.durationMs ?? source.imageMs ?? fallbackSlide.durationMs) ||
+        DEFAULT_SITE_EVENT_SLIDE.durationMs
+    ),
+    camera: normalizeSiteEventCamera(source.camera || fallbackSlide.camera),
+  };
+}
+
+function ensureSiteEvent(data = websiteData) {
+  if (!data || typeof data !== "object") return { ...DEFAULT_SITE_EVENT };
+  if (!data.siteEvent || typeof data.siteEvent !== "object" || Array.isArray(data.siteEvent)) {
+    data.siteEvent = {};
+  }
+  const legacySlide = normalizeSiteEventSlide({
+    image: data.siteEvent.image || DEFAULT_SITE_EVENT.image,
+    text: data.siteEvent.text || DEFAULT_SITE_EVENT.text,
+    durationMs: data.siteEvent.imageMs || DEFAULT_SITE_EVENT.imageMs,
+    camera: data.siteEvent.camera || DEFAULT_SITE_EVENT_SLIDE.camera,
+  });
+  const sourceSlides = Array.isArray(data.siteEvent.slides) ? data.siteEvent.slides : [];
+  const slides = sourceSlides.length
+    ? sourceSlides.map((slide, index) =>
+        normalizeSiteEventSlide(slide, index === 0 ? legacySlide : DEFAULT_SITE_EVENT_SLIDE)
+      )
+    : [legacySlide];
+  const firstSlide = slides[0] || legacySlide;
+  const lastSlide = slides[slides.length - 1] || firstSlide;
+
+  data.siteEvent = {
+    ...DEFAULT_SITE_EVENT,
+    ...data.siteEvent,
+    enabled: data.siteEvent.enabled === true,
+    homepageOnly: data.siteEvent.homepageOnly !== false,
+    image: firstSlide.image,
+    text: firstSlide.text,
+    imageMs: firstSlide.durationMs,
+    exitMs: Math.max(260, Number(data.siteEvent.exitMs) || DEFAULT_SITE_EVENT.exitMs),
+    homeRevealMs: Math.max(900, Number(data.siteEvent.homeRevealMs) || DEFAULT_SITE_EVENT.homeRevealMs),
+    frostFrameEnabled: data.siteEvent.frostFrameEnabled !== false,
+    frostInMs: Math.max(
+      900,
+      Math.min(
+        lastSlide.durationMs,
+        Number(data.siteEvent.frostInMs) || Math.round(lastSlide.durationMs * 0.62)
+      )
+    ),
+    slideTransitionMs: Math.max(
+      0,
+      Math.min(2200, Number(data.siteEvent.slideTransitionMs) || DEFAULT_SITE_EVENT.slideTransitionMs)
+    ),
+    homeIntroText: String(data.siteEvent.homeIntroText || DEFAULT_SITE_EVENT.homeIntroText).trim(),
+    gameEntryEnabled: data.siteEvent.gameEntryEnabled !== false,
+    gameUrl: normalizeSitePath(data.siteEvent.gameUrl, DEFAULT_SITE_EVENT.gameUrl),
+    gameEntryKicker: String(data.siteEvent.gameEntryKicker || DEFAULT_SITE_EVENT.gameEntryKicker).trim(),
+    gameEntryTitle: String(data.siteEvent.gameEntryTitle || DEFAULT_SITE_EVENT.gameEntryTitle).trim(),
+    slides,
+  };
+
+  return data.siteEvent;
 }
 
 function normalizeMusicSrc(value) {
@@ -1877,6 +1995,32 @@ function escapeHtml(value) {
   return escapeEditorValue(value);
 }
 
+function findSiteEventSlideCard(element) {
+  return element?.closest?.("[data-site-event-slide-index]") || null;
+}
+
+function collectSiteEventSlidesFromEditor() {
+  const cards = Array.from(document.querySelectorAll("[data-site-event-slide-index]"));
+  const slides = cards.map((card) => {
+    const getField = (field) =>
+      card.querySelector(`[data-site-event-slide-field="${field}"]`)?.value;
+    return normalizeSiteEventSlide({
+      image: getField("image"),
+      text: getField("text"),
+      durationMs: getField("durationMs"),
+      camera: getField("camera"),
+    });
+  });
+  return slides.length ? slides : [{ ...DEFAULT_SITE_EVENT_SLIDE }];
+}
+
+function syncLegacySiteEventFieldsFromSlides(event) {
+  const firstSlide = normalizeSiteEventSlide(Array.isArray(event.slides) ? event.slides[0] : null);
+  event.image = firstSlide.image;
+  event.text = firstSlide.text;
+  event.imageMs = firstSlide.durationMs;
+}
+
 function countNodeChildren(node) {
   if (!node || typeof node !== "object") return 0;
 
@@ -1980,7 +2124,9 @@ function getTreeNodeSubtitle(node, path, type) {
 
   if (type === "siteSettings") {
     const settings = ensureSiteSettings(websiteData);
-    return settings.icpNumber ? `ICP备案：${settings.icpNumber}` : "ICP备案未填写";
+    const event = ensureSiteEvent(websiteData);
+    const icpText = settings.icpNumber ? `ICP备案：${settings.icpNumber}` : "ICP备案未填写";
+    return `${icpText} · 活动${event.enabled ? "开启" : "关闭"}`;
   }
 
   if (type === "musicRoot") {
@@ -2039,6 +2185,11 @@ function getNodeMetaChips(path, node, type, sectionCount = 0) {
     chips.push({
       text: node?.icpNumber ? "ICP备案已设置" : "ICP备案待填写",
       tone: node?.icpNumber ? "asset" : "warn",
+    });
+    const event = ensureSiteEvent(websiteData);
+    chips.push({
+      text: event.enabled ? "活动已开启" : "活动已关闭",
+      tone: event.enabled ? "accent" : "neutral",
     });
   }
 
@@ -2342,11 +2493,15 @@ function searchNodes(keyword, typeFilter = "all") {
   });
 
   const settings = ensureSiteSettings(websiteData);
+  const event = ensureSiteEvent(websiteData);
   const siteSettingsHaystack = [
     SITE_SETTINGS_ROOT_NODE.title,
-    "ICP ICP备案 备案号 工信部",
+    "ICP ICP备案 备案号 工信部 限时活动 启动页 开屏 首页 图片 文案",
     settings.icpNumber,
     settings.icpUrl,
+    event.enabled ? "活动开启" : "活动关闭",
+    event.image,
+    event.text,
   ]
     .join(" ")
     .toLowerCase();
@@ -2358,7 +2513,7 @@ function searchNodes(keyword, typeFilter = "all") {
       path: ["__siteSettings", "root"],
       title: SITE_SETTINGS_ROOT_NODE.title,
       type: "siteSettings",
-      snippet: settings.icpNumber || "ICP备案未填写",
+      snippet: `${settings.icpNumber || "ICP备案未填写"} · 活动${event.enabled ? "开启" : "关闭"}`,
     });
   }
 
@@ -2574,6 +2729,7 @@ async function loadData() {
 
     ensureMusicPlaylist(websiteData);
     ensureSiteSettings(websiteData);
+    ensureSiteEvent(websiteData);
 
     // 额外加载小说清单（失败也不影响 website-data）
     await loadNovelsManifest();
@@ -2595,6 +2751,7 @@ async function saveData() {
 
   ensureMusicPlaylist(websiteData);
   ensureSiteSettings(websiteData);
+  ensureSiteEvent(websiteData);
   setStatus("正在保存 website-data…", "warn");
 
   try {
@@ -3818,8 +3975,68 @@ function renderNovelEditor(editor, path) {
 function renderSiteSettingsEditor(editor, settings) {
   const icpNumber = String(settings?.icpNumber || "");
   const icpUrl = String(settings?.icpUrl || DEFAULT_ICP_URL);
+  const event = ensureSiteEvent(websiteData);
   const previewText = icpNumber.trim() || "前台未显示备案号";
   const previewUrl = normalizeExternalUrl(icpUrl);
+  const eventSlides = (Array.isArray(event.slides) && event.slides.length
+    ? event.slides
+    : [normalizeSiteEventSlide(event)]
+  ).map((slide) => normalizeSiteEventSlide(slide));
+  const firstEventSlide = eventSlides[0] || normalizeSiteEventSlide(event);
+  const renderCameraOptions = (selectedCamera) =>
+    SITE_EVENT_CAMERA_OPTIONS.map((option) => `
+      <option value="${escapeEditorValue(option.value)}" ${option.value === selectedCamera ? "selected" : ""}>
+        ${escapeHtml(option.label)}
+      </option>
+    `).join("");
+  const eventSlidesHtml = eventSlides.map((slide, index) => `
+    <div class="site-event-slide-card" data-site-event-slide-index="${index}">
+      <div class="site-event-slide-head">
+        <div>
+          <strong>镜头 ${index + 1}</strong>
+          <span>${index === eventSlides.length - 1 ? "最后一张会启动黑边霜雾" : "纯照片运镜播放"}</span>
+        </div>
+        <div class="site-event-slide-actions">
+          <button class="secondary" type="button" data-site-event-slide-action="move-up" data-slide-index="${index}" ${index === 0 ? "disabled" : ""}>上移</button>
+          <button class="secondary" type="button" data-site-event-slide-action="move-down" data-slide-index="${index}" ${index === eventSlides.length - 1 ? "disabled" : ""}>下移</button>
+          <button class="secondary" type="button" data-site-event-slide-action="remove" data-slide-index="${index}" ${eventSlides.length <= 1 ? "disabled" : ""}>删除</button>
+        </div>
+      </div>
+
+      <div class="site-event-slide-grid">
+        <label>
+          图片路径
+          <input type="text" data-site-event-slide-field="image" value="${escapeEditorValue(slide.image)}">
+        </label>
+        <label>
+          浮现文字
+          <input type="text" data-site-event-slide-field="text" value="${escapeEditorValue(slide.text)}">
+        </label>
+        <label>
+          展示毫秒
+          <input type="number" min="1400" step="100" data-site-event-slide-field="durationMs" value="${Number(slide.durationMs) || DEFAULT_SITE_EVENT_SLIDE.durationMs}">
+        </label>
+        <label>
+          运镜
+          <select data-site-event-slide-field="camera">
+            ${renderCameraOptions(slide.camera)}
+          </select>
+        </label>
+      </div>
+
+      <div class="site-event-slide-upload">
+        <input type="file" accept="image/*" data-site-event-slide-upload-file="${index}" style="color:#e5e7eb;">
+        <button class="secondary" type="button" data-site-event-slide-action="upload" data-slide-index="${index}">上传到此镜头</button>
+      </div>
+
+      <img
+        class="site-event-slide-preview"
+        data-site-event-slide-preview="${index}"
+        src="${escapeEditorValue(slide.image)}"
+        alt="镜头 ${index + 1} 图片预览"
+      >
+    </div>
+  `).join("");
 
   editor.innerHTML = `
     <div class="editor-section">
@@ -3849,16 +4066,408 @@ function renderSiteSettingsEditor(editor, settings) {
         <button id="apply-edit" class="primary" type="button">应用修改</button>
       </div>
     </div>
+
+    <div class="editor-section">
+      <h2>限时活动开屏</h2>
+
+      <div class="field-row">
+        <label>启用活动</label>
+        <label class="inline-check">
+          <input id="site-event-enabled" type="checkbox" ${event.enabled ? "checked" : ""}>
+          <span>打开网站时播放活动开屏</span>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>仅首页播放</label>
+        <label class="inline-check">
+          <input id="site-event-homepage-only" type="checkbox" ${event.homepageOnly ? "checked" : ""}>
+          <span>深链接进入其他页面时跳过活动</span>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>黑边霜雾</label>
+        <label class="inline-check">
+          <input id="site-event-frost-frame-enabled" type="checkbox" ${event.frostFrameEnabled ? "checked" : ""}>
+          <span>启用四周不规则黑边、烟灰冰霜与回缩散开效果</span>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>活动首页文字</label>
+        <textarea id="site-event-home-intro-text" class="editor-textarea">${escapeEditorValue(event.homeIntroText || DEFAULT_SITE_EVENT.homeIntroText)}</textarea>
+        <div class="field-hint">活动开启时临时替换首页介绍；关闭活动后自动恢复首页默认文字。可用换行分段。</div>
+      </div>
+
+      <div class="field-row">
+        <label>小游戏入口</label>
+        <label class="inline-check">
+          <input id="site-event-game-entry-enabled" type="checkbox" ${event.gameEntryEnabled ? "checked" : ""}>
+          <span>活动开启时在首页左下角显示进入小游戏入口</span>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>入口角标</label>
+        <input id="site-event-game-entry-kicker" type="text" value="${escapeEditorValue(event.gameEntryKicker || DEFAULT_SITE_EVENT.gameEntryKicker)}">
+      </div>
+
+      <div class="field-row">
+        <label>入口标题</label>
+        <input id="site-event-game-entry-title" type="text" value="${escapeEditorValue(event.gameEntryTitle || DEFAULT_SITE_EVENT.gameEntryTitle)}">
+      </div>
+
+      <div class="field-row">
+        <label>小游戏链接</label>
+        <input id="site-event-game-url" type="text" value="${escapeEditorValue(event.gameUrl || DEFAULT_SITE_EVENT.gameUrl)}">
+        <div class="field-hint">默认使用网站内部子目录 /event-game/；也可以填完整外部链接。</div>
+      </div>
+
+      <div class="field-row">
+        <label>第一张图片</label>
+        <input id="site-event-image" type="text" value="${escapeEditorValue(firstEventSlide.image)}">
+        <div class="field-hint">这是序列第一张图的快捷设置；完整顺序请在下方 CG 图片序列中调整。</div>
+      </div>
+
+      <div class="field-row">
+        <label>替换第一张</label>
+        <input type="file" id="site-event-upload-file" accept="image/*" style="color:#e5e7eb;">
+        <button id="site-event-upload-btn" class="secondary" type="button">上传到第一张</button>
+      </div>
+
+      <div class="field-row" style="flex-direction:column;align-items:flex-start;">
+        <label>第一张预览</label>
+        <img
+          id="site-event-image-preview"
+          src="${escapeEditorValue(firstEventSlide.image)}"
+          alt="第一张活动图片预览"
+          style="max-width: min(560px, 100%); max-height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(148,163,184,0.35);"
+        >
+      </div>
+
+      <div class="field-row">
+        <label>第一张文字</label>
+        <input id="site-event-text" type="text" value="${escapeEditorValue(firstEventSlide.text)}">
+        <div class="field-hint">前台会使用思源黑体 / Noto Sans CJK / 微软雅黑系列字体，白字浮现在图片中间。</div>
+      </div>
+
+      <div class="field-row">
+        <label>第一张毫秒</label>
+        <input id="site-event-image-ms" type="number" min="1400" step="100" value="${Number(firstEventSlide.durationMs) || DEFAULT_SITE_EVENT.imageMs}">
+      </div>
+
+      <div class="field-row">
+        <label>第一张运镜</label>
+        <select id="site-event-camera">
+          ${renderCameraOptions(firstEventSlide.camera)}
+        </select>
+      </div>
+
+      <div class="field-row">
+        <label>消失过渡毫秒</label>
+        <input id="site-event-exit-ms" type="number" min="260" step="20" value="${Number(event.exitMs) || DEFAULT_SITE_EVENT.exitMs}">
+      </div>
+
+      <div class="field-row">
+        <label>首页波浪加载毫秒</label>
+        <input id="site-event-home-reveal-ms" type="number" min="900" step="100" value="${Number(event.homeRevealMs) || DEFAULT_SITE_EVENT.homeRevealMs}">
+      </div>
+
+      <div class="field-row">
+        <label>霜雾进入毫秒</label>
+        <input id="site-event-frost-in-ms" type="number" min="900" step="100" value="${Number(event.frostInMs) || DEFAULT_SITE_EVENT.frostInMs}">
+        <div class="field-hint">只作用于最后一张图片；前面的照片不会显示黑边和霜雾。</div>
+      </div>
+
+      <div class="field-row">
+        <label>图片转场毫秒</label>
+        <input id="site-event-slide-transition-ms" type="number" min="0" max="2200" step="100" value="${Number(event.slideTransitionMs) || DEFAULT_SITE_EVENT.slideTransitionMs}">
+        <div class="field-hint">控制 CG 图片之间的交叠淡入和扫描暗场转场；填 0 可关闭。</div>
+      </div>
+
+      <div class="field-row site-event-sequence-row">
+        <label>CG图片序列</label>
+        <div class="site-event-sequence">
+          <div class="field-hint">按顺序播放；最后一张开始时才出现黑边霜雾，结束后按当前方式退去。</div>
+          <div class="site-event-slide-list">
+            ${eventSlidesHtml}
+          </div>
+          <button id="site-event-add-slide" class="secondary" type="button">添加镜头</button>
+        </div>
+      </div>
+    </div>
   `;
 
   document.getElementById("apply-edit")?.addEventListener("click", () => {
     const nextSettings = ensureSiteSettings(websiteData);
+    const nextEvent = ensureSiteEvent(websiteData);
     nextSettings.icpNumber = String(document.getElementById("site-icp-number")?.value || "").trim();
     nextSettings.icpUrl = normalizeExternalUrl(document.getElementById("site-icp-url")?.value || DEFAULT_ICP_URL);
+    nextEvent.enabled = Boolean(document.getElementById("site-event-enabled")?.checked);
+    nextEvent.homepageOnly = Boolean(document.getElementById("site-event-homepage-only")?.checked);
+    nextEvent.frostFrameEnabled = Boolean(document.getElementById("site-event-frost-frame-enabled")?.checked);
+    nextEvent.homeIntroText = String(document.getElementById("site-event-home-intro-text")?.value || "").trim();
+    nextEvent.gameEntryEnabled = Boolean(document.getElementById("site-event-game-entry-enabled")?.checked);
+    nextEvent.gameEntryKicker = String(document.getElementById("site-event-game-entry-kicker")?.value || DEFAULT_SITE_EVENT.gameEntryKicker).trim();
+    nextEvent.gameEntryTitle = String(document.getElementById("site-event-game-entry-title")?.value || DEFAULT_SITE_EVENT.gameEntryTitle).trim();
+    nextEvent.gameUrl = normalizeSitePath(document.getElementById("site-event-game-url")?.value || DEFAULT_SITE_EVENT.gameUrl, DEFAULT_SITE_EVENT.gameUrl);
+    const slides = collectSiteEventSlidesFromEditor();
+    slides[0] = normalizeSiteEventSlide({
+      ...slides[0],
+      image: document.getElementById("site-event-image")?.value || slides[0]?.image,
+      text: document.getElementById("site-event-text")?.value || slides[0]?.text,
+      durationMs: document.getElementById("site-event-image-ms")?.value || slides[0]?.durationMs,
+      camera: document.getElementById("site-event-camera")?.value || slides[0]?.camera,
+    });
+    nextEvent.slides = slides.map((slide) => normalizeSiteEventSlide(slide));
+    syncLegacySiteEventFieldsFromSlides(nextEvent);
+    nextEvent.exitMs = Math.max(260, Number(document.getElementById("site-event-exit-ms")?.value) || DEFAULT_SITE_EVENT.exitMs);
+    nextEvent.homeRevealMs = Math.max(900, Number(document.getElementById("site-event-home-reveal-ms")?.value) || DEFAULT_SITE_EVENT.homeRevealMs);
+    const lastSlide = nextEvent.slides[nextEvent.slides.length - 1] || normalizeSiteEventSlide(null);
+    nextEvent.frostInMs = Math.max(
+      900,
+      Math.min(
+        lastSlide.durationMs,
+        Number(document.getElementById("site-event-frost-in-ms")?.value) || DEFAULT_SITE_EVENT.frostInMs
+      )
+    );
+    nextEvent.slideTransitionMs = Math.max(
+      0,
+      Math.min(
+        2200,
+        Number(document.getElementById("site-event-slide-transition-ms")?.value) || DEFAULT_SITE_EVENT.slideTransitionMs
+      )
+    );
 
     setStatus("已修改站点设置（未保存）", "warn");
     renderTree();
     renderEditor();
+  });
+
+  const updateEventDraftFromEditor = () => {
+    const draftEvent = ensureSiteEvent(websiteData);
+    draftEvent.enabled = Boolean(document.getElementById("site-event-enabled")?.checked);
+    draftEvent.homepageOnly = Boolean(document.getElementById("site-event-homepage-only")?.checked);
+    draftEvent.frostFrameEnabled = Boolean(document.getElementById("site-event-frost-frame-enabled")?.checked);
+    draftEvent.homeIntroText = String(document.getElementById("site-event-home-intro-text")?.value || "").trim();
+    draftEvent.gameEntryEnabled = Boolean(document.getElementById("site-event-game-entry-enabled")?.checked);
+    draftEvent.gameEntryKicker = String(document.getElementById("site-event-game-entry-kicker")?.value || DEFAULT_SITE_EVENT.gameEntryKicker).trim();
+    draftEvent.gameEntryTitle = String(document.getElementById("site-event-game-entry-title")?.value || DEFAULT_SITE_EVENT.gameEntryTitle).trim();
+    draftEvent.gameUrl = normalizeSitePath(document.getElementById("site-event-game-url")?.value || DEFAULT_SITE_EVENT.gameUrl, DEFAULT_SITE_EVENT.gameUrl);
+    const slides = collectSiteEventSlidesFromEditor();
+    slides[0] = normalizeSiteEventSlide({
+      ...slides[0],
+      image: document.getElementById("site-event-image")?.value || slides[0]?.image,
+      text: document.getElementById("site-event-text")?.value || slides[0]?.text,
+      durationMs: document.getElementById("site-event-image-ms")?.value || slides[0]?.durationMs,
+      camera: document.getElementById("site-event-camera")?.value || slides[0]?.camera,
+    });
+    draftEvent.slides = slides.map((slide) => normalizeSiteEventSlide(slide));
+    syncLegacySiteEventFieldsFromSlides(draftEvent);
+    draftEvent.exitMs = Math.max(260, Number(document.getElementById("site-event-exit-ms")?.value) || DEFAULT_SITE_EVENT.exitMs);
+    draftEvent.homeRevealMs = Math.max(900, Number(document.getElementById("site-event-home-reveal-ms")?.value) || DEFAULT_SITE_EVENT.homeRevealMs);
+    const lastSlide = draftEvent.slides[draftEvent.slides.length - 1] || normalizeSiteEventSlide(null);
+    draftEvent.frostInMs = Math.max(
+      900,
+      Math.min(
+        lastSlide.durationMs,
+        Number(document.getElementById("site-event-frost-in-ms")?.value) || DEFAULT_SITE_EVENT.frostInMs
+      )
+    );
+    draftEvent.slideTransitionMs = Math.max(
+      0,
+      Math.min(
+        2200,
+        Number(document.getElementById("site-event-slide-transition-ms")?.value) || DEFAULT_SITE_EVENT.slideTransitionMs
+      )
+    );
+    return draftEvent;
+  };
+
+  document.getElementById("site-event-add-slide")?.addEventListener("click", () => {
+    const draftEvent = updateEventDraftFromEditor();
+    draftEvent.slides.push({
+      ...DEFAULT_SITE_EVENT_SLIDE,
+      text: "新的梦想仍在继续",
+      camera: "slow-zoom",
+    });
+    syncLegacySiteEventFieldsFromSlides(draftEvent);
+    setStatus("已添加活动镜头（未保存）", "warn");
+    renderEditor();
+  });
+
+  const bindSyncedInputs = (source, target, eventName = "input") => {
+    source?.addEventListener(eventName, () => {
+      if (target) target.value = source.value;
+    });
+  };
+  const firstSlideCard = editor.querySelector('[data-site-event-slide-index="0"]');
+  const firstSlideImage = firstSlideCard?.querySelector('[data-site-event-slide-field="image"]');
+  const firstSlideText = firstSlideCard?.querySelector('[data-site-event-slide-field="text"]');
+  const firstSlideDuration = firstSlideCard?.querySelector('[data-site-event-slide-field="durationMs"]');
+  const firstSlideCamera = firstSlideCard?.querySelector('[data-site-event-slide-field="camera"]');
+  const firstShortcutImage = document.getElementById("site-event-image");
+  const firstShortcutText = document.getElementById("site-event-text");
+  const firstShortcutDuration = document.getElementById("site-event-image-ms");
+  const firstShortcutCamera = document.getElementById("site-event-camera");
+  bindSyncedInputs(firstShortcutImage, firstSlideImage);
+  bindSyncedInputs(firstSlideImage, firstShortcutImage);
+  bindSyncedInputs(firstShortcutText, firstSlideText);
+  bindSyncedInputs(firstSlideText, firstShortcutText);
+  bindSyncedInputs(firstShortcutDuration, firstSlideDuration);
+  bindSyncedInputs(firstSlideDuration, firstShortcutDuration);
+  bindSyncedInputs(firstShortcutCamera, firstSlideCamera, "change");
+  bindSyncedInputs(firstSlideCamera, firstShortcutCamera, "change");
+
+  editor.querySelectorAll('[data-site-event-slide-field="image"]').forEach((input) => {
+    input.addEventListener("input", () => {
+      const card = findSiteEventSlideCard(input);
+      const index = card?.dataset?.siteEventSlideIndex;
+      const preview = document.querySelector(`[data-site-event-slide-preview="${index}"]`);
+      if (preview) preview.src = input.value;
+      if (index === "0") {
+        const firstPreview = document.getElementById("site-event-image-preview");
+        if (firstPreview) firstPreview.src = input.value;
+      }
+    });
+  });
+
+  firstShortcutImage?.addEventListener("input", () => {
+    const firstPreview = document.getElementById("site-event-image-preview");
+    const slidePreview = document.querySelector('[data-site-event-slide-preview="0"]');
+    if (firstPreview) firstPreview.src = firstShortcutImage.value;
+    if (slidePreview) slidePreview.src = firstShortcutImage.value;
+  });
+
+  editor.querySelectorAll("[data-site-event-slide-action]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const action = button.dataset.siteEventSlideAction;
+      const index = Number(button.dataset.slideIndex);
+      if (!Number.isFinite(index)) return;
+
+      if (action === "upload") {
+        const input = document.querySelector(`[data-site-event-slide-upload-file="${index}"]`);
+        const file = input?.files?.[0];
+        if (!file) {
+          alert("请选择活动图片");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        setStatus("正在上传活动镜头图片…", "warn");
+
+        try {
+          const res = await fetch(UPLOAD_ENDPOINT, {
+            method: "POST",
+            headers: buildAdminHeaders(),
+            body: formData,
+          });
+          const result = await res.json().catch(async () => ({
+            error: await res.text().catch(() => "上传失败"),
+          }));
+
+          if (res.status === 401 || result.error === "Invalid admin token") {
+            handleAdminAuthFailure();
+            return;
+          }
+
+          if (!res.ok || !result.ok) {
+            const message = result.error || `上传失败（HTTP ${res.status}）`;
+            setStatus(`活动镜头图片上传失败：${message}`, "error");
+            alert(message);
+            return;
+          }
+
+          const card = findSiteEventSlideCard(button);
+          const imageInput = card?.querySelector('[data-site-event-slide-field="image"]');
+          const preview = document.querySelector(`[data-site-event-slide-preview="${index}"]`);
+          if (imageInput) imageInput.value = result.path;
+          if (preview) preview.src = result.path;
+          if (index === 0) {
+            const firstImageInput = document.getElementById("site-event-image");
+            const firstPreview = document.getElementById("site-event-image-preview");
+            if (firstImageInput) firstImageInput.value = result.path;
+            if (firstPreview) firstPreview.src = result.path;
+          }
+          setStatus("活动镜头图片上传成功（记得应用修改并保存）", "ok");
+        } catch (error) {
+          console.error(error);
+          const message = error?.message || "上传过程中出错";
+          setStatus(`活动镜头图片上传失败：${message}`, "error");
+          alert(message);
+        }
+        return;
+      }
+
+      const draftEvent = updateEventDraftFromEditor();
+      const slides = draftEvent.slides;
+      if (action === "remove" && slides.length > 1) {
+        slides.splice(index, 1);
+      }
+      if (action === "move-up" && index > 0) {
+        [slides[index - 1], slides[index]] = [slides[index], slides[index - 1]];
+      }
+      if (action === "move-down" && index < slides.length - 1) {
+        [slides[index], slides[index + 1]] = [slides[index + 1], slides[index]];
+      }
+      draftEvent.slides = slides.map((slide) => normalizeSiteEventSlide(slide));
+      syncLegacySiteEventFieldsFromSlides(draftEvent);
+      setStatus("已调整活动镜头序列（未保存）", "warn");
+      renderEditor();
+    });
+  });
+
+  document.getElementById("site-event-upload-btn")?.addEventListener("click", async () => {
+    const input = document.getElementById("site-event-upload-file");
+    const file = input?.files?.[0];
+    if (!file) {
+      alert("请选择活动图片");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    setStatus("正在上传活动图片…", "warn");
+
+    try {
+      const res = await fetch(UPLOAD_ENDPOINT, {
+        method: "POST",
+        headers: buildAdminHeaders(),
+        body: formData,
+      });
+      const result = await res.json().catch(async () => ({
+        error: await res.text().catch(() => "上传失败"),
+      }));
+
+      if (res.status === 401 || result.error === "Invalid admin token") {
+        handleAdminAuthFailure();
+        return;
+      }
+
+      if (!res.ok || !result.ok) {
+        const message = result.error || `上传失败（HTTP ${res.status}）`;
+        setStatus(`活动图片上传失败：${message}`, "error");
+        alert(message);
+        return;
+      }
+
+      const imageInput = document.getElementById("site-event-image");
+      const preview = document.getElementById("site-event-image-preview");
+      const slideImageInput = document.querySelector('[data-site-event-slide-index="0"] [data-site-event-slide-field="image"]');
+      const slidePreview = document.querySelector('[data-site-event-slide-preview="0"]');
+      if (imageInput) imageInput.value = result.path;
+      if (preview) preview.src = result.path;
+      if (slideImageInput) slideImageInput.value = result.path;
+      if (slidePreview) slidePreview.src = result.path;
+      setStatus("活动图片上传成功（记得应用修改并保存）", "ok");
+    } catch (error) {
+      console.error(error);
+      const message = error?.message || "上传过程中出错";
+      setStatus(`活动图片上传失败：${message}`, "error");
+      alert(message);
+    }
   });
 }
 

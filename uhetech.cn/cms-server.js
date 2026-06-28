@@ -439,6 +439,17 @@ function requireAdminPage(req, res, next) {
 }
 
 app.use('/admin', requireAdminPage, express.static(ADMIN_STATIC_DIR));
+app.use(
+  '/event-game',
+  express.static(path.join(__dirname, 'event-game'), {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.wasm')) {
+        res.setHeader('Content-Type', 'application/wasm');
+      }
+      res.setHeader('Cache-Control', 'no-store');
+    }
+  })
+);
 // Development convenience: serve the whole site directly from cms-server
 // so local testing no longer depends on Live Server.
 app.use(express.static(__dirname));

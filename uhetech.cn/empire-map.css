@@ -1,0 +1,1388 @@
+/* Empire Territory Map styles */
+
+.category-panel--map {
+    overflow: hidden;
+}
+
+.category-panel--map::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 1px solid rgba(0, 174, 255, 0.22);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, transparent 0 48%, rgba(0, 174, 255, 0.18) 49% 51%, transparent 52% 100%),
+        linear-gradient(0deg, transparent 0 48%, rgba(0, 174, 255, 0.14) 49% 51%, transparent 52% 100%);
+    background-size: 34px 34px;
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.category-panel--map .panel-title {
+    text-shadow: 0 0 16px rgba(0, 174, 255, 0.22);
+}
+
+#map-view {
+    --map-ocean: rgba(221, 239, 248, 0.72);
+    --map-land: rgba(255, 255, 255, 0.82);
+    --map-land-stroke: rgba(32, 37, 45, 0.14);
+    --map-panel-bg: var(--bg-elevated);
+    --map-grid: rgba(0, 174, 255, 0.12);
+    --map-route: rgba(0, 174, 255, 0.42);
+    background:
+        linear-gradient(135deg, rgba(250, 253, 255, 0.95), rgba(230, 241, 248, 0.78)),
+        var(--bg-main);
+}
+
+#map-view::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(32, 37, 45, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(32, 37, 45, 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+}
+
+.empire-map-shell {
+    width: min(1480px, 96vw);
+    height: min(820px, calc(100vh - 134px));
+    position: relative;
+    z-index: 1;
+}
+
+.empire-map-shell.map-entry-from-category .empire-map-stage {
+    animation: empire-map-entry-stage 0.95s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.empire-map-shell.map-entry-from-category .empire-map-panel--control {
+    animation: empire-map-entry-left 0.9s cubic-bezier(0.2, 0.9, 0.2, 1) 0.08s both;
+}
+
+.empire-map-shell.map-entry-from-category .empire-map-panel--detail {
+    animation: empire-map-entry-right 0.9s cubic-bezier(0.2, 0.9, 0.2, 1) 0.14s both;
+}
+
+.empire-map-shell.map-entry-from-category .empire-map-svg {
+    animation: empire-map-entry-scan 0.9s ease-out both;
+}
+
+.empire-map-frame {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(250px, 0.85fr) minmax(520px, 1.8fr) minmax(260px, 0.95fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.empire-map-panel,
+.empire-map-stage {
+    border: 1px solid var(--border-subtle);
+    background: var(--map-panel-bg);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    opacity: 1;
+    transform: none;
+}
+
+.empire-map-panel {
+    border-radius: 16px;
+    padding: 20px;
+    overflow: hidden;
+    color: var(--text-main);
+}
+
+.empire-map-panel--control {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.empire-map-kicker,
+.empire-map-detail-kicker {
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    color: var(--accent-strong);
+    font-weight: 600;
+}
+
+.empire-map-panel h1,
+.empire-map-detail h2 {
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0;
+}
+
+.empire-map-panel h1 {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+}
+
+.empire-map-stage-meta {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-elevated-soft);
+}
+
+.empire-map-year {
+    display: inline-flex;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.empire-map-stage-title {
+    display: block;
+    font-size: 1.05rem;
+    color: var(--text-main);
+}
+
+.empire-map-stage-subtitle,
+.empire-map-note,
+.empire-map-detail-summary,
+.empire-map-detail-body {
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.empire-map-stage-subtitle {
+    margin: 8px 0 0;
+    font-size: 0.92rem;
+}
+
+.empire-map-stage-list {
+    display: grid;
+    gap: 8px;
+    min-height: 0;
+    overflow: auto;
+    padding-right: 2px;
+}
+
+.empire-map-stage-button {
+    width: 100%;
+    min-height: 56px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--bg-elevated-soft);
+    color: var(--text-main);
+    text-align: left;
+    cursor: pointer;
+    padding: 9px 11px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.empire-map-stage-button span {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+.empire-map-stage-button strong {
+    font-size: 0.94rem;
+    font-weight: 600;
+}
+
+.empire-map-stage-button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 174, 255, 0.42);
+}
+
+.empire-map-stage-button.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px rgba(0, 174, 255, 0.08), 0 12px 28px rgba(0, 174, 255, 0.12);
+}
+
+.empire-map-range-wrap {
+    display: grid;
+    gap: 8px;
+}
+
+.empire-map-range {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+.empire-map-range-labels {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-faint);
+    font-size: 0.74rem;
+}
+
+.empire-map-note {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.88rem;
+}
+
+.empire-map-stage {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, rgba(0, 174, 255, 0.06), rgba(255, 255, 255, 0.26)),
+        var(--map-ocean);
+}
+
+.empire-map-stage::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid rgba(0, 174, 255, 0.16);
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.empire-map-scanline {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(transparent 0 48%, rgba(255, 255, 255, 0.16) 49% 51%, transparent 52% 100%);
+    background-size: 100% 6px;
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.empire-map-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.empire-map-main-viewport,
+.empire-map-australia-focus {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+        opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.empire-map-main-viewport {
+    opacity: 1;
+}
+
+.empire-map-shell {
+    --mapbox-style-land: hsl(0, 0%, 100%);
+    --mapbox-style-water: hsl(0, 0%, 89%);
+    --mapbox-style-road: hsl(211, 0%, 0%);
+    --mapbox-style-boundary: hsl(212, 2%, 89%);
+    --mapbox-style-label: hsl(216, 34%, 72%);
+}
+
+.empire-map-australia-focus {
+    --mapbox-land: var(--mapbox-style-land);
+    --mapbox-water: var(--mapbox-style-water);
+    --mapbox-road: var(--mapbox-style-road);
+    --mapbox-boundary: var(--mapbox-style-boundary);
+    --mapbox-label: var(--mapbox-style-label);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.08);
+}
+
+.empire-map-shell.is-australia-focused .empire-map-main-viewport {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.72);
+    filter: blur(2px);
+}
+
+.empire-map-shell.is-australia-focused .empire-map-australia-focus {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.empire-map-australia-content {
+    transform-box: view-box;
+    transform-origin: 0 0;
+    transition: transform 0.95s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.empire-map-australia-local-pan {
+    transition: transform 0.28s ease;
+}
+
+.empire-map-shell.is-local-dragging .empire-map-australia-local-pan {
+    transition: none;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-svg {
+    cursor: grab;
+}
+
+.empire-map-shell.is-local-dragging .empire-map-svg {
+    cursor: grabbing;
+}
+
+.empire-map-australia-local-paper {
+    opacity: 0;
+    fill: hsl(0, 0%, 98%);
+    transition: opacity 0.42s ease 0.12s;
+    pointer-events: none;
+}
+
+.empire-map-australia-local-paper.is-visible {
+    opacity: 1;
+}
+
+.empire-map-shell.is-australia-focused .empire-map-stage {
+    background: hsl(0, 0%, 89%);
+}
+
+.empire-map-shell.is-australia-focused .empire-map-stage::before,
+.empire-map-shell.is-australia-focused .empire-map-scanline {
+    opacity: 0;
+}
+
+.empire-map-grid-line {
+    fill: none;
+    stroke: var(--map-grid);
+    stroke-width: 0.8;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-country {
+    fill: var(--map-land);
+    stroke: var(--map-land-stroke);
+    stroke-width: 0.7;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-territory {
+    --territory-strength: 0;
+    fill: var(--region-accent);
+    fill-opacity: calc(var(--territory-strength) * 0.68);
+    stroke: var(--region-accent);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+    cursor: pointer;
+    transition:
+        opacity 0.2s ease,
+        fill 0.2s ease,
+        stroke-width 0.2s ease,
+        filter 0.2s ease;
+}
+
+.empire-map-territory.is-active {
+    filter: url(#empire-map-glow);
+}
+
+.empire-map-territory.is-contested {
+    fill-opacity: 0.08;
+    stroke-dasharray: 4 5;
+    filter: none;
+}
+
+.empire-map-territory:hover,
+.empire-map-territory.is-selected {
+    stroke-width: 2.2;
+    filter: url(#empire-map-glow);
+}
+
+.empire-map-route {
+    fill: none;
+    stroke: var(--map-route);
+    stroke-width: 1.25;
+    stroke-dasharray: 6 7;
+    vector-effect: non-scaling-stroke;
+    transition: opacity 0.35s ease;
+}
+
+.empire-map-route.is-active {
+    animation: empire-map-route-flow 4s linear infinite;
+}
+
+.empire-map-point {
+    color: var(--region-accent);
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.28s ease, filter 0.2s ease;
+}
+
+.empire-map-point.is-active,
+.empire-map-point.is-contested {
+    filter: url(#empire-map-glow);
+}
+
+.empire-map-point-pulse {
+    fill: currentColor;
+    opacity: 0.18;
+}
+
+.empire-map-point-core {
+    fill: currentColor;
+    stroke: rgba(255, 255, 255, 0.86);
+    stroke-width: 1.4;
+}
+
+.empire-map-point text {
+    fill: var(--text-main);
+    stroke: rgba(255, 255, 255, 0.78);
+    stroke-width: 2.5;
+    paint-order: stroke;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    pointer-events: none;
+}
+
+.empire-map-point:hover,
+.empire-map-point.is-selected {
+    filter: url(#empire-map-glow);
+}
+
+.empire-map-detail {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.empire-map-detail h2 {
+    font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+}
+
+.empire-map-detail-summary {
+    margin: 0;
+    font-size: 0.96rem;
+}
+
+.empire-map-detail-body {
+    min-height: 0;
+    overflow: auto;
+    padding-right: 4px;
+    font-size: 0.92rem;
+}
+
+.empire-map-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.empire-map-action-button,
+.empire-map-site-row {
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-elevated-soft);
+    color: var(--text-main);
+    cursor: pointer;
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.empire-map-action-button {
+    min-height: 38px;
+    border-radius: 10px;
+    padding: 0 13px;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.empire-map-action-button:hover,
+.empire-map-site-row:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 174, 255, 0.45);
+    box-shadow: 0 12px 26px rgba(0, 174, 255, 0.1);
+}
+
+.empire-map-action-button:not(.empire-map-action-button--ghost) {
+    background: var(--accent-soft);
+    border-color: rgba(0, 174, 255, 0.36);
+    color: var(--accent-strong);
+}
+
+.empire-map-site-list {
+    display: grid;
+    gap: 8px;
+}
+
+.empire-map-site-row {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 10px;
+    padding: 9px 11px;
+    text-align: left;
+    display: grid;
+    gap: 4px;
+}
+
+.empire-map-site-row span {
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.empire-map-site-row strong {
+    color: var(--text-main);
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.empire-map-local-legend {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--bg-elevated-soft);
+}
+
+.empire-map-local-legend div {
+    display: grid;
+    grid-template-columns: 24px minmax(72px, auto) 1fr;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.78rem;
+}
+
+.empire-map-local-legend strong {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.empire-map-local-legend em {
+    color: var(--text-muted);
+    font-style: normal;
+    line-height: 1.35;
+}
+
+.legend-swatch {
+    width: 22px;
+    height: 8px;
+    border-radius: 99px;
+    background: hsl(0, 0%, 18%);
+}
+
+.legend-swatch--imperial {
+    background: hsl(198, 100%, 42%);
+    box-shadow: 0 0 10px rgba(0, 174, 255, 0.32);
+}
+
+.legend-swatch--restricted {
+    border-top: 2px dashed hsl(198, 100%, 34%);
+    background: transparent;
+    border-radius: 0;
+}
+
+.legend-swatch--facility {
+    height: 14px;
+    border: 1px solid hsl(198, 100%, 34%);
+    background: rgba(0, 174, 255, 0.18);
+    border-radius: 3px;
+}
+
+.legend-swatch--marker {
+    width: 16px;
+    height: 16px;
+    border: 2px solid hsl(198, 100%, 34%);
+    background: hsl(0, 0%, 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 3px rgba(0, 174, 255, 0.18);
+}
+
+.legend-swatch--cordon {
+    height: 14px;
+    border: 1px dashed hsl(198, 100%, 42%);
+    background: transparent;
+}
+
+.empire-map-detail-meta {
+    display: grid;
+    gap: 8px;
+    margin: auto 0 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.empire-map-detail-meta div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.84rem;
+}
+
+.empire-map-detail-meta dt {
+    color: var(--text-muted);
+}
+
+.empire-map-detail-meta dd {
+    margin: 0;
+    color: var(--text-main);
+    text-align: right;
+}
+
+.empire-map-australia-water {
+    fill: var(--mapbox-water);
+}
+
+.empire-map-australia-terrain-area {
+    fill: hsl(0, 0%, 91%);
+    opacity: 0.72;
+}
+
+.empire-map-australia-lake {
+    fill: hsl(0, 0%, 88%);
+    opacity: 0.96;
+}
+
+.empire-map-australia-shape {
+    fill: var(--mapbox-land);
+    stroke: hsl(0, 0%, 38%);
+    stroke-width: 1.45;
+    filter: none;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-admin-line {
+    fill: none;
+    stroke: hsl(0, 0%, 48%);
+    stroke-width: 1.05;
+    opacity: 0.9;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-road {
+    fill: none;
+    stroke: var(--mapbox-road);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.72;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-road--major {
+    stroke-width: 1.85;
+}
+
+.empire-map-australia-road--secondary {
+    stroke-width: 1.05;
+    opacity: 0.52;
+}
+
+.empire-map-australia-road--local {
+    stroke-width: 0.72;
+    opacity: 0.44;
+}
+
+.empire-map-australia-local-road {
+    fill: none;
+    opacity: 0;
+    stroke: hsl(0, 0%, 12%);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    transition: opacity 0.45s ease 0.2s;
+    pointer-events: none;
+}
+
+.empire-map-australia-local-road.is-visible {
+    opacity: 1;
+    pointer-events: stroke;
+}
+
+.empire-map-australia-local-road--major {
+    stroke-width: 4.2;
+    opacity: 0;
+}
+
+.empire-map-australia-local-road--major.is-visible {
+    opacity: 0.94;
+}
+
+.empire-map-australia-local-road--collector {
+    stroke-width: 2.15;
+}
+
+.empire-map-australia-local-road--collector.is-visible {
+    opacity: 0.72;
+}
+
+.empire-map-australia-local-road--local {
+    stroke-width: 1.05;
+}
+
+.empire-map-australia-local-road--local.is-visible {
+    opacity: 0.48;
+}
+
+.empire-map-australia-local-road--service {
+    stroke-width: 0.72;
+    stroke-dasharray: 2 2;
+}
+
+.empire-map-australia-local-road--service.is-visible {
+    opacity: 0.34;
+}
+
+.empire-map-australia-local-road--imperial {
+    stroke: hsl(198, 100%, 42%);
+    stroke-width: 3.6;
+    filter: url(#empire-map-glow);
+}
+
+.empire-map-australia-local-road--imperial.is-visible {
+    opacity: 0.9;
+}
+
+.empire-map-australia-local-road--restricted {
+    stroke: hsl(198, 100%, 34%);
+    stroke-width: 1.55;
+    stroke-dasharray: 7 4;
+}
+
+.empire-map-australia-local-road--restricted.is-visible {
+    opacity: 0.74;
+}
+
+.empire-map-australia-detail-feature,
+.empire-map-australia-detail-radius,
+.empire-map-australia-detail-ring,
+.empire-map-australia-detail-marker,
+.empire-map-australia-detail-label {
+    opacity: 0;
+    transition: opacity 0.45s ease 0.24s;
+    pointer-events: none;
+}
+
+.empire-map-australia-detail-feature.is-visible,
+.empire-map-australia-detail-radius.is-visible,
+.empire-map-australia-detail-ring.is-visible,
+.empire-map-australia-detail-marker.is-visible,
+.empire-map-australia-detail-label.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.empire-map-australia-detail-feature {
+    fill: none;
+    stroke: hsl(0, 0%, 5%);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-detail-feature--detail-major {
+    stroke-width: 1.05;
+}
+
+.empire-map-australia-detail-feature--detail-secondary {
+    stroke-width: 0.78;
+    opacity: 0;
+}
+
+.empire-map-australia-detail-feature--detail-secondary.is-visible {
+    opacity: 0.82;
+}
+
+.empire-map-australia-detail-feature--detail-local {
+    stroke-width: 0.48;
+    opacity: 0;
+}
+
+.empire-map-australia-detail-feature--detail-local.is-visible {
+    opacity: 0.56;
+}
+
+.empire-map-australia-detail-feature--detail-water {
+    fill: hsl(0, 0%, 88%);
+    stroke: hsl(0, 0%, 78%);
+    stroke-width: 0.8;
+}
+
+.empire-map-australia-detail-feature--detail-water-river,
+.empire-map-australia-detail-feature--detail-water-lake {
+    fill: hsl(0, 0%, 86%);
+}
+
+.empire-map-australia-detail-feature--detail-water-bay,
+.empire-map-australia-detail-feature--detail-water-harbour {
+    fill: hsl(0, 0%, 84%);
+    stroke: hsl(0, 0%, 72%);
+}
+
+.empire-map-australia-detail-feature--detail-zone {
+    fill: rgba(255, 255, 255, 0.18);
+    stroke: rgba(0, 0, 0, 0.28);
+    stroke-width: 0.95;
+    stroke-dasharray: 5 4;
+}
+
+.empire-map-australia-detail-feature--detail-zone-command,
+.empire-map-australia-detail-feature--detail-zone-intel,
+.empire-map-australia-detail-feature--detail-zone-radar {
+    fill: rgba(0, 174, 255, 0.08);
+    stroke: rgba(0, 132, 190, 0.54);
+}
+
+.empire-map-australia-detail-feature--detail-zone-security,
+.empire-map-australia-detail-feature--detail-zone-archive,
+.empire-map-australia-detail-feature--detail-zone-harbor {
+    fill: rgba(0, 0, 0, 0.04);
+    stroke: rgba(0, 0, 0, 0.34);
+}
+
+.empire-map-australia-detail-feature--detail-block {
+    fill: hsl(0, 0%, 94%);
+    stroke: hsl(0, 0%, 82%);
+    stroke-width: 0.45;
+}
+
+.empire-map-australia-detail-feature--detail-facility {
+    fill: rgba(255, 255, 255, 0.72);
+    stroke: hsl(0, 0%, 5%);
+    stroke-width: 1.35;
+}
+
+.empire-map-australia-detail-feature--detail-facility-capital {
+    fill: rgba(0, 174, 255, 0.18);
+    stroke: hsl(198, 100%, 34%);
+    stroke-width: 1.55;
+}
+
+.empire-map-australia-detail-feature--detail-facility-intel,
+.empire-map-australia-detail-feature--detail-facility-radar {
+    fill: rgba(0, 174, 255, 0.10);
+    stroke: hsl(198, 88%, 28%);
+}
+
+.empire-map-australia-detail-feature--detail-facility-archive,
+.empire-map-australia-detail-feature--detail-facility-defence,
+.empire-map-australia-detail-feature--detail-facility-harbor {
+    fill: hsl(0, 0%, 92%);
+    stroke: hsl(0, 0%, 16%);
+}
+
+.empire-map-australia-detail-feature--detail-arc {
+    fill: none;
+    stroke: hsl(198, 100%, 42%);
+    stroke-width: 1.25;
+    stroke-dasharray: 5 4;
+    opacity: 0;
+}
+
+.empire-map-australia-detail-feature--detail-arc.is-visible {
+    opacity: 0.82;
+}
+
+.empire-map-australia-detail-feature--detail-arc-security,
+.empire-map-australia-detail-feature--detail-arc-harbor {
+    stroke: hsl(0, 0%, 12%);
+    stroke-dasharray: 2 4;
+}
+
+.empire-map-australia-detail-radius {
+    fill: none;
+    stroke: hsl(198, 100%, 42%);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 3;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-detail-ring {
+    fill: none;
+    stroke: hsl(198, 100%, 42%);
+    stroke-width: 0.85;
+    stroke-dasharray: 3 2;
+    opacity: 0;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-detail-ring--middle {
+    stroke-opacity: 0.5;
+}
+
+.empire-map-australia-detail-ring--outer {
+    stroke-opacity: 0.28;
+}
+
+.empire-map-australia-detail-marker {
+    cursor: help;
+}
+
+.empire-map-australia-detail-marker-halo {
+    fill: rgba(255, 255, 255, 0.94);
+    stroke: hsl(198, 100%, 38%);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-detail-marker-core {
+    fill: rgba(0, 174, 255, 0.14);
+    stroke: hsl(0, 0%, 6%);
+    stroke-width: 0.7;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-detail-marker-code {
+    fill: hsl(205, 12%, 18%);
+    stroke: rgba(255, 255, 255, 0.9);
+    stroke-width: 0.45;
+    paint-order: stroke;
+    text-anchor: middle;
+    font-family: "DIN Pro", "Segoe UI", Arial, sans-serif;
+    font-size: 3.5px;
+    font-weight: 900;
+    letter-spacing: 0;
+    pointer-events: none;
+}
+
+.empire-map-australia-detail-marker--intel .empire-map-australia-detail-marker-halo,
+.empire-map-australia-detail-marker--radar .empire-map-australia-detail-marker-halo {
+    stroke: hsl(198, 100%, 30%);
+    stroke-dasharray: 2 1.4;
+}
+
+.empire-map-australia-detail-label {
+    fill: hsl(205, 12%, 38%);
+    stroke: rgba(255, 255, 255, 0.94);
+    stroke-width: 1.6;
+    paint-order: stroke;
+    text-anchor: middle;
+    font-size: 2.2px;
+    font-weight: 700;
+    letter-spacing: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(var(--local-screen-scale, 1));
+    cursor: help;
+}
+
+.empire-map-australia-detail-label--district {
+    fill: hsl(205, 10%, 46%);
+    font-size: 1.85px;
+    font-weight: 600;
+}
+
+.empire-map-australia-detail-label--facility {
+    fill: hsl(198, 100%, 28%);
+    font-size: 2.55px;
+    font-weight: 800;
+}
+
+.empire-map-australia-detail-label--system {
+    fill: hsl(205, 10%, 26%);
+    font-size: 2.15px;
+    font-weight: 700;
+}
+
+.empire-map-australia-detail-label--water {
+    fill: hsl(205, 8%, 50%);
+    font-size: 2px;
+    font-weight: 600;
+    font-style: italic;
+}
+
+.empire-map-australia-status {
+    pointer-events: none;
+}
+
+.empire-map-australia-status rect {
+    fill: rgba(255, 255, 255, 0.82);
+    stroke: rgba(0, 0, 0, 0.14);
+    stroke-width: 1;
+}
+
+.empire-map-australia-status text {
+    fill: hsl(205, 12%, 30%);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.empire-map-australia-zoom-ui,
+.empire-map-australia-reset-ui,
+.empire-map-local-tooltip {
+    pointer-events: none;
+}
+
+.empire-map-local-zoom-controls,
+.empire-map-local-reset {
+    pointer-events: auto;
+}
+
+.empire-map-local-zoom-controls {
+    height: 34px;
+    display: grid;
+    grid-template-columns: 30px 1fr 30px;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.86);
+    color: hsl(205, 12%, 24%);
+    font-family: "DIN Pro", "Segoe UI", Arial, sans-serif;
+    overflow: hidden;
+}
+
+.empire-map-local-zoom-controls button,
+.empire-map-local-reset {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.empire-map-local-zoom-controls button {
+    height: 100%;
+    font-size: 18px;
+}
+
+.empire-map-australia-zoom-readout {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.empire-map-local-reset {
+    width: 100%;
+    height: 30px;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.82);
+    font-size: 12px;
+}
+
+.empire-map-local-zoom-controls .is-disabled,
+.empire-map-local-reset.is-disabled {
+    opacity: 0.36;
+    cursor: default;
+}
+
+.empire-map-local-tooltip-card {
+    display: grid;
+    gap: 5px;
+    min-height: 62px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.13);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.88);
+    color: hsl(205, 12%, 24%);
+    font-family: "DIN Pro", "Segoe UI", Arial, sans-serif;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.08);
+}
+
+.empire-map-local-tooltip-card strong {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.empire-map-local-tooltip-card span {
+    color: hsl(205, 10%, 42%);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.empire-map-australia-place {
+    fill: hsl(205, 12%, 48%);
+    stroke: rgba(255, 255, 255, 0.86);
+    stroke-width: 3;
+    paint-order: stroke;
+    text-anchor: middle;
+    font-family: "DIN Pro", "Segoe UI", Arial, sans-serif;
+    letter-spacing: 0;
+    pointer-events: none;
+}
+
+.empire-map-australia-place--major {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.empire-map-australia-place--minor {
+    font-size: 9px;
+    font-weight: 600;
+    opacity: 0.68;
+}
+
+.empire-map-australia-site {
+    cursor: pointer;
+    color: hsl(198, 100%, 42%);
+    transition:
+        filter var(--transition-fast),
+        opacity 0.32s ease,
+        transform var(--transition-fast);
+}
+
+.empire-map-australia-site:hover,
+.empire-map-australia-site.is-selected {
+    filter: url(#empire-map-glow);
+}
+
+.empire-map-australia-site.is-muted {
+    opacity: 0.24;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-australia-place {
+    opacity: 0;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-australia-road--major,
+.empire-map-shell.is-australia-detail .empire-map-australia-road--secondary {
+    opacity: 0;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-australia-road--local {
+    opacity: 0;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-australia-shape,
+.empire-map-shell.is-australia-detail .empire-map-australia-terrain-area,
+.empire-map-shell.is-australia-detail .empire-map-australia-lake,
+.empire-map-shell.is-australia-detail .empire-map-australia-admin-line {
+    opacity: 0;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-australia-site-leader,
+.empire-map-shell.is-australia-detail .empire-map-australia-site-label,
+.empire-map-shell.is-australia-detail .empire-map-australia-site-code,
+.empire-map-shell.is-australia-detail .empire-map-australia-site-ring {
+    opacity: 0;
+}
+
+.empire-map-shell.is-australia-detail .empire-map-australia-site.is-selected .empire-map-australia-site-core {
+    stroke-width: 1.8;
+}
+
+.empire-map-australia-site-hit {
+    fill: transparent;
+}
+
+.empire-map-australia-site-ring {
+    fill: currentColor;
+    opacity: 0.12;
+    stroke: currentColor;
+    stroke-width: 1.3;
+}
+
+.empire-map-australia-site-core {
+    fill: currentColor;
+    stroke: var(--mapbox-land);
+    stroke-width: 2.6;
+}
+
+.empire-map-australia-site-leader {
+    stroke: currentColor;
+    stroke-width: 0.95;
+    opacity: 0.52;
+    vector-effect: non-scaling-stroke;
+}
+
+.empire-map-australia-site-label,
+.empire-map-australia-site-code {
+    fill: hsl(206, 18%, 20%);
+    stroke: rgba(255, 255, 255, 0.94);
+    stroke-width: 3;
+    paint-order: stroke;
+    font-weight: 700;
+    letter-spacing: 0;
+    pointer-events: none;
+}
+
+.empire-map-australia-site-label {
+    font-size: 11px;
+}
+
+.empire-map-australia-site-code {
+    fill: hsl(205, 12%, 45%);
+    font-size: 8.5px;
+}
+
+:root[data-theme="dark"] #map-view {
+    --map-ocean: rgba(5, 13, 24, 0.92);
+    --map-land: rgba(26, 34, 49, 0.92);
+    --map-land-stroke: rgba(255, 255, 255, 0.08);
+    --map-grid: rgba(53, 182, 255, 0.13);
+    --map-route: rgba(53, 182, 255, 0.42);
+    background:
+        linear-gradient(135deg, rgba(5, 8, 16, 0.98), rgba(13, 18, 28, 0.96)),
+        var(--bg-main);
+}
+
+:root[data-theme="dark"] #map-view::before {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+
+:root[data-theme="dark"] .empire-map-stage {
+    background:
+        linear-gradient(135deg, rgba(53, 182, 255, 0.06), rgba(18, 22, 32, 0.62)),
+        var(--map-ocean);
+}
+
+:root[data-theme="dark"] .empire-map-shell.is-australia-focused .empire-map-stage {
+    background: hsl(0, 0%, 89%);
+}
+
+:root[data-theme="dark"] .empire-map-australia-focus {
+    --mapbox-land: hsl(0, 0%, 100%);
+    --mapbox-water: hsl(0, 0%, 89%);
+    --mapbox-road: hsl(211, 0%, 0%);
+    --mapbox-boundary: hsl(212, 2%, 89%);
+    --mapbox-label: hsl(216, 34%, 72%);
+}
+
+:root[data-theme="dark"] .empire-map-australia-shape {
+    filter: none;
+}
+
+:root[data-theme="dark"] .empire-map-australia-site-core {
+    stroke: hsl(0, 0%, 100%);
+}
+
+:root[data-theme="dark"] .empire-map-australia-site-label,
+:root[data-theme="dark"] .empire-map-australia-site-code {
+    stroke: rgba(255, 255, 255, 0.94);
+}
+
+:root[data-theme="dark"] .empire-map-point text {
+    stroke: rgba(5, 8, 16, 0.84);
+}
+
+@keyframes empire-map-route-flow {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -52; }
+}
+
+@keyframes empire-map-entry-stage {
+    0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.975);
+        clip-path: inset(48% 0 48% 0 round 16px);
+        filter: saturate(0.72) brightness(1.08);
+    }
+
+    48% {
+        opacity: 1;
+        clip-path: inset(0 0 0 0 round 16px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        clip-path: inset(0 0 0 0 round 16px);
+        filter: none;
+    }
+}
+
+@keyframes empire-map-entry-left {
+    from {
+        opacity: 0;
+        transform: translateX(-22px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes empire-map-entry-right {
+    from {
+        opacity: 0;
+        transform: translateX(22px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes empire-map-entry-scan {
+    0% {
+        opacity: 0.35;
+        filter: contrast(1.35) brightness(1.12);
+    }
+
+    42% {
+        opacity: 0.86;
+    }
+
+    100% {
+        opacity: 1;
+        filter: none;
+    }
+}
+
+@media (max-width: 1180px) {
+    .empire-map-shell {
+        height: calc(100vh - 120px);
+    }
+
+    .empire-map-frame {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: minmax(360px, 1fr) auto;
+    }
+
+    .empire-map-stage {
+        grid-column: 1 / -1;
+        order: 1;
+    }
+
+    .empire-map-panel--control {
+        order: 2;
+    }
+
+    .empire-map-panel--detail {
+        order: 3;
+    }
+
+    .empire-map-stage-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    #map-view {
+        padding: 78px 12px 14px;
+    }
+
+    .empire-map-shell {
+        width: 100%;
+        height: calc(100vh - 96px);
+        overflow: auto;
+    }
+
+    .empire-map-frame {
+        min-height: 980px;
+        grid-template-columns: 1fr;
+        grid-template-rows: 420px auto auto;
+        gap: 12px;
+    }
+
+    .empire-map-panel {
+        padding: 16px;
+    }
+
+    .empire-map-stage-list {
+        grid-template-columns: 1fr;
+        max-height: 260px;
+    }
+}

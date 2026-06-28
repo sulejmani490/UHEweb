@@ -7,6 +7,7 @@ const CONTENT_API_BASE = window.appConfig?.CONTENT_API_BASE || '';
 const WEBSITE_DATA_ENDPOINT = `${CONTENT_API_BASE}/content-api/website-data`;
 const LOCAL_WEBSITE_DATA_ENDPOINT = '/website-data.json';
 const DEFAULT_ICP_URL = 'https://beian.miit.gov.cn/';
+const DEFAULT_LANDING_INTRO_HTML = document.getElementById('intro')?.innerHTML || '';
 
 let websiteData = { categories: [] };
 
@@ -40,6 +41,89 @@ function renderIcpFooter() {
     link.textContent = icpNumber;
     link.href = normalizeIcpUrl(settings.icpUrl);
     footer.hidden = false;
+}
+
+function getSiteEventSettings(data = websiteData) {
+    return data && typeof data.siteEvent === 'object' && !Array.isArray(data.siteEvent)
+        ? data.siteEvent
+        : {};
+}
+
+function shouldPrepareEventSplash(routeState, data = websiteData) {
+    const eventSettings = getSiteEventSettings(data);
+    if (eventSettings.enabled !== true) return false;
+    if (eventSettings.homepageOnly === false) return true;
+    return routeState?.viewId === '#landing-view';
+}
+
+function setLandingIntroParagraphs(text) {
+    const intro = document.getElementById('intro');
+    if (!intro) return;
+
+    const paragraphs = String(text || '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+    if (!paragraphs.length) {
+        intro.innerHTML = DEFAULT_LANDING_INTRO_HTML;
+        return;
+    }
+
+    intro.replaceChildren(
+        ...paragraphs.map((paragraph) => {
+            const p = document.createElement('p');
+            p.textContent = paragraph;
+            return p;
+        })
+    );
+}
+
+function applySiteEventLandingIntro(data = websiteData) {
+    const intro = document.getElementById('intro');
+    if (!intro) return;
+
+    const eventSettings = getSiteEventSettings(data);
+    const eventIntroText = String(eventSettings.homeIntroText || '').trim();
+    if (eventSettings.enabled === true && eventIntroText) {
+        setLandingIntroParagraphs(eventIntroText);
+        return;
+    }
+
+    intro.innerHTML = DEFAULT_LANDING_INTRO_HTML;
+}
+
+function normalizeInternalOrExternalUrl(value, fallback = '/') {
+    const rawValue = String(value || '').trim();
+    if (!rawValue) return fallback;
+    if (/^(?:[a-z]+:)?\/\//i.test(rawValue)) return rawValue;
+    if (rawValue.startsWith('#')) return rawValue;
+    return rawValue.startsWith('/') ? rawValue : `/${rawValue.replace(/^\.?\//, '')}`;
+}
+
+function renderEventGameEntry(data = websiteData) {
+    const entry = document.getElementById('event-game-entry');
+    if (!entry) return;
+
+    const eventSettings = getSiteEventSettings(data);
+    const shouldShow =
+        eventSettings.enabled === true &&
+        eventSettings.gameEntryEnabled !== false;
+
+    if (!shouldShow) {
+        entry.hidden = true;
+        return;
+    }
+
+    const kicker = entry.querySelector('[data-event-game-entry-kicker]');
+    const title = entry.querySelector('[data-event-game-entry-title]');
+    const entryKicker = String(eventSettings.gameEntryKicker || '限时活动').trim();
+    const entryTitle = String(eventSettings.gameEntryTitle || '进入小游戏').trim();
+
+    if (kicker) kicker.textContent = entryKicker || '限时活动';
+    if (title) title.textContent = entryTitle || '进入小游戏';
+    entry.href = normalizeInternalOrExternalUrl(eventSettings.gameUrl, '/event-game/');
+    entry.hidden = false;
 }
 
 function isValidWebsiteDataPayload(data) {
@@ -80,6 +164,8 @@ async function loadWebsiteData() {
             websiteData = data;
             window.__websiteData = websiteData; // 供其它模块/调试使用（不影响原逻辑）
             renderIcpFooter();
+            applySiteEventLandingIntro();
+            renderEventGameEntry();
             console.log(
                 `[CMS] website data 加载成功，来源 ${source}，分类数:`,
                 websiteData.categories.length
@@ -94,6 +180,8 @@ async function loadWebsiteData() {
     console.error('[CMS] 加载 website-data 失败，将使用空数据集:', lastError);
     websiteData = { categories: [] };
     renderIcpFooter();
+    applySiteEventLandingIntro();
+    renderEventGameEntry();
 }
 
 // --- 1. 全局状态与元素获取 ---
@@ -111,6 +199,7 @@ const appState = {
     timelineFocusByCategory: {},
     activeCharterSelections: {},
     activeLawHistoryPanels: {},
+    pendingMapEntryTransition: false,
 };
 const logo = document.getElementById('logo');
 
@@ -157,6 +246,7 @@ const views = {
     '#law-detail-view': document.getElementById('law-detail-view'),
     '#list-view': document.getElementById('list-view'),
     '#timeline-view': document.getElementById('timeline-view'),
+    '#map-view': document.getElementById('map-view'),
     '#detail-view': document.getElementById('detail-view'),
     '#reader-view': document.getElementById('reader-view'),
 };
@@ -515,6 +605,8 @@ const buildRouteUrl = (state) => {
             return categoryKey ? `/list/${categoryKey}` : '/categories';
         case '#timeline-view':
             return categoryKey ? `/timeline/${categoryKey}` : '/categories';
+        case '#map-view':
+            return '/map';
         case '#detail-view':
             if (branchCrumb) {
                 const branch = category?.branches?.[branchCrumb.branchIndex];
@@ -658,6 +750,9 @@ const parseRouteStateFromLocation = () => {
                           history: [{ type: 'category', catIndex }],
                       };
             }
+            if (normalizedHashPath === '/map') {
+                return { viewId: '#map-view', history: [{ type: 'map' }] };
+            }
             if (normalizedHashPath === '/laws') {
                 const catIndex = getRouteCategoryIndex(
                     hashParams.get('c'),
@@ -792,6 +887,8 @@ const parseRouteStateFromLocation = () => {
                       history: [{ type: 'category', catIndex }],
                   };
         }
+        case 'map':
+            return { viewId: '#map-view', history: [{ type: 'map' }] };
         case 'laws': {
             const catIndex = getRouteCategoryIndex(
                 LAW_CATEGORY_ID,
@@ -957,6 +1054,7 @@ const KNOWN_VIEW_IDS = [
     '#law-detail-view',
     '#list-view',
     '#timeline-view',
+    '#map-view',
     '#detail-view',
     '#reader-view',
 ];
@@ -3187,6 +3285,8 @@ const render = (state) => {
                     title = '小说原文';
                 } else if (crumb.type === 'library') {
                     title = '帝国中央文库';
+                } else if (crumb.type === 'map') {
+                    title = '地图';
                 } else if (crumb.type === 'branchEvent') {
                     const cat = websiteData.categories[crumb.catIndex];
                     const branch =
@@ -3233,7 +3333,7 @@ const render = (state) => {
             const displayCategories = websiteData.categories.filter(
                 (cat) => cat.id !== 'novels'
             );
-            container.innerHTML = displayCategories
+            const categoryCardsHtml = displayCategories
                 .map((cat) => {
                     const originalIndex = websiteData.categories.findIndex(
                         (c) => c.id === cat.id
@@ -3253,6 +3353,13 @@ const render = (state) => {
                             </div>`;
                 })
                 .join('');
+            const mapCardHtml = `
+                <div class="category-panel category-panel--map animate-on-load"
+                     data-map-entry="true"
+                     style="background-image: url('/images/开拓年代.png');">
+                    <h2 class="panel-title">地图</h2>
+                </div>`;
+            container.innerHTML = `${categoryCardsHtml}${mapCardHtml}`;
         } else if (viewId === '#law-hub-view') {
             const { catIndex = 0 } =
                 stateHistory.find((h) => h.type === 'category') || {};
@@ -3339,6 +3446,10 @@ const render = (state) => {
                             appState.timelineFocusByCategory[catIndex],
                     }
                 );
+            }
+        } else if (viewId === '#map-view') {
+            if (window.EmpireMap && typeof window.EmpireMap.init === 'function') {
+                window.EmpireMap.init(view, { parseAndColorText });
             }
         } else if (viewId === '#detail-view') {
             removeTimelineDetailNavigator(view);
@@ -3461,6 +3572,7 @@ const syncGlobalControlsForView = (viewId) => {
         '#law-hub-view',
         '#law-detail-view',
         '#list-view',
+        '#map-view',
         '#detail-view',
         '#reader-view'
     ]);
@@ -3496,9 +3608,9 @@ const animateViewEntryElements = (view, viewId) => {
     });
 
     if (viewId !== '#library-view') {
-        const animatedContent = view.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .reader-content-wrapper');
+        const animatedContent = view.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .empire-map-shell, .reader-content-wrapper');
         animatedContent.forEach((el) => {
-             const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right');
+             const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right, .empire-map-panel, .empire-map-stage');
              if (childrenToAnimate.length > 0){
                 void el.offsetWidth;
                 childrenToAnimate.forEach((child, index) => {
@@ -3510,6 +3622,20 @@ const animateViewEntryElements = (view, viewId) => {
              }
         });
     }
+};
+
+const playMapEntryTransition = (view) => {
+    if (!view) return;
+    const shell = view.querySelector('.empire-map-shell');
+    if (!shell) return;
+
+    shell.classList.remove('map-entry-from-category');
+    void shell.offsetWidth;
+    shell.classList.add('map-entry-from-category');
+
+    window.setTimeout(() => {
+        shell.classList.remove('map-entry-from-category');
+    }, 1250);
 };
 
 const showView = (state) => {
@@ -3534,6 +3660,7 @@ const showView = (state) => {
             '#law-hub-view',
             '#law-detail-view',
             '#list-view',
+            '#map-view',
             '#detail-view',
             '#reader-view'
         ]);
@@ -3569,9 +3696,9 @@ const showView = (state) => {
         });
 
         if (state.viewId !== '#library-view') {
-            const animatedContent = nextView.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .reader-content-wrapper');
+            const animatedContent = nextView.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .empire-map-shell, .reader-content-wrapper');
             animatedContent.forEach((el) => {
-                 const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right');
+                 const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right, .empire-map-panel, .empire-map-stage');
                  if (childrenToAnimate.length > 0){
                     void el.offsetWidth;
                     childrenToAnimate.forEach((child, index) => {
@@ -3582,6 +3709,11 @@ const showView = (state) => {
                     });
                  }
             });
+        }
+
+        if (state.viewId === '#map-view' && appState.pendingMapEntryTransition) {
+            appState.pendingMapEntryTransition = false;
+            playMapEntryTransition(nextView);
         }
 
         appState.isNavigating = false;
@@ -3723,6 +3855,11 @@ document.body.addEventListener('click', (e) => {
     const categoryPanel = e.target.closest('.category-panel');
     if (categoryPanel) {
         e.preventDefault();
+        if (categoryPanel.dataset.mapEntry === 'true') {
+            appState.pendingMapEntryTransition = true;
+            navigate({ viewId: '#map-view', history: [{ type: 'map' }] });
+            return;
+        }
         const catIndex = parseInt(categoryPanel.dataset.catIndex);
         if (isNaN(catIndex)) return;
         const category = websiteData.categories[catIndex];
@@ -3871,6 +4008,13 @@ document.body.addEventListener('click', (e) => {
 
         const targetHistory = currentHistory.slice(0, level);
         const targetCrumb = targetHistory[targetHistory.length - 1];
+        if (targetCrumb?.type === 'map') {
+            navigate({
+                viewId: '#map-view',
+                history: targetHistory,
+            });
+            return;
+        }
         if (targetCrumb?.type === 'category') {
             const category = websiteData.categories[targetCrumb.catIndex];
             if (isLawCategory(category)) {
@@ -4074,12 +4218,14 @@ function prefetchNovelManifestIdle() {
 async function initializeApp() {
     const bootRouteState =
         parseRouteStateFromLocation() || history.state || DEFAULT_ROUTE_STATE;
-    if (bootRouteState.viewId === '#landing-view') {
-        revealLandingIntro();
-    }
 
     // ① 先从后端拿 website-data
     await loadWebsiteData();
+    const willPlayEventSplash = shouldPrepareEventSplash(bootRouteState);
+    if (willPlayEventSplash) {
+        document.body.classList.add('event-splash-preparing');
+        document.getElementById('intro')?.classList.remove('visible');
+    }
 
     // ② 小说清单：改为低优先级预取（不阻塞首屏）
     // 保留原功能：仍然会在后台把 novels 挂到 websiteData 里，供搜索/统一数据结构使用
@@ -4132,6 +4278,21 @@ async function initializeApp() {
 
     history.replaceState(initialState, '', buildRouteUrl(initialState));
     appState.hasInitialized = true;
+
+    const eventSplashPlayed =
+        willPlayEventSplash &&
+        window.EventSplash &&
+        typeof window.EventSplash.play === 'function'
+            ? await window.EventSplash.play(websiteData, { routeState: initialState })
+            : false;
+
+    if (initialState.viewId === '#landing-view') {
+        if (eventSplashPlayed) {
+            revealLandingIntro(1600);
+        } else {
+            revealLandingIntro();
+        }
+    }
 }
 
 

@@ -1,7 +1,32 @@
 {
   "siteSettings": {
-    "icpNumber": "ICP备案号待填写",
+    "icpNumber": "陕ICP备2025078213号-1",
     "icpUrl": "https://beian.miit.gov.cn/"
+  },
+  "siteEvent": {
+    "enabled": true,
+    "homepageOnly": true,
+    "image": "/images/总理府活动.png",
+    "text": "这是你的梦想吗？",
+    "imageMs": 4400,
+    "exitMs": 720,
+    "homeRevealMs": 2850,
+    "frostFrameEnabled": true,
+    "slides": [
+      {
+        "image": "/images/总理府活动.png",
+        "text": "这是你的梦想吗？",
+        "durationMs": 4400,
+        "camera": "focus-zoom"
+      }
+    ],
+    "frostInMs": 2700,
+    "slideTransitionMs": 1100,
+    "homeIntroText": "帝国纪元70年，人类帝国随着第三委员上台进入了新的时期，但复活中心的损坏带来的动荡继续蔓延，委员会的矛盾正在扩大，欢迎来到70年代，绝望与希望并存的时代。",
+    "gameEntryEnabled": true,
+    "gameUrl": "/event-game/",
+    "gameEntryKicker": "限时活动",
+    "gameEntryTitle": "进入小游戏"
   },
   "musicPlaylist": [
     {

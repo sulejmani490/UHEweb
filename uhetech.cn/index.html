@@ -10,6 +10,8 @@
     <!-- 【【【 FIX: Added root-relative paths to prevent MIME type errors on deep links 】】】 -->
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/timeline.css">
+    <link rel="stylesheet" href="/event-splash.css?v=event-game-entry-20260628">
+    <link rel="stylesheet" href="/empire-map.css">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 </head>
 <body>
@@ -31,7 +33,7 @@
                 </div>
                 <div class="sponsor-info">
                     <label>赞助人：</label>
-                    <span id="sponsor-name">中轴线</span>
+                    <span id="sponsor-name">中轴线 旋风</span>
                 </div>
               
                 <!-- 主 HTML（音乐播放器） -->
@@ -87,6 +89,10 @@
                 <div class="icp-footer" id="icp-footer" hidden>
                     <a id="icp-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer"></a>
                 </div>
+                <a id="event-game-entry" class="event-game-entry" href="/event-game/" target="_blank" rel="noopener noreferrer" hidden>
+                    <span class="event-game-entry-kicker" data-event-game-entry-kicker>限时活动</span>
+                    <span class="event-game-entry-title" data-event-game-entry-title>进入小游戏</span>
+                </a>
             </div>
 
             <!-- 【【【 核心修正 】】】 L_NEW: 图书馆视图 (Library View) - 已移至此处，成为 Landing View 的兄弟节点 -->
@@ -140,6 +146,13 @@
                 <div class="back-button" title="返回上一页">‹</div>
                 <nav class="breadcrumb"></nav>
                 <div class="timeline-container"></div>
+            </div>
+
+            <!-- L_MAP: 帝国疆域地图 -->
+            <div id="map-view" class="view-container">
+                <div class="back-button" title="返回上一页">‹</div>
+                <nav class="breadcrumb"></nav>
+                <div class="empire-map-shell"></div>
             </div>
 
             <!-- L4: 详情视图 (Detail View) -->
@@ -248,6 +261,7 @@
     <script type="text/plain" data-src="/graph-data.js"></script>
     <script type="text/plain" data-src="/graph.js"></script>
     <script src="/app-modules.js" defer></script>
+    <script src="/empire-map.js" defer></script>
     
     <!-- 主逻辑最后加载，确保其他模块的 window 对象已准备好 -->
     <script>
@@ -453,6 +467,7 @@
         }
     });
     </script>
+    <script src="/event-splash.js?v=event-game-entry-20260628" defer></script>
     <script src="/script.js" defer></script> <!-- 4. 主逻辑脚本 (保持最后加载) -->
   <!--背景按钮 -->
   <button id="background-toggle" class="background-toggle-button">

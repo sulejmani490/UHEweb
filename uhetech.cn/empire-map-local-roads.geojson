@@ -1,0 +1,1741 @@
+{
+  "type": "FeatureCollection",
+  "name": "empire-map-local-roads-osm-edited",
+  "source": "Locally reduced and edited city road skeleton based on real Australian urban geography, with Human Empire fiction overlays.",
+  "note": "Kept intentionally sparse so the local SVG map stays readable; imperial/restricted roads are original fiction edits.",
+  "generatedAt": "2026-06-27T11:58:30.127Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-1",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Commonwealth Avenue",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.112,
+            -35.347
+          ],
+          [
+            149.118,
+            -35.325
+          ],
+          [
+            149.123,
+            -35.307
+          ],
+          [
+            149.129,
+            -35.289
+          ],
+          [
+            149.132,
+            -35.27
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-2",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Kings Avenue",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.151,
+            -35.34
+          ],
+          [
+            149.151,
+            -35.32
+          ],
+          [
+            149.15,
+            -35.3
+          ],
+          [
+            149.148,
+            -35.28
+          ],
+          [
+            149.146,
+            -35.26
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-3",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Parkes Way",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.055,
+            -35.285
+          ],
+          [
+            149.085,
+            -35.282
+          ],
+          [
+            149.125,
+            -35.28
+          ],
+          [
+            149.165,
+            -35.281
+          ],
+          [
+            149.215,
+            -35.286
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-4",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "London Circuit",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.118,
+            -35.286
+          ],
+          [
+            149.132,
+            -35.282
+          ],
+          [
+            149.146,
+            -35.286
+          ],
+          [
+            149.149,
+            -35.297
+          ],
+          [
+            149.14,
+            -35.306
+          ],
+          [
+            149.124,
+            -35.304
+          ],
+          [
+            149.116,
+            -35.296
+          ],
+          [
+            149.118,
+            -35.286
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-5",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Constitution Avenue",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.124,
+            -35.29
+          ],
+          [
+            149.145,
+            -35.288
+          ],
+          [
+            149.17,
+            -35.29
+          ],
+          [
+            149.194,
+            -35.296
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-6",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Adelaide Avenue",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.112,
+            -35.347
+          ],
+          [
+            149.085,
+            -35.36
+          ],
+          [
+            149.055,
+            -35.382
+          ],
+          [
+            149.026,
+            -35.404
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-7",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "State Circle",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.115,
+            -35.302
+          ],
+          [
+            149.134,
+            -35.296
+          ],
+          [
+            149.151,
+            -35.306
+          ],
+          [
+            149.147,
+            -35.324
+          ],
+          [
+            149.126,
+            -35.329
+          ],
+          [
+            149.109,
+            -35.318
+          ],
+          [
+            149.115,
+            -35.302
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-8",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Morshead Drive",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.153,
+            -35.286
+          ],
+          [
+            149.185,
+            -35.292
+          ],
+          [
+            149.218,
+            -35.305
+          ],
+          [
+            149.252,
+            -35.326
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-9",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Fairbairn Avenue",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.148,
+            -35.265
+          ],
+          [
+            149.175,
+            -35.245
+          ],
+          [
+            149.211,
+            -35.229
+          ],
+          [
+            149.267,
+            -35.205
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-10",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Civic Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.119,
+            -35.276
+          ],
+          [
+            149.151,
+            -35.278
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-11",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Civic Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.119,
+            -35.292
+          ],
+          [
+            149.154,
+            -35.294
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-12",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Civic Grid C",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.126,
+            -35.27
+          ],
+          [
+            149.126,
+            -35.307
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-13",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Civic Grid D",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.143,
+            -35.271
+          ],
+          [
+            149.142,
+            -35.307
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-14",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Barton Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.126,
+            -35.314
+          ],
+          [
+            149.164,
+            -35.318
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-15",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Barton Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.129,
+            -35.331
+          ],
+          [
+            149.168,
+            -35.334
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-16",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Russell Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.151,
+            -35.286
+          ],
+          [
+            149.19,
+            -35.29
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-17",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Russell Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.161,
+            -35.277
+          ],
+          [
+            149.16,
+            -35.31
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-18",
+        "highway": "service",
+        "roadClass": "service",
+        "name": "Council Service Lane",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.121,
+            -35.304
+          ],
+          [
+            149.139,
+            -35.305
+          ],
+          [
+            149.139,
+            -35.316
+          ],
+          [
+            149.12,
+            -35.315
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-19",
+        "highway": "imperial",
+        "roadClass": "imperial",
+        "name": "Capital Command Spine",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.07,
+            -35.33
+          ],
+          [
+            149.098,
+            -35.314
+          ],
+          [
+            149.13,
+            -35.305
+          ],
+          [
+            149.166,
+            -35.294
+          ],
+          [
+            149.207,
+            -35.286
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-20",
+        "highway": "restricted",
+        "roadClass": "restricted",
+        "name": "Council Security Loop",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.105,
+            -35.29
+          ],
+          [
+            149.164,
+            -35.292
+          ],
+          [
+            149.164,
+            -35.33
+          ],
+          [
+            149.107,
+            -35.327
+          ],
+          [
+            149.105,
+            -35.29
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "canberra",
+        "osmId": "canberra-21",
+        "highway": "restricted",
+        "roadClass": "restricted",
+        "name": "Intelligence Access Tunnel",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            149.128,
+            -35.303
+          ],
+          [
+            149.15,
+            -35.296
+          ],
+          [
+            149.176,
+            -35.292
+          ],
+          [
+            149.202,
+            -35.292
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-1",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Boat Harbour Drive",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.745,
+            -25.289
+          ],
+          [
+            152.785,
+            -25.3
+          ],
+          [
+            152.823,
+            -25.313
+          ],
+          [
+            152.866,
+            -25.329
+          ],
+          [
+            152.925,
+            -25.354
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-2",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Maryborough Hervey Bay Road",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.71,
+            -25.364
+          ],
+          [
+            152.752,
+            -25.342
+          ],
+          [
+            152.8,
+            -25.32
+          ],
+          [
+            152.856,
+            -25.292
+          ],
+          [
+            152.914,
+            -25.264
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-3",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Nikenbah Dundowran Road",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.734,
+            -25.258
+          ],
+          [
+            152.774,
+            -25.28
+          ],
+          [
+            152.814,
+            -25.319
+          ],
+          [
+            152.85,
+            -25.362
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-4",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Urraween Road",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.785,
+            -25.292
+          ],
+          [
+            152.825,
+            -25.292
+          ],
+          [
+            152.87,
+            -25.298
+          ],
+          [
+            152.92,
+            -25.312
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-5",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Main Street Hervey Bay",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.845,
+            -25.284
+          ],
+          [
+            152.875,
+            -25.272
+          ],
+          [
+            152.915,
+            -25.26
+          ],
+          [
+            152.97,
+            -25.245
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-6",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Nikenbah Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.77,
+            -25.305
+          ],
+          [
+            152.85,
+            -25.323
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-7",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Nikenbah Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.78,
+            -25.333
+          ],
+          [
+            152.852,
+            -25.348
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-8",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Nikenbah Grid C",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.79,
+            -25.275
+          ],
+          [
+            152.806,
+            -25.345
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-9",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Urraween Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.825,
+            -25.27
+          ],
+          [
+            152.906,
+            -25.288
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-10",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Coastal Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.89,
+            -25.32
+          ],
+          [
+            152.97,
+            -25.347
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-11",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Coastal Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.902,
+            -25.29
+          ],
+          [
+            152.988,
+            -25.316
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-12",
+        "highway": "service",
+        "roadClass": "service",
+        "name": "Bureau Service Lane",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.803,
+            -25.306
+          ],
+          [
+            152.833,
+            -25.31
+          ],
+          [
+            152.829,
+            -25.328
+          ],
+          [
+            152.8,
+            -25.324
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-13",
+        "highway": "imperial",
+        "roadClass": "imperial",
+        "name": "Maritime Warning Access",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.72,
+            -25.35
+          ],
+          [
+            152.766,
+            -25.333
+          ],
+          [
+            152.8153,
+            -25.3188
+          ],
+          [
+            152.868,
+            -25.302
+          ],
+          [
+            152.94,
+            -25.276
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-14",
+        "highway": "restricted",
+        "roadClass": "restricted",
+        "name": "Coast Watch Service Line",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.816,
+            -25.319
+          ],
+          [
+            152.87,
+            -25.344
+          ],
+          [
+            152.936,
+            -25.364
+          ],
+          [
+            152.988,
+            -25.386
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "nikenbah",
+        "osmId": "nikenbah-15",
+        "highway": "restricted",
+        "roadClass": "restricted",
+        "name": "Signal Basin Patrol Track",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            152.735,
+            -25.266
+          ],
+          [
+            152.783,
+            -25.246
+          ],
+          [
+            152.858,
+            -25.252
+          ],
+          [
+            152.926,
+            -25.282
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-1",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Cahill Expressway",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.194,
+            -33.862
+          ],
+          [
+            151.215,
+            -33.858
+          ],
+          [
+            151.244,
+            -33.852
+          ],
+          [
+            151.284,
+            -33.846
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-2",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Western Distributor",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.12,
+            -33.875
+          ],
+          [
+            151.152,
+            -33.875
+          ],
+          [
+            151.184,
+            -33.872
+          ],
+          [
+            151.209,
+            -33.869
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-3",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Anzac Bridge Approach",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.12,
+            -33.875
+          ],
+          [
+            151.092,
+            -33.87
+          ],
+          [
+            151.06,
+            -33.862
+          ],
+          [
+            151.032,
+            -33.85
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-4",
+        "highway": "primary",
+        "roadClass": "major",
+        "name": "Eastern Distributor",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.209,
+            -33.869
+          ],
+          [
+            151.216,
+            -33.895
+          ],
+          [
+            151.222,
+            -33.928
+          ],
+          [
+            151.226,
+            -33.966
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-5",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "George Street",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.206,
+            -33.856
+          ],
+          [
+            151.206,
+            -33.874
+          ],
+          [
+            151.207,
+            -33.892
+          ],
+          [
+            151.208,
+            -33.914
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-6",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Pitt Street",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.21,
+            -33.858
+          ],
+          [
+            151.211,
+            -33.878
+          ],
+          [
+            151.212,
+            -33.902
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-7",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Elizabeth Street",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.213,
+            -33.858
+          ],
+          [
+            151.216,
+            -33.88
+          ],
+          [
+            151.219,
+            -33.907
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-8",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Market Street",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.196,
+            -33.87
+          ],
+          [
+            151.212,
+            -33.87
+          ],
+          [
+            151.232,
+            -33.872
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-9",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Oxford Street",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.212,
+            -33.88
+          ],
+          [
+            151.236,
+            -33.888
+          ],
+          [
+            151.27,
+            -33.9
+          ],
+          [
+            151.312,
+            -33.91
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-10",
+        "highway": "secondary",
+        "roadClass": "collector",
+        "name": "Hickson Road",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.19,
+            -33.858
+          ],
+          [
+            151.206,
+            -33.852
+          ],
+          [
+            151.23,
+            -33.846
+          ],
+          [
+            151.26,
+            -33.838
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-11",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "CBD Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.194,
+            -33.862
+          ],
+          [
+            151.232,
+            -33.864
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-12",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "CBD Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.193,
+            -33.878
+          ],
+          [
+            151.232,
+            -33.88
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-13",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "CBD Grid C",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.196,
+            -33.894
+          ],
+          [
+            151.232,
+            -33.896
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-14",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "CBD Grid D",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.198,
+            -33.856
+          ],
+          [
+            151.199,
+            -33.904
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-15",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "CBD Grid E",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.225,
+            -33.858
+          ],
+          [
+            151.224,
+            -33.904
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-16",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Darling Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.148,
+            -33.866
+          ],
+          [
+            151.194,
+            -33.87
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-17",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Darling Grid B",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.154,
+            -33.886
+          ],
+          [
+            151.198,
+            -33.89
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-18",
+        "highway": "local",
+        "roadClass": "local",
+        "name": "Harbour Grid A",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.236,
+            -33.828
+          ],
+          [
+            151.294,
+            -33.844
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-19",
+        "highway": "service",
+        "roadClass": "service",
+        "name": "OCMA Service Lane",
+        "source": "local-osm-edited"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.202,
+            -33.86
+          ],
+          [
+            151.224,
+            -33.862
+          ],
+          [
+            151.222,
+            -33.878
+          ],
+          [
+            151.2,
+            -33.876
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-20",
+        "highway": "imperial",
+        "roadClass": "imperial",
+        "name": "Colonial Administration Corridor",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.048,
+            -33.906
+          ],
+          [
+            151.112,
+            -33.888
+          ],
+          [
+            151.2093,
+            -33.8688
+          ],
+          [
+            151.274,
+            -33.842
+          ],
+          [
+            151.326,
+            -33.818
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-21",
+        "highway": "restricted",
+        "roadClass": "restricted",
+        "name": "Archive Transfer Route",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.15,
+            -33.888
+          ],
+          [
+            151.176,
+            -33.88
+          ],
+          [
+            151.209,
+            -33.869
+          ],
+          [
+            151.246,
+            -33.856
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "siteId": "sydney",
+        "osmId": "sydney-22",
+        "highway": "restricted",
+        "roadClass": "restricted",
+        "name": "Harbour Dispatch Line",
+        "source": "imperial-local-edit"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.206,
+            -33.87
+          ],
+          [
+            151.232,
+            -33.852
+          ],
+          [
+            151.27,
+            -33.836
+          ],
+          [
+            151.316,
+            -33.82
+          ]
+        ]
+      }
+    }
+  ]
+}

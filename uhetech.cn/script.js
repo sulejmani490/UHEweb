@@ -6,8 +6,41 @@
 const CONTENT_API_BASE = window.appConfig?.CONTENT_API_BASE || '';
 const WEBSITE_DATA_ENDPOINT = `${CONTENT_API_BASE}/content-api/website-data`;
 const LOCAL_WEBSITE_DATA_ENDPOINT = '/website-data.json';
+const DEFAULT_ICP_URL = 'https://beian.miit.gov.cn/';
 
 let websiteData = { categories: [] };
+
+function getSiteSettings(data = websiteData) {
+    return data && typeof data.siteSettings === 'object' && !Array.isArray(data.siteSettings)
+        ? data.siteSettings
+        : {};
+}
+
+function normalizeIcpUrl(value) {
+    const rawValue = String(value || '').trim();
+    if (!rawValue) return DEFAULT_ICP_URL;
+    if (/^(?:https?:)?\/\//i.test(rawValue)) return rawValue;
+    return `https://${rawValue.replace(/^\/+/, '')}`;
+}
+
+function renderIcpFooter() {
+    const footer = document.getElementById('icp-footer');
+    const link = document.getElementById('icp-link');
+    if (!footer || !link) return;
+
+    const settings = getSiteSettings();
+    const icpNumber = String(settings.icpNumber || '').trim();
+    if (!icpNumber) {
+        footer.hidden = true;
+        link.textContent = '';
+        link.removeAttribute('href');
+        return;
+    }
+
+    link.textContent = icpNumber;
+    link.href = normalizeIcpUrl(settings.icpUrl);
+    footer.hidden = false;
+}
 
 function isValidWebsiteDataPayload(data) {
     return !!data && Array.isArray(data.categories);
@@ -46,6 +79,7 @@ async function loadWebsiteData() {
             const data = await fetchWebsiteDataFrom(source);
             websiteData = data;
             window.__websiteData = websiteData; // 供其它模块/调试使用（不影响原逻辑）
+            renderIcpFooter();
             console.log(
                 `[CMS] website data 加载成功，来源 ${source}，分类数:`,
                 websiteData.categories.length
@@ -59,6 +93,7 @@ async function loadWebsiteData() {
 
     console.error('[CMS] 加载 website-data 失败，将使用空数据集:', lastError);
     websiteData = { categories: [] };
+    renderIcpFooter();
 }
 
 // --- 1. 全局状态与元素获取 ---

@@ -1,4 +1,8 @@
 {
+  "siteSettings": {
+    "icpNumber": "ICP备案号待填写",
+    "icpUrl": "https://beian.miit.gov.cn/"
+  },
   "musicPlaylist": [
     {
       "name": "Inner Spark",

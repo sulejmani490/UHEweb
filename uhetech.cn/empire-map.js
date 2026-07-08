@@ -4,7 +4,11 @@
   const MAP_DATA_URL = '/map-world-110m.geojson';
   const MAPBOX_STYLE_URL = '/empire-mapbox-style.json';
   const MAP_LOCAL_ROADS_URL = '/empire-map-local-roads.geojson';
+  const MAP_LOCAL_CONTOURS_URL = '/empire-map-local-contours.geojson';
   const SVG_NS = 'http://www.w3.org/2000/svg';
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
 
   const COUNTRY_ALIASES = {
     'East Timor': 'TLS',
@@ -1094,52 +1098,77 @@
   const AUSTRALIA_LOCAL_DETAIL_AREAS = {
     canberra: {
       center: [149.13, -35.28],
-      bounds: { minLng: 148.94, maxLng: 149.32, minLat: -35.43, maxLat: -35.16 },
+      bounds: { minLng: 148.98, maxLng: 149.28, minLat: -35.42, maxLat: -35.20 },
       waterBodies: [
         {
           id: 'lake-burley-griffin',
           type: 'lake',
+          name: '伯利格里芬湖',
+          description: '真实堪培拉的中心水体。地图用它把 Civic、国会三角区、Russell 防务区分开，避免内部布局混成一团。',
           coordinates: [
-            [149.035, -35.292],
-            [149.075, -35.276],
-            [149.138, -35.280],
-            [149.197, -35.292],
-            [149.226, -35.307],
-            [149.166, -35.323],
-            [149.088, -35.318],
+            [149.020, -35.290],
+            [149.046, -35.278],
+            [149.090, -35.276],
+            [149.128, -35.282],
+            [149.171, -35.286],
+            [149.222, -35.300],
+            [149.214, -35.317],
+            [149.160, -35.323],
+            [149.098, -35.318],
+            [149.044, -35.306],
           ],
         },
       ],
       zones: [
         {
-          id: 'capital-command-precinct',
+          id: 'parliament-command-triangle',
           type: 'command',
+          name: '国会三角核心管制区',
+          description: '以 Capital Hill、Barton、Parkes 组成首都指挥三角，承载最高委员会、总理府与远征授权流程。',
           coordinates: [
-            [149.105, -35.286],
-            [149.164, -35.288],
-            [149.160, -35.330],
-            [149.102, -35.326],
+            [149.090, -35.300],
+            [149.137, -35.286],
+            [149.176, -35.318],
+            [149.148, -35.350],
+            [149.096, -35.338],
           ],
         },
         {
           id: 'russell-intelligence-quarter',
           type: 'intel',
+          name: 'Russell 情报与防务区',
+          description: '东湖岸与 Mount Pleasant 坡地之间的保密办公区，靠近现实 Russell 防务设施位置。',
           coordinates: [
-            [149.143, -35.282],
-            [149.188, -35.284],
-            [149.184, -35.309],
-            [149.140, -35.307],
+            [149.154, -35.270],
+            [149.208, -35.278],
+            [149.202, -35.312],
+            [149.148, -35.306],
           ],
         },
         {
-          id: 'capital-security-ring',
-          type: 'security',
+          id: 'civic-residential-grid',
+          type: 'residential',
+          name: 'Civic 居民与行政服务区',
+          description: '用简化矩形街区代表湖西北的居民、档案服务和日常行政区，保留城市生活层而不挤占核心设施。',
           coordinates: [
-            [149.010, -35.248],
-            [149.232, -35.252],
-            [149.262, -35.354],
-            [149.084, -35.402],
-            [148.972, -35.330],
+            [149.060, -35.248],
+            [149.132, -35.252],
+            [149.126, -35.286],
+            [149.054, -35.286],
+          ],
+        },
+        {
+          id: 'capital-security-cordon',
+          type: 'security',
+          name: '首都分级警戒圈',
+          description: '围绕湖岸和国会三角布置的分级管制区，普通城市道路在圈外保持连续，核心通道进入圈内后收束。',
+          coordinates: [
+            [149.028, -35.244],
+            [149.210, -35.248],
+            [149.226, -35.326],
+            [149.176, -35.366],
+            [149.072, -35.356],
+            [149.010, -35.314],
           ],
         },
       ],
@@ -1148,71 +1177,90 @@
           id: 'supreme-council',
           type: 'capital',
           name: '最高委员会',
+          description: '首都最高决策设施，放在 Capital Hill 北侧，和现实国会轴线保持一致。',
           coordinates: [
-            [149.118, -35.297],
-            [149.142, -35.298],
-            [149.141, -35.315],
-            [149.117, -35.314],
+            [149.115, -35.304],
+            [149.142, -35.306],
+            [149.140, -35.324],
+            [149.112, -35.322],
           ],
         },
         {
           id: 'imperial-intelligence',
           type: 'intel',
           name: '帝国情报局总部',
+          description: '情报局总部位于 Russell 防务区内，连接湖岸主路和限制通行的地下访问线。',
           coordinates: [
-            [149.155, -35.289],
-            [149.180, -35.291],
-            [149.178, -35.306],
-            [149.153, -35.304],
+            [149.164, -35.286],
+            [149.190, -35.289],
+            [149.186, -35.306],
+            [149.160, -35.303],
           ],
         },
         {
           id: 'capital-defence-gate',
           type: 'defence',
           name: '首都防务闸门',
+          description: '连接 Civic 与国会三角的湖西入口，承担车辆筛查和危机时的封桥任务。',
           coordinates: [
-            [149.068, -35.272],
-            [149.090, -35.273],
-            [149.088, -35.288],
-            [149.066, -35.286],
+            [149.066, -35.272],
+            [149.090, -35.274],
+            [149.088, -35.290],
+            [149.064, -35.288],
+          ],
+        },
+        {
+          id: 'revival-command-annex',
+          type: 'archive',
+          name: '复活中心联络署',
+          description: '不直接表现完整复活中心，只在首都核心区布置联络署，负责死亡统计、复活授权和安保调度。',
+          coordinates: [
+            [149.092, -35.332],
+            [149.118, -35.334],
+            [149.116, -35.350],
+            [149.090, -35.348],
           ],
         },
       ],
       arcs: [
-        { id: 'inner-council-cordon', type: 'command', radiusLng: 0.030, radiusLat: 0.020, startAngle: 175, endAngle: 520 },
-        { id: 'outer-capital-cordon', type: 'security', radiusLng: 0.074, radiusLat: 0.052, startAngle: 165, endAngle: 530 },
+        { id: 'inner-council-cordon', type: 'command', name: '内层委员会警戒圈', description: '围绕最高委员会和总理府的步行级封控圈。', radiusLng: 0.032, radiusLat: 0.020, startAngle: 166, endAngle: 520 },
+        { id: 'outer-capital-cordon', type: 'security', name: '外层首都防务环', description: '覆盖湖岸、桥梁和 Russell 防务区的车辆级管制圈。', radiusLng: 0.090, radiusLat: 0.054, startAngle: 156, endAngle: 532 },
       ],
       districts: [
-        { name: 'Civic', coordinates: [149.128, -35.280] },
-        { name: 'Capital Hill', coordinates: [149.125, -35.309] },
-        { name: 'Russell', coordinates: [149.164, -35.297] },
-        { name: 'Barton', coordinates: [149.142, -35.318] },
+        { name: 'Civic', coordinates: [149.088, -35.262], description: '北岸城市服务与居民片区。' },
+        { name: 'Capital Hill', coordinates: [149.104, -35.326], description: '最高委员会所在的首都核心。' },
+        { name: 'Russell', coordinates: [149.178, -35.292], description: '防务和情报机构集中区。' },
+        { name: 'Barton', coordinates: [149.142, -35.334], description: '外交、行政和复活系统联络区。' },
       ],
       labels: [
-        { name: '最高委员会', coordinates: [149.130, -35.305], kind: 'facility' },
-        { name: '帝国情报局', coordinates: [149.168, -35.292], kind: 'facility' },
-        { name: 'Capital Security Cordon', coordinates: [149.038, -35.255], kind: 'system' },
-        { name: 'Lake Burley Griffin', coordinates: [149.130, -35.322], kind: 'water' },
+        { name: '最高委员会', coordinates: [149.126, -35.304], kind: 'facility', description: '首都核心设施标注。' },
+        { name: '帝国情报局', coordinates: [149.178, -35.284], kind: 'facility', description: 'Russell 防务区内的情报总部。' },
+        { name: 'Capital Security Cordon', coordinates: [149.040, -35.248], kind: 'system', description: '首都外层警戒圈标注。' },
+        { name: 'Lake Burley Griffin', coordinates: [149.138, -35.324], kind: 'water', description: '堪培拉局部图的地理基准线。' },
       ],
     },
     nikenbah: {
       center: [152.8153, -25.3188],
-      bounds: { minLng: 152.70, maxLng: 153.02, minLat: -25.43, maxLat: -25.16 },
+      bounds: { minLng: 152.70, maxLng: 153.03, minLat: -25.42, maxLat: -25.18 },
       waterBodies: [
         {
           id: 'hervey-bay-edge',
           type: 'bay',
+          name: '赫维湾近岸水域',
+          description: '真实赫维湾方向的近岸水体，用来表达海事警戒局面向珊瑚海的监视方向。',
           coordinates: [
-            [152.918, -25.185],
-            [153.020, -25.176],
-            [153.020, -25.372],
-            [152.966, -25.394],
-            [152.926, -25.302],
+            [152.918, -25.184],
+            [153.030, -25.184],
+            [153.030, -25.384],
+            [152.974, -25.398],
+            [152.934, -25.318],
           ],
         },
         {
           id: 'patrol-basin',
           type: 'basin',
+          name: '巡逻调度内湾',
+          description: '简化表现的小型巡逻艇/无人艇调度水域，连接沿岸封锁线。',
           coordinates: [
             [152.850, -25.334],
             [152.887, -25.342],
@@ -1225,31 +1273,49 @@
         {
           id: 'maritime-warning-campus',
           type: 'command',
+          name: '海事警戒局总部园区',
+          description: '位于 Nikenbah 与 Urraween 之间的内陆指挥园区，避开海岸洪水风险，同时可接入沿岸主路。',
           coordinates: [
-            [152.790, -25.286],
-            [152.846, -25.292],
-            [152.838, -25.340],
-            [152.782, -25.334],
+            [152.786, -25.286],
+            [152.850, -25.292],
+            [152.842, -25.344],
+            [152.776, -25.336],
           ],
         },
         {
           id: 'radar-field',
           type: 'radar',
+          name: '珊瑚海雷达/监听场',
+          description: '沿海抬升地带的传感器阵列，覆盖赫维湾外海和珊瑚海方向异常航迹。',
           coordinates: [
-            [152.875, -25.226],
-            [152.972, -25.238],
-            [152.955, -25.294],
-            [152.866, -25.278],
+            [152.872, -25.224],
+            [152.980, -25.238],
+            [152.962, -25.300],
+            [152.862, -25.282],
           ],
         },
         {
           id: 'coast-watch-line',
           type: 'security',
+          name: '东岸封锁与巡逻带',
+          description: '沿海低地的限制通行带，串联巡逻调度湾、海岸观察哨和补给入口。',
           coordinates: [
             [152.858, -25.342],
             [152.982, -25.372],
             [152.966, -25.412],
             [152.820, -25.382],
+          ],
+        },
+        {
+          id: 'urraween-residential-service',
+          type: 'residential',
+          name: 'Urraween 居民与后勤区',
+          description: '简化居民和后勤服务片区，保留城市支撑功能，同时与总部园区分隔。',
+          coordinates: [
+            [152.804, -25.258],
+            [152.864, -25.266],
+            [152.854, -25.292],
+            [152.792, -25.284],
           ],
         },
       ],
@@ -1258,6 +1324,7 @@
           id: 'maritime-warning-bureau',
           type: 'capital',
           name: '海事警戒局总部',
+          description: '海事警戒局的核心指挥楼群，负责东岸监控、封锁调度与异常航迹预警。',
           coordinates: [
             [152.807, -25.306],
             [152.832, -25.309],
@@ -1269,6 +1336,7 @@
           id: 'signal-array',
           type: 'radar',
           name: '珊瑚海监听阵列',
+          description: '面向珊瑚海的监听与雷达设施，用刻线扇区表达预警覆盖方向。',
           coordinates: [
             [152.902, -25.246],
             [152.936, -25.252],
@@ -1280,6 +1348,7 @@
           id: 'patrol-dispatch',
           type: 'harbor',
           name: '巡逻调度站',
+          description: '小型无人艇、巡逻车和海岸封锁队的调度节点，贴近内湾而不直接暴露于外海。',
           coordinates: [
             [152.866, -25.349],
             [152.892, -25.354],
@@ -1287,45 +1356,64 @@
             [152.862, -25.366],
           ],
         },
+        {
+          id: 'coast-watch-bunker',
+          type: 'defence',
+          name: '海岸观察堡',
+          description: '低地封锁带上的加固观察节点，用于接力传感器数据和现场拦截命令。',
+          coordinates: [
+            [152.940, -25.354],
+            [152.966, -25.360],
+            [152.960, -25.376],
+            [152.934, -25.370],
+          ],
+        },
       ],
       arcs: [
-        { id: 'near-sea-sweep', type: 'radar', radiusLng: 0.044, radiusLat: 0.032, startAngle: -46, endAngle: 74 },
-        { id: 'outer-sea-sweep', type: 'radar', radiusLng: 0.078, radiusLat: 0.056, startAngle: -42, endAngle: 72 },
+        { id: 'near-sea-sweep', type: 'radar', name: '近海雷达扫掠扇区', description: '覆盖赫维湾近岸航迹的短程扫掠范围。', radiusLng: 0.052, radiusLat: 0.036, startAngle: -50, endAngle: 72 },
+        { id: 'outer-sea-sweep', type: 'radar', name: '珊瑚海外层预警扇区', description: '面向外海的远程监听范围，在地图上用扇形警戒线表达。', radiusLng: 0.092, radiusLat: 0.064, startAngle: -45, endAngle: 70 },
+        { id: 'blockade-envelope', type: 'security', name: '东岸封锁包络线', description: '海岸线与总部之间的应急封锁边界。', radiusLng: 0.118, radiusLat: 0.082, startAngle: -38, endAngle: 64 },
       ],
       districts: [
-        { name: 'Nikenbah', coordinates: [152.8153, -25.3188] },
-        { name: 'Urraween', coordinates: [152.830, -25.298] },
-        { name: 'Coast Watch', coordinates: [152.935, -25.352] },
-        { name: 'Hervey Bay Edge', coordinates: [152.960, -25.220] },
+        { name: 'Nikenbah', coordinates: [152.808, -25.326], description: '总部园区所在的内陆近郊。' },
+        { name: 'Urraween', coordinates: [152.836, -25.278], description: '居民、医勤和后勤服务片区。' },
+        { name: 'Coast Watch', coordinates: [152.948, -25.354], description: '海岸封锁带和观察节点。' },
+        { name: 'Hervey Bay Edge', coordinates: [152.968, -25.220], description: '赫维湾近岸方向。' },
       ],
       labels: [
-        { name: '海事警戒局', coordinates: [152.818, -25.304], kind: 'facility' },
-        { name: '雷达扇区', coordinates: [152.930, -25.238], kind: 'system' },
-        { name: '东岸封锁线', coordinates: [152.928, -25.405], kind: 'system' },
-        { name: 'Hervey Bay', coordinates: [152.980, -25.255], kind: 'water' },
+        { name: '海事警戒局', coordinates: [152.820, -25.304], kind: 'facility', description: '总部楼群标注。' },
+        { name: '雷达扇区', coordinates: [152.934, -25.236], kind: 'system', description: '珊瑚海预警方向。' },
+        { name: '东岸封锁线', coordinates: [152.928, -25.406], kind: 'system', description: '沿海限制通行边界。' },
+        { name: 'Hervey Bay', coordinates: [152.988, -25.252], kind: 'water', description: '近岸水体参照。' },
       ],
     },
     sydney: {
       center: [151.2093, -33.8688],
-      bounds: { minLng: 151.02, maxLng: 151.34, minLat: -34.02, maxLat: -33.75 },
+      bounds: { minLng: 151.02, maxLng: 151.34, minLat: -34.02, maxLat: -33.76 },
       waterBodies: [
         {
           id: 'sydney-harbour',
           type: 'harbour',
+          name: '悉尼港',
+          description: '真实悉尼港水体被简化为可读轮廓，用来分割北岸、CBD 和港湾派遣区。',
           coordinates: [
-            [151.060, -33.820],
-            [151.126, -33.784],
-            [151.220, -33.777],
-            [151.318, -33.804],
-            [151.340, -33.846],
-            [151.286, -33.878],
-            [151.186, -33.858],
-            [151.102, -33.848],
+            [151.050, -33.826],
+            [151.098, -33.798],
+            [151.176, -33.782],
+            [151.246, -33.790],
+            [151.318, -33.812],
+            [151.340, -33.852],
+            [151.292, -33.878],
+            [151.222, -33.862],
+            [151.154, -33.852],
+            [151.092, -33.850],
           ],
         },
         {
           id: 'darling-harbour',
           type: 'basin',
+          name: 'Darling Harbour 内湾',
+          description: '港湾派遣与殖民地物流的内湾节点，连接 CBD 和 Pyrmont 方向。',
           coordinates: [
             [151.184, -33.858],
             [151.205, -33.866],
@@ -1333,36 +1421,66 @@
             [151.178, -33.888],
           ],
         },
+        {
+          id: 'botany-approach-pocket',
+          type: 'bay',
+          name: 'Botany 进近水域',
+          description: '南侧 Botany 方向以简化水域标注，提示殖民物资并非只从悉尼港进入。',
+          coordinates: [
+            [151.186, -33.964],
+            [151.238, -33.970],
+            [151.270, -34.006],
+            [151.198, -34.012],
+          ],
+        },
       ],
       zones: [
         {
           id: 'colonial-administration-core',
           type: 'command',
+          name: '对外殖民行政核心区',
+          description: '以 CBD 为中心的对外殖民管理局核心区，负责殖民官派驻、资源审批和海外民政协调。',
           coordinates: [
-            [151.190, -33.850],
-            [151.226, -33.854],
-            [151.222, -33.885],
-            [151.186, -33.881],
+            [151.188, -33.846],
+            [151.232, -33.852],
+            [151.226, -33.888],
+            [151.182, -33.882],
           ],
         },
         {
           id: 'archive-corridor',
           type: 'archive',
+          name: '殖民档案走廊',
+          description: '从 Pyrmont/Darling Harbour 向 CBD 延伸的档案与数据转运走廊，便于连接港湾和行政核心。',
           coordinates: [
-            [151.150, -33.858],
-            [151.192, -33.862],
-            [151.188, -33.900],
-            [151.142, -33.894],
+            [151.134, -33.856],
+            [151.194, -33.862],
+            [151.188, -33.904],
+            [151.126, -33.896],
           ],
         },
         {
           id: 'harbour-dispatch-sector',
           type: 'harbor',
+          name: '港湾派遣扇区',
+          description: '北东侧港湾控制区，用于船队派遣、短驳补给和对海外据点的行政联络。',
           coordinates: [
-            [151.232, -33.812],
-            [151.298, -33.826],
-            [151.284, -33.862],
-            [151.222, -33.846],
+            [151.232, -33.806],
+            [151.306, -33.824],
+            [151.288, -33.866],
+            [151.222, -33.848],
+          ],
+        },
+        {
+          id: 'inner-cbd-residential',
+          type: 'residential',
+          name: '内城居民与服务区',
+          description: '简化表现 CBD 南部居民、商业和职员服务区，维持城市尺度感。',
+          coordinates: [
+            [151.196, -33.890],
+            [151.258, -33.902],
+            [151.248, -33.948],
+            [151.184, -33.936],
           ],
         },
       ],
@@ -1371,6 +1489,7 @@
           id: 'ocma-headquarters',
           type: 'capital',
           name: '对外殖民管理局总部',
+          description: '对外殖民管理局总部设在 CBD 核心，靠近港湾与主干路，方便行政和物流双向接入。',
           coordinates: [
             [151.203, -33.860],
             [151.224, -33.862],
@@ -1382,6 +1501,7 @@
           id: 'colonial-archive-terminal',
           type: 'archive',
           name: '殖民档案终端',
+          description: '殖民地档案、资源配给审批和派驻记录的集中处理设施。',
           coordinates: [
             [151.160, -33.870],
             [151.184, -33.874],
@@ -1393,6 +1513,7 @@
           id: 'harbour-dispatch-office',
           type: 'harbor',
           name: '港湾派遣办公室',
+          description: '面向悉尼港的派遣节点，负责船队靠泊、人员转运和紧急撤离调度。',
           coordinates: [
             [151.244, -33.832],
             [151.268, -33.838],
@@ -1400,22 +1521,36 @@
             [151.238, -33.848],
           ],
         },
+        {
+          id: 'botany-logistics-gate',
+          type: 'defence',
+          name: 'Botany 后勤闸门',
+          description: '南向货运和应急后勤入口，连接 Botany 进近水域与行政核心。',
+          coordinates: [
+            [151.214, -33.948],
+            [151.244, -33.954],
+            [151.240, -33.974],
+            [151.210, -33.968],
+          ],
+        },
       ],
       arcs: [
-        { id: 'administration-cordon', type: 'command', radiusLng: 0.032, radiusLat: 0.024, startAngle: 172, endAngle: 528 },
-        { id: 'harbour-control-ring', type: 'harbor', radiusLng: 0.070, radiusLat: 0.046, startAngle: -8, endAngle: 194 },
+        { id: 'administration-cordon', type: 'command', name: '行政核心警戒圈', description: '围绕对外殖民管理局总部的核心安保范围。', radiusLng: 0.038, radiusLat: 0.026, startAngle: 166, endAngle: 526 },
+        { id: 'harbour-control-ring', type: 'harbor', name: '港湾控制环', description: '覆盖 Circular Quay、Darling Harbour 和北岸通道的港湾调度范围。', radiusLng: 0.090, radiusLat: 0.056, startAngle: -12, endAngle: 196 },
+        { id: 'archive-transfer-cordon', type: 'archive', name: '档案转运保护线', description: 'Pyrmont 至 CBD 的档案转运保护范围。', radiusLng: 0.066, radiusLat: 0.044, startAngle: 132, endAngle: 416 },
       ],
       districts: [
-        { name: 'Sydney CBD', coordinates: [151.2093, -33.8688] },
-        { name: 'Darling Harbour', coordinates: [151.190, -33.880] },
-        { name: 'Circular Quay', coordinates: [151.213, -33.858] },
-        { name: 'Harbour Sector', coordinates: [151.268, -33.832] },
+        { name: 'Sydney CBD', coordinates: [151.220, -33.836], description: '对外殖民管理局所在的行政核心。' },
+        { name: 'Darling Harbour', coordinates: [151.174, -33.908], description: '港湾物流与档案转运内湾。' },
+        { name: 'Circular Quay', coordinates: [151.202, -33.842], description: '港湾和城市核心的换乘节点。' },
+        { name: 'Harbour Sector', coordinates: [151.292, -33.812], description: '面向悉尼港的派遣扇区。' },
+        { name: 'Botany Gate', coordinates: [151.230, -33.966], description: '南向后勤入口。' },
       ],
       labels: [
-        { name: '对外殖民管理局', coordinates: [151.212, -33.856], kind: 'facility' },
-        { name: '殖民档案走廊', coordinates: [151.150, -33.858], kind: 'system' },
-        { name: 'Harbour Dispatch', coordinates: [151.270, -33.822], kind: 'facility' },
-        { name: 'Sydney Harbour', coordinates: [151.240, -33.792], kind: 'water' },
+        { name: '对外殖民管理局', coordinates: [151.214, -33.854], kind: 'facility', description: '行政总部标注。' },
+        { name: '殖民档案走廊', coordinates: [151.144, -33.858], kind: 'system', description: '档案转运和数据处理带。' },
+        { name: 'Harbour Dispatch', coordinates: [151.276, -33.820], kind: 'facility', description: '港湾派遣节点。' },
+        { name: 'Sydney Harbour', coordinates: [151.242, -33.808], kind: 'water', description: '悉尼港水体参照。' },
       ],
     },
   };
@@ -1514,6 +1649,7 @@
   let worldDataPromise = null;
   let mapboxStylePromise = null;
   let localRoadsPromise = null;
+  let localContoursPromise = null;
 
   const state = {
     initialized: false,
@@ -1544,12 +1680,16 @@
     currentTerritory: {},
     targetTerritory: {},
     selectedRegionId: 'australia',
+    selectedLocalFeatureId: '',
     focusMode: 'world',
     australiaView: 'overview',
     australiaProjector: null,
     australiaLocalProjectors: new Map(),
     australiaLocalPan: {},
     australiaLocalZoom: {},
+    websiteData: {},
+    parseAndColorText: null,
+    mapTextOverrides: {},
     australiaDrag: {
       active: false,
       pointerId: null,
@@ -1561,6 +1701,7 @@
     worldFeatures: [],
     australiaFeature: null,
     localRoadFeatures: [],
+    localContourFeatures: [],
     featureElements: new Map(),
     regionElements: new Map(),
     pointElements: new Map(),
@@ -1571,12 +1712,86 @@
     animationFrame: null,
   };
 
-  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-
   const lerp = (from, to, t) => from + (to - from) * t;
 
   const easeInOutCubic = (t) =>
     t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const escapeHtml = (value = '') =>
+    String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+  const formatPlainText = (value = '') =>
+    escapeHtml(value)
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+      .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+      .join('');
+
+  const formatMapText = (value = '') => {
+    const raw = String(value || '');
+    if (!raw.trim()) return '';
+    if (typeof state.parseAndColorText === 'function') {
+      return raw
+        .split(/\n{2,}/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+        .map((paragraph) => `<p>${state.parseAndColorText(escapeHtml(paragraph)).replace(/\n/g, '<br>')}</p>`)
+        .join('');
+    }
+    return formatPlainText(raw);
+  };
+
+  const formatInlineMapText = (value = '') => {
+    const raw = String(value || '');
+    if (!raw.trim()) return '';
+    const safe = escapeHtml(raw);
+    return typeof state.parseAndColorText === 'function'
+      ? state.parseAndColorText(safe)
+      : safe;
+  };
+
+  const getLocalTextOverride = (siteId, keys = []) => {
+    const siteOverrides = state.mapTextOverrides?.[siteId];
+    if (!siteOverrides || typeof siteOverrides !== 'object') return null;
+    for (const key of keys) {
+      if (!key) continue;
+      const entry = siteOverrides[key];
+      if (entry && typeof entry === 'object') return entry;
+    }
+    return null;
+  };
+
+  const resolveLocalFeatureText = (siteId, featureId, fallbackTitle, fallbackBody, extraKeys = []) => {
+    const detailId = featureId && String(featureId).startsWith(`${siteId}-`)
+      ? String(featureId)
+      : `${siteId}-${featureId}`;
+    const rawId = featureId ? String(featureId) : '';
+    const override = getLocalTextOverride(siteId, [
+      detailId,
+      rawId,
+      ...extraKeys,
+    ]);
+    return {
+      title: override?.title || fallbackTitle || rawId.replace(/-/g, ' '),
+      body: override?.body || override?.details || fallbackBody || '',
+    };
+  };
+
+  const resolveLocalSiteText = (site) => {
+    if (!site) return { title: '', summary: '', body: '' };
+    const override = getLocalTextOverride(site.id, ['__site', `site-${site.id}`, site.id]) || {};
+    return {
+      title: override.title || site.name,
+      summary: override.summary || site.title,
+      body: override.body || override.details || site.detail,
+    };
+  };
 
   const readPaintColor = (style, layerId, propertyName, fallback) => {
     const layer = (style?.layers || []).find((item) => item.id === layerId);
@@ -1642,6 +1857,18 @@
     return localRoadsPromise;
   };
 
+  const loadLocalContourData = async () => {
+    if (!localContoursPromise) {
+      localContoursPromise = fetch(MAP_LOCAL_CONTOURS_URL, { cache: 'no-cache' })
+        .then((response) => {
+          if (!response.ok) return { type: 'FeatureCollection', features: [] };
+          return response.json();
+        })
+        .catch(() => ({ type: 'FeatureCollection', features: [] }));
+    }
+    return localContoursPromise;
+  };
+
   const normalizeLng = (lng) => {
     let normalized = Number(lng);
     while (normalized < -180) normalized += 360;
@@ -1681,6 +1908,9 @@
     ];
   };
 
+  const getLongitudeScaleAtLatitude = (lat) =>
+    Math.max(0.56, Math.cos((Number(lat) * Math.PI) / 180));
+
   const getLocalDetailProjection = (siteId) => {
     const area = AUSTRALIA_LOCAL_DETAIL_AREAS[siteId] || AUSTRALIA_DETAIL_AREAS[siteId];
     if (!area) return getAustraliaProjection();
@@ -1694,17 +1924,19 @@
     const paddingY = Math.max(16, state.height * 0.035);
     const spanLng = bounds.maxLng - bounds.minLng;
     const spanLat = bounds.maxLat - bounds.minLat;
+    const lngScale = getLongitudeScaleAtLatitude(area.center?.[1] || (bounds.minLat + bounds.maxLat) / 2);
+    const projectedSpanLng = spanLng * lngScale;
     const scale = Math.max(
-      (state.width - paddingX * 2) / spanLng,
+      (state.width - paddingX * 2) / projectedSpanLng,
       (state.height - paddingY * 2) / spanLat
     );
-    const mapWidth = spanLng * scale;
+    const mapWidth = projectedSpanLng * scale;
     const mapHeight = spanLat * scale;
     const offsetX = (state.width - mapWidth) / 2;
     const offsetY = (state.height - mapHeight) / 2;
 
     return ([lng, lat]) => [
-      offsetX + (normalizeLng(lng) - bounds.minLng) * scale,
+      offsetX + (normalizeLng(lng) - bounds.minLng) * lngScale * scale,
       offsetY + (bounds.maxLat - lat) * scale,
     ];
   };
@@ -1719,6 +1951,12 @@
 
   const coordinatesToPolygonPath = (coordinates, projector) =>
     `${coordinatesToLinePath(coordinates, projector)} Z`;
+
+  const multiLineToPath = (lines = [], projector) =>
+    lines
+      .map((line) => coordinatesToLinePath(line, projector))
+      .filter(Boolean)
+      .join(' ');
 
   const getAustraliaSite = (siteId) =>
     AUSTRALIA_FOCUS_SITES.find((item) => item.id === siteId) || null;
@@ -1739,28 +1977,559 @@
     ];
   };
 
-  const getFacilityMarkerCode = (facility = {}) => {
-    const explicitCodes = {
-      'supreme-council': 'SC',
-      'imperial-intelligence': 'II',
-      'capital-defence-gate': 'DG',
-      'maritime-warning-bureau': 'MW',
-      'signal-array': 'SA',
-      'patrol-dispatch': 'PD',
-      'ocma-headquarters': 'OC',
-      'colonial-archive-terminal': 'AR',
-      'harbour-dispatch-office': 'HD',
+  const getProjectedBounds = (coordinates = [], projector) => {
+    const points = coordinates
+      .filter((coord) => Array.isArray(coord) && coord.length >= 2)
+      .map((coord) => projector(coord));
+    if (!points.length) return null;
+    const xs = points.map((point) => point[0]);
+    const ys = points.map((point) => point[1]);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    return {
+      minX,
+      maxX,
+      minY,
+      maxY,
+      width: maxX - minX,
+      height: maxY - minY,
+      centerX: (minX + maxX) / 2,
+      centerY: (minY + maxY) / 2,
     };
-    if (explicitCodes[facility.id]) return explicitCodes[facility.id];
-    const typeCodes = {
-      capital: 'HQ',
-      intel: 'IN',
-      radar: 'RD',
-      archive: 'AR',
-      defence: 'DF',
-      harbor: 'HB',
+  };
+
+  const isPointInPolygon = (point, polygon = []) => {
+    if (!point || polygon.length < 3) return false;
+    const [px, py] = point;
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+      const [xi, yi] = polygon[i];
+      const [xj, yj] = polygon[j];
+      const intersects = yi > py !== yj > py &&
+        px < ((xj - xi) * (py - yi)) / ((yj - yi) || 1) + xi;
+      if (intersects) inside = !inside;
+    }
+    return inside;
+  };
+
+  const LOCAL_ROAD_AVOIDANCE_SAMPLE_PX = 1.2;
+  const LOCAL_ROAD_CLEARANCE_BY_CLASS = {
+    major: 8.5,
+    collector: 6.5,
+    local: 4.8,
+    service: 4.2,
+    imperial: 9.2,
+    restricted: 5.8,
+  };
+
+  const getPointDistance = (a, b) =>
+    Math.hypot((Number(a?.[0]) || 0) - (Number(b?.[0]) || 0), (Number(a?.[1]) || 0) - (Number(b?.[1]) || 0));
+
+  const getPointToSegmentDistance = (point, start, end) => {
+    const [px, py] = point;
+    const [x1, y1] = start;
+    const [x2, y2] = end;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
+    if (!lengthSquared) return Math.hypot(px - x1, py - y1);
+    const t = clamp(((px - x1) * dx + (py - y1) * dy) / lengthSquared, 0, 1);
+    return Math.hypot(px - (x1 + dx * t), py - (y1 + dy * t));
+  };
+
+  const getProjectedPolygonBounds = (polygon = []) => {
+    if (!polygon.length) return null;
+    const xs = polygon.map((point) => point[0]);
+    const ys = polygon.map((point) => point[1]);
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
     };
-    return typeCodes[facility.type] || 'IM';
+  };
+
+  const getRoadClearance = (roadClass) =>
+    LOCAL_ROAD_CLEARANCE_BY_CLASS[roadClass] || LOCAL_ROAD_CLEARANCE_BY_CLASS.local;
+
+  const buildRoadAvoidanceAreas = (area, projector) =>
+    (area?.facilities || [])
+      .map((facility) => {
+        const polygon = (facility.coordinates || [])
+          .filter((coord) => Array.isArray(coord) && coord.length >= 2)
+          .map((coord) => projector(coord));
+        const bounds = getProjectedPolygonBounds(polygon);
+        if (!bounds || polygon.length < 3) return null;
+        return { id: facility.id, polygon, bounds };
+      })
+      .filter(Boolean);
+
+  const isPointNearPolygonEdge = (point, polygon, clearance) => {
+    for (let index = 0; index < polygon.length; index += 1) {
+      const start = polygon[index];
+      const end = polygon[(index + 1) % polygon.length];
+      if (getPointToSegmentDistance(point, start, end) <= clearance) return true;
+    }
+    return false;
+  };
+
+  const isRoadPointBlocked = (point, avoidanceAreas, roadClass) => {
+    if (!point || !avoidanceAreas?.length) return false;
+    const clearance = getRoadClearance(roadClass);
+    return avoidanceAreas.some((area) => {
+      const { bounds, polygon } = area;
+      if (
+        point[0] < bounds.minX - clearance ||
+        point[0] > bounds.maxX + clearance ||
+        point[1] < bounds.minY - clearance ||
+        point[1] > bounds.maxY + clearance
+      ) {
+        return false;
+      }
+      return isPointInPolygon(point, polygon) || isPointNearPolygonEdge(point, polygon, clearance);
+    });
+  };
+
+  const projectedSegmentsToPath = (segments = []) =>
+    segments
+      .filter((segment) => segment.length >= 2)
+      .map((segment) =>
+        segment
+          .map((point, index) => `${index === 0 ? 'M' : 'L'}${point[0].toFixed(2)},${point[1].toFixed(2)}`)
+          .join(' ')
+      )
+      .join(' ');
+
+  const buildAvoidedRoadPath = (coordinates, projector, avoidanceAreas, roadClass) => {
+    const projected = (coordinates || [])
+      .filter((coord) => Array.isArray(coord) && coord.length >= 2)
+      .map((coord) => projector(coord));
+    if (projected.length < 2) return '';
+    if (!avoidanceAreas?.length) return projectedSegmentsToPath([projected]);
+
+    const segments = [];
+    let current = [];
+    const appendPoint = (point) => {
+      const last = current[current.length - 1];
+      if (!last || getPointDistance(last, point) > 0.35) current.push(point);
+    };
+    const flushSegment = () => {
+      if (current.length >= 2) segments.push(current);
+      current = [];
+    };
+
+    for (let lineIndex = 0; lineIndex < projected.length - 1; lineIndex += 1) {
+      const start = projected[lineIndex];
+      const end = projected[lineIndex + 1];
+      const length = getPointDistance(start, end);
+      const steps = Math.max(2, Math.ceil(length / LOCAL_ROAD_AVOIDANCE_SAMPLE_PX));
+      for (let step = 0; step <= steps; step += 1) {
+        if (lineIndex > 0 && step === 0) continue;
+        const t = step / steps;
+        const point = [
+          start[0] + (end[0] - start[0]) * t,
+          start[1] + (end[1] - start[1]) * t,
+        ];
+        if (isRoadPointBlocked(point, avoidanceAreas, roadClass)) {
+          flushSegment();
+        } else {
+          appendPoint(point);
+        }
+      }
+    }
+
+    flushSegment();
+    return projectedSegmentsToPath(segments);
+  };
+
+  const buildInternalStructureSegments = (bounds, type = 'default', variant = 'zone') => {
+    if (!bounds || bounds.width < 9 || bounds.height < 7) return [];
+    const margin = clamp(Math.min(bounds.width, bounds.height) * 0.18, 2.4, 8.5);
+    const x1 = bounds.minX + margin;
+    const x2 = bounds.maxX - margin;
+    const y1 = bounds.minY + margin;
+    const y2 = bounds.maxY - margin;
+    const cx = bounds.centerX;
+    const cy = bounds.centerY;
+    const thirdX = x1 + (x2 - x1) / 3;
+    const twoThirdX = x1 + ((x2 - x1) * 2) / 3;
+    const thirdY = y1 + (y2 - y1) / 3;
+    const twoThirdY = y1 + ((y2 - y1) * 2) / 3;
+
+    const rect = `M${x1.toFixed(2)},${y1.toFixed(2)} H${x2.toFixed(2)} V${y2.toFixed(2)} H${x1.toFixed(2)} Z`;
+    const segments = [rect];
+    const addCenterRelay = () => {
+      const relaySize = clamp(Math.min(bounds.width, bounds.height) * 0.08, 1.6, 3.8);
+      const rx1 = cx - relaySize;
+      const rx2 = cx + relaySize;
+      const ry1 = cy - relaySize;
+      const ry2 = cy + relaySize;
+      segments.push(`M${rx1.toFixed(2)},${ry1.toFixed(2)} H${rx2.toFixed(2)} V${ry2.toFixed(2)} H${rx1.toFixed(2)} Z`);
+    };
+
+    if (type === 'defence' || type === 'security') {
+      segments.push(
+        `M${x1.toFixed(2)},${cy.toFixed(2)} H${x2.toFixed(2)}`,
+        `M${twoThirdX.toFixed(2)},${y1.toFixed(2)} V${y2.toFixed(2)}`,
+        `M${x1.toFixed(2)},${(y2 + margin * 0.34).toFixed(2)} H${x2.toFixed(2)}`
+      );
+      addCenterRelay();
+    } else if (type === 'radar') {
+      segments.push(
+        `M${x1.toFixed(2)},${y2.toFixed(2)} L${cx.toFixed(2)},${y1.toFixed(2)} L${x2.toFixed(2)},${y2.toFixed(2)}`,
+        `M${cx.toFixed(2)},${y1.toFixed(2)} V${y2.toFixed(2)}`,
+        `M${(cx - (x2 - x1) * 0.18).toFixed(2)},${twoThirdY.toFixed(2)} H${(cx + (x2 - x1) * 0.18).toFixed(2)}`
+      );
+      addCenterRelay();
+    } else if (type === 'harbor' || type === 'harbour') {
+      segments.push(
+        `M${x1.toFixed(2)},${twoThirdY.toFixed(2)} H${x2.toFixed(2)}`,
+        `M${cx.toFixed(2)},${y1.toFixed(2)} V${y2.toFixed(2)}`,
+        `M${x1.toFixed(2)},${(y2 + margin * 0.24).toFixed(2)} H${x2.toFixed(2)}`
+      );
+    } else if (type === 'archive') {
+      segments.push(
+        `M${x1.toFixed(2)},${thirdY.toFixed(2)} H${x2.toFixed(2)}`,
+        `M${x1.toFixed(2)},${twoThirdY.toFixed(2)} H${x2.toFixed(2)}`,
+        `M${thirdX.toFixed(2)},${y1.toFixed(2)} V${y2.toFixed(2)}`
+      );
+    } else if (type === 'residential') {
+      segments.push(
+        `M${thirdX.toFixed(2)},${y1.toFixed(2)} V${y2.toFixed(2)}`,
+        `M${x1.toFixed(2)},${cy.toFixed(2)} H${x2.toFixed(2)}`
+      );
+    } else {
+      segments.push(
+        `M${cx.toFixed(2)},${y1.toFixed(2)} V${y2.toFixed(2)}`,
+        `M${x1.toFixed(2)},${cy.toFixed(2)} H${x2.toFixed(2)}`
+      );
+    }
+
+    if (variant === 'facility' && type !== 'defence' && type !== 'security' && type !== 'radar') {
+      addCenterRelay();
+    }
+
+    return segments;
+  };
+
+  const getFacilityConnectorRadius = (markerScale = 1, screenScale = 1) =>
+    Math.max(
+      7.4,
+      (FACILITY_SYMBOL_VISUAL_SIZE * markerScale * screenScale) / 2 + 2.2
+    );
+
+  const getFacilityCenterMap = (facilities = [], projector) =>
+    new Map(
+      facilities
+        .map((facility) => {
+          const centroid = getPolygonCentroid(facility.coordinates);
+          if (!centroid) return null;
+          const [x, y] = projector(centroid);
+          const markerScale = getFacilityMarkerScale(facility, projector);
+          const markerRadius = getFacilityConnectorRadius(markerScale, 1);
+          return [facility.id, { x, y, type: facility.type || 'facility', markerRadius }];
+        })
+        .filter(Boolean)
+    );
+
+  const getConnectorEndpoint = (origin, target) => {
+    if (!origin || !target) return origin;
+    const dx = target.x - origin.x;
+    const dy = target.y - origin.y;
+    const radius = origin.markerRadius || 7.4;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      return {
+        x: origin.x + Math.sign(dx || 1) * radius,
+        y: origin.y,
+      };
+    }
+    return {
+      x: origin.x,
+      y: origin.y + Math.sign(dy || 1) * radius,
+    };
+  };
+
+  const buildOrthogonalConnectorPath = (from, to) => {
+    if (!from || !to) return '';
+    const start = getConnectorEndpoint(from, to);
+    const end = getConnectorEndpoint(to, from);
+    const midX = (start.x + end.x) / 2;
+    return [
+      `M${start.x.toFixed(2)},${start.y.toFixed(2)}`,
+      `H${midX.toFixed(2)}`,
+      `V${end.y.toFixed(2)}`,
+      `H${end.x.toFixed(2)}`,
+    ].join(' ');
+  };
+
+  const getOrthogonalConnectorNodes = (from, to) => {
+    if (!from || !to) return [];
+    const start = getConnectorEndpoint(from, to);
+    const end = getConnectorEndpoint(to, from);
+    const midX = (start.x + end.x) / 2;
+    return [
+      { x: midX, y: start.y, variant: 'junction' },
+      { x: midX, y: end.y, variant: 'junction' },
+    ];
+  };
+
+  const getMarkerConnectorGeometry = (marker) => {
+    if (!marker) return null;
+    const x = Number(marker.dataset.centerX);
+    const y = Number(marker.dataset.centerY);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const markerScale = Number(marker.dataset.markerScale || 1) || 1;
+    const screenScale = Number(marker.dataset.screenScale || 1) || 1;
+    return {
+      x,
+      y,
+      markerRadius: getFacilityConnectorRadius(markerScale, screenScale),
+    };
+  };
+
+  const updateFacilityConnectorGeometry = () => {
+    if (!state.australiaDetailLayer) return;
+    const markerMap = new Map(
+      Array.from(state.australiaDetailLayer.querySelectorAll('.empire-map-australia-detail-marker[data-detail-site][data-local-feature-key]'))
+        .map((marker) => [
+          `${marker.dataset.detailSite}:${marker.dataset.localFeatureKey}`,
+          getMarkerConnectorGeometry(marker),
+        ])
+        .filter(([, geometry]) => geometry)
+    );
+
+    state.australiaDetailLayer
+      .querySelectorAll('.empire-map-australia-function-link[data-detail-site][data-link-from][data-link-to]')
+      .forEach((link) => {
+        const siteId = link.dataset.detailSite;
+        const from = markerMap.get(`${siteId}:${link.dataset.linkFrom}`);
+        const to = markerMap.get(`${siteId}:${link.dataset.linkTo}`);
+        if (!from || !to) return;
+        const pathData = buildOrthogonalConnectorPath(from, to);
+        if (pathData) link.setAttribute('d', pathData);
+
+        const nodes = Array.from(
+          state.australiaDetailLayer.querySelectorAll(
+            `.empire-map-australia-function-node[data-detail-site="${siteId}"][data-link-from="${link.dataset.linkFrom}"][data-link-to="${link.dataset.linkTo}"]`
+          )
+        );
+        getOrthogonalConnectorNodes(from, to).forEach((point, index) => {
+          const node = nodes[index];
+          if (!node) return;
+          node.setAttribute('x', (point.x - 1.55).toFixed(2));
+          node.setAttribute('y', (point.y - 1.55).toFixed(2));
+        });
+      });
+  };
+
+  const rectsIntersect = (a, b, padding = 0) => {
+    if (!a || !b) return false;
+    return (
+      a.left - padding < b.right &&
+      a.right + padding > b.left &&
+      a.top - padding < b.bottom &&
+      a.bottom + padding > b.top
+    );
+  };
+
+  const updateLocalLabelAvoidance = () => {
+    if (!state.australiaDetailLayer || state.australiaView === 'overview') return;
+    const siteId = state.australiaView;
+    const markerRects = Array.from(
+      state.australiaDetailLayer.querySelectorAll(
+        `.empire-map-australia-detail-marker.is-visible[data-detail-site="${siteId}"] .empire-map-australia-detail-marker-frame`
+      )
+    ).map((node) => node.getBoundingClientRect());
+
+    state.australiaDetailLayer
+      .querySelectorAll(`.empire-map-australia-detail-label--district[data-detail-site="${siteId}"]`)
+      .forEach((label) => {
+        if (!label.classList.contains('is-visible') || label.classList.contains('is-local-selected')) {
+          label.classList.remove('is-label-avoided');
+          return;
+        }
+        const labelRect = label.getBoundingClientRect();
+        const shouldAvoid = markerRects.some((markerRect) => rectsIntersect(labelRect, markerRect, 3));
+        label.classList.toggle('is-label-avoided', shouldAvoid);
+      });
+  };
+
+  const getFacilityConnectorPairs = (siteId, centerMap) => {
+    const available = (...ids) => ids.find((id) => centerMap.has(id));
+    const pairsBySite = {
+      canberra: [
+        ['supreme-council', 'capital-defence-gate', 'screening'],
+        ['supreme-council', 'imperial-intelligence', 'classified'],
+        ['supreme-council', 'revival-command-annex', 'archive'],
+      ],
+      nikenbah: [
+        ['maritime-warning-bureau', 'signal-array', 'sensor'],
+        ['maritime-warning-bureau', 'patrol-dispatch', 'dispatch'],
+        ['patrol-dispatch', 'coast-watch-bunker', 'screening'],
+      ],
+      sydney: [
+        ['ocma-headquarters', 'colonial-archive-terminal', 'archive'],
+        ['ocma-headquarters', 'harbour-dispatch-office', 'dispatch'],
+        ['ocma-headquarters', 'botany-logistics-gate', 'screening'],
+      ],
+    };
+    return (pairsBySite[siteId] || []).filter(([fromId, toId]) => available(fromId) && available(toId));
+  };
+
+  const renderFacilityConnectors = (siteId, facilities, projector) => {
+    if (!state.australiaDetailLayer || !Array.isArray(facilities) || !projector) return;
+    const centerMap = getFacilityCenterMap(facilities, projector);
+    getFacilityConnectorPairs(siteId, centerMap).forEach(([fromId, toId, role]) => {
+      const from = centerMap.get(fromId);
+      const to = centerMap.get(toId);
+      const pathData = buildOrthogonalConnectorPath(from, to);
+      if (!pathData) return;
+      state.australiaDetailLayer.appendChild(
+        createSvgEl('path', {
+          class: `empire-map-australia-function-link empire-map-australia-function-link--${role || 'default'}`,
+          d: pathData,
+          'data-detail-site': siteId,
+          'data-link-from': fromId,
+          'data-link-to': toId,
+          'aria-hidden': 'true',
+        })
+      );
+      getOrthogonalConnectorNodes(from, to).forEach((point) => {
+        state.australiaDetailLayer.appendChild(
+          createSvgEl('rect', {
+            class: `empire-map-australia-function-node empire-map-australia-function-node--${role || 'default'} empire-map-australia-function-node--${point.variant}`,
+            x: (point.x - 1.55).toFixed(2),
+            y: (point.y - 1.55).toFixed(2),
+            width: '3.1',
+            height: '3.1',
+            'data-detail-site': siteId,
+            'data-link-from': fromId,
+            'data-link-to': toId,
+            'aria-hidden': 'true',
+          })
+        );
+      });
+    });
+  };
+
+  const renderInternalStructure = (siteId, item, projector, variant = 'zone') => {
+    if (!state.australiaDetailLayer || !item?.coordinates || !projector) return;
+    const bounds = getProjectedBounds(item.coordinates, projector);
+    const segments = buildInternalStructureSegments(bounds, item.type, variant);
+    if (!segments.length) return;
+    const featureKey = item.id || item.name || '';
+    state.australiaDetailLayer.appendChild(
+      createSvgEl('path', {
+        class: `empire-map-australia-internal-structure empire-map-australia-internal-structure--${variant} empire-map-australia-internal-structure--${item.type || 'default'}`,
+        d: segments.join(' '),
+        'data-detail-site': siteId,
+        'data-local-feature-key': featureKey,
+        'aria-hidden': 'true',
+      })
+    );
+  };
+
+  const renderAreaPlusFill = (siteId, item, projector) => {
+    if (!state.australiaDetailLayer || !item?.coordinates || !projector) return;
+    const bounds = getProjectedBounds(item.coordinates, projector);
+    if (!bounds || bounds.width < 24 || bounds.height < 18) return;
+    const polygon = item.coordinates
+      .filter((coord) => Array.isArray(coord) && coord.length >= 2)
+      .map((coord) => projector(coord));
+    const step = clamp(Math.min(bounds.width, bounds.height) / 3.5, 12, 22);
+    const arm = clamp(step * 0.15, 1.4, 2.8);
+    const margin = step * 0.78;
+    const segments = [];
+    for (let y = bounds.minY + margin; y <= bounds.maxY - margin; y += step) {
+      for (let x = bounds.minX + margin; x <= bounds.maxX - margin; x += step) {
+        if (!isPointInPolygon([x, y], polygon)) continue;
+        segments.push(
+          `M${(x - arm).toFixed(2)},${y.toFixed(2)} H${(x + arm).toFixed(2)}`,
+          `M${x.toFixed(2)},${(y - arm).toFixed(2)} V${(y + arm).toFixed(2)}`
+        );
+      }
+    }
+    if (!segments.length) return;
+    const featureKey = item.id || item.name || '';
+    state.australiaDetailLayer.appendChild(
+      createSvgEl('path', {
+        class: `empire-map-australia-plus-fill empire-map-australia-plus-fill--${item.type || 'default'}`,
+        d: segments.join(' '),
+        'data-detail-site': siteId,
+        'data-local-feature-key': featureKey,
+        'aria-hidden': 'true',
+      })
+    );
+  };
+
+  const FACILITY_SYMBOL_VISUAL_SIZE = 11.6;
+  const FACILITY_SYMBOL_MIN_FRAME_SIZE = 10;
+  const FACILITY_SYMBOL_TARGET_COVERAGE = 0.22;
+  const FACILITY_SYMBOL_MIN_SCALE = 1.25;
+  const FACILITY_SYMBOL_MAX_SCALE = 2.15;
+  const FACILITY_SYMBOL_DESKTOP_MIN_PX = 22;
+
+  const getFacilityMarkerScale = (facility, projector) => {
+    const bounds = getProjectedBounds(facility?.coordinates, projector);
+    if (!bounds) return FACILITY_SYMBOL_MIN_SCALE;
+    const occupiedRange = Math.max(bounds.width, bounds.height);
+    const targetSize = occupiedRange * FACILITY_SYMBOL_TARGET_COVERAGE;
+    return clamp(
+      targetSize / FACILITY_SYMBOL_VISUAL_SIZE,
+      FACILITY_SYMBOL_MIN_SCALE,
+      FACILITY_SYMBOL_MAX_SCALE
+    );
+  };
+
+  const FACILITY_TACTICAL_SYMBOLS = {
+    capital: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M-2.6,2.2 H2.6', 'M-1.65,0.2 H1.65', 'M0,-3.15 V3.1'],
+      accent: ['M-5.8,-5.8 L-3.2,-3.2', 'M5.8,-5.8 L3.2,-3.2'],
+    },
+    intel: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M-3.0,0 H3.0', 'M0,-3.2 V3.2', 'M-2.05,-2.05 L2.05,2.05', 'M2.05,-2.05 L-2.05,2.05'],
+      accent: ['M-5.8,-5.8 H-2.8', 'M5.8,5.8 H2.8'],
+    },
+    radar: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M-3.05,2.65 H3.05', 'M-1.75,0.75 H1.75', 'M0,-3.6 V3.65'],
+      accent: ['M-5.8,5.8 L-2.8,2.8', 'M5.8,5.8 L2.8,2.8'],
+    },
+    archive: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M-3.1,-2.6 H3.1', 'M-3.1,0 H3.1', 'M-3.1,2.6 H3.1'],
+      accent: ['M-5.8,-2.8 H-3.8', 'M5.8,-2.8 H3.8'],
+    },
+    defence: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M-4.0,0 H4.0', 'M0,-4.0 V4.0', 'M-2.0,-2.0 H2.0 V2.0 H-2.0 Z'],
+      accent: ['M-5.8,0 H-4.0', 'M5.8,0 H4.0'],
+    },
+    harbor: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M0,-3.25 V2.9', 'M-2.65,-0.85 H2.65', 'M-3.1,1.25 C-1.55,2.9 1.55,2.9 3.1,1.25'],
+      accent: ['M-5.8,5.8 H-2.9', 'M5.8,5.8 H2.9'],
+    },
+    default: {
+      frame: 'M-5.8,-5.8 H5.8 V5.8 H-5.8 Z',
+      glyph: ['M-2.7,2.7 L2.7,-2.7'],
+      accent: ['M-5.8,-5.8 L-3.3,-3.3', 'M5.8,5.8 L3.3,3.3'],
+    },
+  };
+
+  const getFacilityTacticalSymbolMarkup = (type = 'default') => {
+    const symbol = FACILITY_TACTICAL_SYMBOLS[type] || FACILITY_TACTICAL_SYMBOLS.default;
+    return `
+              <rect class="empire-map-australia-detail-marker-hit" x="-10" y="-10" width="20" height="20"></rect>
+              <path class="empire-map-australia-detail-marker-plate" d="${symbol.frame}"></path>
+              <path class="empire-map-australia-detail-marker-frame" d="${symbol.frame}"></path>
+              ${(symbol.accent || []).map((path) => `<path class="empire-map-australia-detail-marker-accent" d="${path}"></path>`).join('')}
+              ${symbol.glyph.map((path) => `<path class="empire-map-australia-detail-marker-glyph" d="${path}"></path>`).join('')}
+            `;
   };
 
   const offsetCoordinate = ([lng, lat], distanceLng, distanceLat, angleDeg) => {
@@ -1866,28 +2635,12 @@
     return coordinates;
   };
 
-  const buildDetailSecurityRings = (area) => {
-    if (!area) return [];
-    const { center } = area;
-    const spanLng = area.spanLng || (area.bounds ? area.bounds.maxLng - area.bounds.minLng : 0);
-    const spanLat = area.spanLat || (area.bounds ? area.bounds.maxLat - area.bounds.minLat : 0);
-    const radiusBase = Math.min(spanLng, spanLat);
-    if (!radiusBase) return [];
-    return [
-      { id: 'inner', radius: radiusBase * 0.10 },
-      { id: 'middle', radius: radiusBase * 0.19 },
-      { id: 'outer', radius: radiusBase * 0.28 },
-    ].map((ring) => ({
-      ...ring,
-      coordinates: center,
-    }));
-  };
-
   const renderLocalRoads = (siteId, area, projector) => {
     if (!state.australiaDetailLayer || !siteId || !area || !projector) return;
     const roadFeatures = state.localRoadFeatures.filter(
       (feature) => feature?.properties?.siteId === siteId && feature?.geometry?.type === 'LineString'
     );
+    const avoidanceAreas = buildRoadAvoidanceAreas(area, projector);
     const roadDescriptions = {
       major: '城市主干道路，构成真实路网骨架。',
       collector: '次级道路，连接主干线与城市片区。',
@@ -1897,18 +2650,70 @@
       restricted: '限制通行线路，通常连接警戒区、设施后勤或安保节点。',
     };
 
-    roadFeatures.forEach((feature) => {
+    roadFeatures.forEach((feature, index) => {
       const coordinates = feature.geometry.coordinates || [];
       if (coordinates.length < 2) return;
       const roadClass = feature.properties?.roadClass || 'local';
+      const roadPath = buildAvoidedRoadPath(coordinates, projector, avoidanceAreas, roadClass);
+      if (!roadPath) return;
+      const roadKey = `road-${feature.properties?.osmId || feature.properties?.name || index}`;
+      const roadText = resolveLocalFeatureText(
+        siteId,
+        roadKey,
+        feature.properties?.name || '道路',
+        roadDescriptions[roadClass] || '局部道路。',
+        [feature.properties?.name]
+      );
       state.australiaDetailLayer.appendChild(
         createSvgEl('path', {
           class: `empire-map-australia-local-road empire-map-australia-local-road--${roadClass}`,
-          d: coordinatesToLinePath(coordinates, projector),
+          d: roadPath,
           'data-detail-site': siteId,
-          'data-detail-id': `${siteId}-road-${feature.properties?.osmId || Math.random()}`,
-          'data-map-tooltip-title': feature.properties?.name || '道路',
-          'data-map-tooltip-body': roadDescriptions[roadClass] || '局部道路。',
+          'data-detail-id': `${siteId}-${roadKey}`,
+          'data-map-feature-kind': 'road',
+          'data-map-tooltip-title': roadText.title,
+          'data-map-tooltip-body': roadText.body,
+        })
+      );
+    });
+  };
+
+  const renderLocalContours = (siteId, projector) => {
+    if (!state.australiaDetailLayer || !siteId || !projector) return;
+    const contourFeatures = state.localContourFeatures.filter(
+      (feature) =>
+        feature?.properties?.siteId === siteId &&
+        feature?.geometry?.type === 'MultiLineString'
+    );
+
+    contourFeatures.forEach((feature) => {
+      const { properties = {}, geometry = {} } = feature;
+      const pathData = multiLineToPath(geometry.coordinates || [], projector);
+      if (!pathData) return;
+      const elevation = Number(properties.elevation || 0);
+      const lineCount = Array.isArray(geometry.coordinates) ? geometry.coordinates.length : 0;
+      const densityClass = lineCount > 2500
+        ? ' empire-map-australia-contour--dense'
+        : lineCount < 180
+          ? ' empire-map-australia-contour--sparse'
+          : '';
+      const contourKey = `contour-${elevation}`;
+      const contourText = resolveLocalFeatureText(
+        siteId,
+        contourKey,
+        `${elevation}m 等高线`,
+        `真实 DEM 生成的陆地等高线，间距 ${properties.contourInterval || '-'}m；来源：Mapzen Terrain Tiles / AWS Open Data Skadi HGT。`
+      );
+      state.australiaDetailLayer.appendChild(
+        createSvgEl('path', {
+          class: `empire-map-australia-contour${properties.index ? ' empire-map-australia-contour--index' : ''}${densityClass}`,
+          d: pathData,
+          'data-detail-site': siteId,
+          'data-detail-id': `${siteId}-${contourKey}`,
+          'data-line-count': String(lineCount),
+          'data-map-feature-kind': 'terrain',
+          'data-map-tooltip-title': contourText.title,
+          'data-map-tooltip-body': contourText.body,
         })
       );
     });
@@ -1926,23 +2731,19 @@
       security: '安保管制区，限制普通通行。',
       archive: '档案和行政资料处理区。',
       harbor: '港湾派遣或海事后勤区域。',
+      residential: '居民、服务和常规行政街区，用简化区块表示。',
       capital: '首都级核心设施，优先防护目标。',
       defence: '防务节点，负责入口管制和区域封锁。',
+      terrain: '真实 DEM 生成的等高线，用于表现自然地形。',
+      facility: '重点机构或设施节点。',
+      system: '地图系统标注，表示警戒、调度或转运范围。',
     };
     return descriptions[type] || fallback;
   };
 
   const renderLocalBackdrop = () => {
     if (!state.australiaLocalBackdropLayer) return;
-    const paperX = -state.width * 0.6;
-    const paperY = -state.height * 0.6;
-    const paperWidth = state.width * 2.2;
-    const paperHeight = state.height * 2.2;
-    state.australiaLocalBackdropLayer.innerHTML = `
-      <rect class="empire-map-australia-local-paper" x="${paperX}" y="${paperY}" width="${paperWidth}" height="${paperHeight}" data-detail-site="canberra"></rect>
-      <rect class="empire-map-australia-local-paper" x="${paperX}" y="${paperY}" width="${paperWidth}" height="${paperHeight}" data-detail-site="nikenbah"></rect>
-      <rect class="empire-map-australia-local-paper" x="${paperX}" y="${paperY}" width="${paperWidth}" height="${paperHeight}" data-detail-site="sydney"></rect>
-    `;
+    state.australiaLocalBackdropLayer.innerHTML = '';
   };
 
   const getCurrentLocalPan = () => {
@@ -1980,19 +2781,56 @@
     updateLocalScreenScale();
   };
 
+  const getSvgViewportCompensation = () => {
+    const svgRect = state.svg?.getBoundingClientRect();
+    const svgScaleX = svgRect?.width ? svgRect.width / state.width : 1;
+    const svgScaleY = svgRect?.height ? svgRect.height / state.height : 1;
+    const viewportScale = Math.max(Math.min(svgScaleX, svgScaleY), 0.01);
+    return clamp(0.72 / viewportScale, 1, 2.35);
+  };
+
+  const updateAustraliaSiteScreenScale = () => {
+    if (!state.australiaSiteLayer) return;
+    const scale = state.australiaView === 'overview' ? getSvgViewportCompensation() : 1;
+    state.australiaSiteLayer.querySelectorAll('.empire-map-australia-site').forEach((site) => {
+      const currentTransform = site.getAttribute('transform') || '';
+      const baseTransform = site.dataset.baseTransform || currentTransform.replace(/\s+scale\([^)]*\)/g, '');
+      site.dataset.baseTransform = baseTransform;
+      site.setAttribute('transform', `${baseTransform} scale(${scale.toFixed(3)})`);
+    });
+  };
+
   const updateLocalScreenScale = () => {
     if (!state.australiaDetailLayer) return;
     const zoom = state.australiaView === 'overview' ? 1 : getCurrentLocalZoom();
-    const screenScale = clamp(1 / zoom, 0.34, 1.18);
+    state.root?.classList.toggle('is-local-low-zoom', state.australiaView !== 'overview' && zoom < 1.15);
+    state.root?.classList.toggle('is-local-high-zoom', state.australiaView !== 'overview' && zoom > 1.85);
+    const responsiveCompensation = getSvgViewportCompensation();
+    const svgRect = state.svg?.getBoundingClientRect();
+    const svgScaleX = svgRect?.width ? svgRect.width / state.width : 1;
+    const svgScaleY = svgRect?.height ? svgRect.height / state.height : 1;
+    const viewportScale = Math.max(Math.min(svgScaleX, svgScaleY), 0.01);
+    const isDesktopViewport = (window.innerWidth || svgRect?.width || 0) >= 760;
+    const labelScale = clamp((responsiveCompensation * 0.92) / zoom, 0.42, 1.7);
     state.australiaDetailLayer.querySelectorAll('.empire-map-australia-detail-marker').forEach((marker) => {
       const currentTransform = marker.getAttribute('transform') || '';
       const baseTransform = marker.dataset.baseTransform || currentTransform.replace(/\s+scale\([^)]*\)/g, '');
+      const markerScale = Number(marker.dataset.markerScale || 1) || 1;
+      const visibleSymbolPx = FACILITY_SYMBOL_MIN_FRAME_SIZE * markerScale * responsiveCompensation * viewportScale;
+      const desktopMinBoost = isDesktopViewport
+        ? clamp(FACILITY_SYMBOL_DESKTOP_MIN_PX / Math.max(visibleSymbolPx, 1), 1, 2.6)
+        : 1;
+      const screenScale = clamp((responsiveCompensation * desktopMinBoost) / zoom, 0.42, 3.2);
       marker.dataset.baseTransform = baseTransform;
+      marker.dataset.screenScale = screenScale.toFixed(3);
       marker.setAttribute('transform', `${baseTransform} scale(${screenScale.toFixed(3)})`);
     });
     state.australiaDetailLayer.querySelectorAll('.empire-map-australia-detail-label').forEach((label) => {
-      label.style.setProperty('--local-screen-scale', screenScale.toFixed(3));
+      label.style.setProperty('--local-screen-scale', labelScale.toFixed(3));
     });
+    updateFacilityConnectorGeometry();
+    window.requestAnimationFrame(() => updateLocalLabelAvoidance());
+    updateAustraliaSiteScreenScale();
   };
 
   const setLocalPan = (siteId, pan) => {
@@ -2029,10 +2867,34 @@
     setLocalZoom(state.australiaView, getCurrentLocalZoom() * factor, anchor);
   };
 
+  const formatLocalZoomLabel = (zoom) => {
+    const rounded = Math.round((zoom || 1) * 10) / 10;
+    return `${rounded.toFixed(1)}X`;
+  };
+
+  const updateAustraliaStatusText = () => {
+    const statusGroup = state.australiaUiLayer?.querySelector('.empire-map-australia-status');
+    const statusNode = statusGroup?.querySelector('text');
+    if (!statusNode) return;
+    const activeSite = getAustraliaSite(state.australiaView);
+    const statusText = activeSite
+      ? `${activeSite.label} / LOCAL ${formatLocalZoomLabel(getCurrentLocalZoom())}`
+      : 'AUSTRALIA / NATIONAL';
+    statusNode.textContent = statusText;
+
+    const statusFrame = statusGroup?.querySelector('rect');
+    if (statusFrame) {
+      const textWidth = typeof statusNode.getComputedTextLength === 'function'
+        ? statusNode.getComputedTextLength()
+        : statusText.length * 7;
+      statusFrame.setAttribute('width', String(Math.max(184, Math.ceil(textWidth + 24))));
+    }
+  };
+
   const updateLocalZoomUi = () => {
     const zoom = getCurrentLocalZoom();
     const zoomText = state.australiaUiLayer?.querySelector('.empire-map-australia-zoom-readout');
-    if (zoomText) zoomText.textContent = `${Math.round(zoom * 100)}%`;
+    if (zoomText) zoomText.textContent = formatLocalZoomLabel(zoom);
     state.australiaUiLayer?.querySelectorAll('[data-map-action="zoom-local-out"]').forEach((node) => {
       node.classList.toggle('is-disabled', zoom <= 0.86 || state.australiaView === 'overview');
     });
@@ -2042,6 +2904,63 @@
     state.australiaUiLayer?.querySelectorAll('[data-map-action="reset-local-map"]').forEach((node) => {
       node.classList.toggle('is-disabled', state.australiaView === 'overview');
     });
+    updateAustraliaStatusText();
+  };
+
+  const getVisibleLocalLayerCount = (siteId, selector) =>
+    state.australiaDetailLayer?.querySelectorAll(`${selector}.is-visible[data-detail-site="${siteId}"]`).length || 0;
+
+  const getLocalDebugSnapshot = () => {
+    const detailEl = state.detailEl;
+    const siteLayerStyle = state.australiaSiteLayer ? getComputedStyle(state.australiaSiteLayer) : null;
+    const siteStates = Array.from(state.australiaSiteLayer?.querySelectorAll('.empire-map-australia-site') || []).map((node) => {
+      const style = getComputedStyle(node);
+      return {
+        siteId: node.dataset.siteId || '',
+        selected: node.classList.contains('is-selected'),
+        muted: node.classList.contains('is-muted'),
+        ariaHidden: node.getAttribute('aria-hidden') || 'false',
+        tabIndex: node.getAttribute('tabindex') || '',
+        visible: style.visibility !== 'hidden' && style.display !== 'none' && Number(style.opacity) > 0,
+      };
+    });
+    const detailSites = Object.fromEntries(
+      AUSTRALIA_FOCUS_SITES.map((site) => [
+        site.id,
+        {
+          roads: getVisibleLocalLayerCount(site.id, '.empire-map-australia-local-road'),
+          contours: getVisibleLocalLayerCount(site.id, '.empire-map-australia-contour'),
+          markers: getVisibleLocalLayerCount(site.id, '.empire-map-australia-detail-marker'),
+          zones: getVisibleLocalLayerCount(site.id, '.empire-map-australia-detail-feature--detail-zone'),
+          facilities: getVisibleLocalLayerCount(site.id, '.empire-map-australia-detail-feature--detail-facility'),
+          connectors: getVisibleLocalLayerCount(site.id, '.empire-map-australia-function-link'),
+          clickableFeatures: state.australiaDetailLayer?.querySelectorAll(
+            `.is-visible[data-detail-site="${site.id}"][data-map-tooltip-title]:not(.empire-map-australia-local-road):not(.empire-map-australia-contour)`
+          ).length || 0,
+        },
+      ])
+    );
+
+    return {
+      initialized: state.initialized,
+      focusMode: state.focusMode,
+      australiaView: state.australiaView,
+      selectedLocalFeatureId: state.selectedLocalFeatureId,
+      zoom: getCurrentLocalZoom(),
+      zoomLabel: formatLocalZoomLabel(getCurrentLocalZoom()),
+      detailTitle: detailEl?.querySelector('h2')?.textContent?.trim() || '',
+      detailKicker: detailEl?.querySelector('.empire-map-detail-kicker')?.textContent?.trim() || '',
+      detailBodyLength: detailEl?.querySelector('.empire-map-detail-body')?.textContent?.trim().length || 0,
+      siteLayer: siteLayerStyle
+        ? {
+            opacity: siteLayerStyle.opacity,
+            visibility: siteLayerStyle.visibility,
+            pointerEvents: siteLayerStyle.pointerEvents,
+          }
+        : null,
+      siteStates,
+      detailSites,
+    };
   };
 
   const getAustraliaViewTransform = (siteId) => {
@@ -2068,12 +2987,7 @@
     state.australiaFocusEl?.setAttribute('data-australia-view', state.australiaView);
     applyLocalPanTransform();
 
-    const activeSite = getAustraliaSite(state.australiaView);
-    const statusText = activeSite
-      ? `${activeSite.label} / LOCAL ${transform.scale.toFixed(1)}X`
-      : 'AUSTRALIA / NATIONAL';
-    const statusNode = state.australiaUiLayer?.querySelector('.empire-map-australia-status text');
-    if (statusNode) statusNode.textContent = statusText;
+    updateAustraliaStatusText();
   };
 
   const coordinateToPath = (coord, index) => {
@@ -2154,20 +3068,178 @@
     state.root?.classList.remove('is-local-dragging');
   };
 
+  const renderLocalFeatureDetail = (target) => {
+    if (!target || state.australiaView === 'overview' || !state.detailEl) return;
+    const siteId = target.dataset.detailSite || state.australiaView;
+    const site = getAustraliaSite(siteId);
+    if (!site) return;
+
+    const featureKind = target.dataset.mapFeatureKind || 'feature';
+    const featureLabel = {
+      lake: '水体',
+      bay: '水体',
+      basin: '水体',
+      harbour: '水体',
+      road: '道路',
+      terrain: '真实等高线',
+      command: '指挥区',
+      intel: '情报区',
+      radar: '预警区',
+      security: '警戒区',
+      archive: '档案区',
+      harbor: '港湾区',
+      residential: '居民/服务区',
+      capital: '核心设施',
+      defence: '防务设施',
+      district: '城市片区',
+      facility: '重点标注',
+      system: '系统标注',
+    }[featureKind] || '局部要素';
+    const title = target.dataset.mapTooltipTitle || site.name;
+    const body = target.dataset.mapTooltipBody || site.detail;
+    const archiveId = target.dataset.localFeatureKey
+      ? `${siteId}-${target.dataset.localFeatureKey}`
+      : target.dataset.detailId || site.label;
+
+    state.detailEl.innerHTML = `
+      <div class="empire-map-detail-kicker">LOCAL FEATURE / ${escapeHtml(site.label)}</div>
+      <h2>${formatInlineMapText(title)}</h2>
+      <p class="empire-map-detail-summary">${escapeHtml(featureLabel)} · ${escapeHtml(site.name)}</p>
+      <div class="empire-map-detail-body">${formatMapText(body)}</div>
+      <div class="empire-map-detail-actions">
+        <button class="empire-map-action-button empire-map-action-button--ghost" type="button" data-australia-site="${site.id}">
+          返回${escapeHtml(site.name)}总览
+        </button>
+        <button class="empire-map-action-button" type="button" data-map-action="show-australia">
+          返回澳大利亚总览
+        </button>
+      </div>
+      <dl class="empire-map-detail-meta">
+        <div><dt>地图层级</dt><dd>${escapeHtml(featureLabel)}</dd></div>
+        <div><dt>所属城市</dt><dd>${escapeHtml(site.name)}</dd></div>
+        <div><dt>档案标记</dt><dd>${escapeHtml(archiveId)}</dd></div>
+      </dl>
+    `;
+  };
+
+  const setSelectedLocalFeature = (target) => {
+    const selectedId = target?.dataset?.detailId || '';
+    const selectedKey = getLocalSelectionKey(target);
+    state.selectedLocalFeatureId = selectedId;
+    state.australiaDetailLayer?.querySelectorAll('.is-local-selected, .is-local-related').forEach((node) => {
+      node.classList.remove('is-local-selected');
+      node.classList.remove('is-local-related');
+    });
+    if (!selectedId || !state.australiaView || state.australiaView === 'overview') return;
+    state.australiaDetailLayer
+      ?.querySelectorAll(`[data-detail-site="${state.australiaView}"][data-detail-id], [data-detail-site="${state.australiaView}"][data-local-feature-key]`)
+      .forEach((node) => {
+        if (node.dataset.detailId === selectedId || (selectedKey && node.dataset.localFeatureKey === selectedKey)) {
+          node.classList.add('is-local-selected');
+        }
+      });
+
+    if (!selectedKey) return;
+    state.australiaDetailLayer
+      ?.querySelectorAll(`[data-detail-site="${state.australiaView}"][data-link-from][data-link-to]`)
+      .forEach((node) => {
+        if (node.dataset.linkFrom === selectedKey || node.dataset.linkTo === selectedKey) {
+          node.classList.add('is-local-related');
+        }
+      });
+  };
+
+  const getLocalSelectionKey = (target) => {
+    if (!target?.dataset) return '';
+    if (target.dataset.localFeatureKey) return target.dataset.localFeatureKey;
+    const detailId = target.dataset.detailId || '';
+    const withoutMarker = detailId.endsWith('-marker') ? detailId.slice(0, -7) : detailId;
+    const sitePrefix = `${target.dataset.detailSite || state.australiaView}-`;
+    return withoutMarker.startsWith(sitePrefix) ? withoutMarker.slice(sitePrefix.length) : withoutMarker;
+  };
+
+  const SUPPORT_LOCAL_FEATURE_KINDS = new Set(['road', 'terrain']);
+
+  const getLocalFeaturePriority = (target) => {
+    if (!target || target.dataset.detailSite !== state.australiaView) return -1;
+    if (!target.dataset.mapTooltipTitle && !target.dataset.mapTooltipBody) return -1;
+    if (SUPPORT_LOCAL_FEATURE_KINDS.has(target.dataset.mapFeatureKind)) return -1;
+
+    const classes = target.classList;
+    if (classes.contains('empire-map-australia-detail-marker')) return 90;
+    if (classes.contains('empire-map-australia-detail-label')) return 80;
+    if (classes.contains('empire-map-australia-detail-feature--detail-facility')) return 72;
+    if (classes.contains('empire-map-australia-detail-feature--detail-water')) return 68;
+    if (classes.contains('empire-map-australia-detail-feature--detail-arc')) return 62;
+    if (classes.contains('empire-map-australia-detail-feature--detail-zone')) return 52;
+    return 40;
+  };
+
+  const getLocalFeatureSpecificity = (target) => {
+    const rect = target?.getBoundingClientRect?.();
+    if (!rect) return 0;
+    const area = Math.max(rect.width * rect.height, 1);
+    return 1 / area;
+  };
+
+  const getLocalFeatureTargetFromEvent = (event) => {
+    if (state.australiaView === 'overview') return null;
+    const selector = '[data-detail-site][data-map-tooltip-title], [data-detail-site][data-map-tooltip-body]';
+    const candidates = [];
+    const seen = new Set();
+
+    if (Number.isFinite(event.clientX) && Number.isFinite(event.clientY) && document.elementsFromPoint) {
+      document.elementsFromPoint(event.clientX, event.clientY).forEach((node) => {
+        const target = node?.closest?.(selector);
+        if (!target || seen.has(target)) return;
+        seen.add(target);
+        candidates.push(target);
+      });
+    }
+
+    const directTarget = event.target?.closest?.(selector);
+    if (directTarget && !seen.has(directTarget)) {
+      candidates.push(directTarget);
+    }
+
+    return candidates
+      .map((target, index) => ({
+        target,
+        priority: getLocalFeaturePriority(target),
+        specificity: getLocalFeatureSpecificity(target),
+        index,
+      }))
+      .filter((entry) => entry.priority >= 0)
+      .sort((a, b) => b.priority - a.priority || b.specificity - a.specificity || a.index - b.index)[0]?.target || null;
+  };
+
+  const handleLocalFeatureClick = (event) => {
+    if (state.australiaView === 'overview') return;
+    if (event.target?.closest?.('.empire-map-australia-site')) return;
+    const target = getLocalFeatureTargetFromEvent(event);
+    if (!target) return;
+    event.stopPropagation();
+    setSelectedLocalFeature(target);
+    renderLocalFeatureDetail(target);
+  };
+
   const setLocalTooltip = (title, body) => {
     const card = state.australiaUiLayer?.querySelector('.empire-map-local-tooltip-card');
     if (!card) return;
     card.classList.toggle('is-active', Boolean(title || body));
     card.innerHTML = `
-      <strong>${title || '局部地图'}</strong>
-      <span>${body || '悬停标志或线路查看说明，拖动地图浏览区域。'}</span>
+      <strong>${formatInlineMapText(title || '局部地图')}</strong>
+      <span>${formatInlineMapText(body || '悬停标志或线路查看说明，拖动地图浏览区域。')}</span>
     `;
   };
 
   const handleLocalTooltipMove = (event) => {
     if (state.australiaView === 'overview') return;
-    const target = event.target?.closest?.('[data-map-tooltip-title], [data-map-tooltip-body]');
-    if (!target) return;
+    const target = getLocalFeatureTargetFromEvent(event);
+    if (!target) {
+      clearLocalTooltip();
+      return;
+    }
     setLocalTooltip(target.dataset.mapTooltipTitle, target.dataset.mapTooltipBody);
   };
 
@@ -2280,6 +3352,7 @@
     state.svg.addEventListener('pointerup', endLocalPointerDrag);
     state.svg.addEventListener('pointercancel', endLocalPointerDrag);
     state.svg.addEventListener('pointerleave', endLocalPointerDrag);
+    state.svg.addEventListener('click', handleLocalFeatureClick);
     state.svg.addEventListener('mousemove', handleLocalTooltipMove);
     state.svg.addEventListener('mouseleave', clearLocalTooltip);
     state.svg.addEventListener('wheel', handleLocalWheel, { passive: false });
@@ -2489,6 +3562,7 @@
   const selectAustraliaSite = (siteId) => {
     const site = getAustraliaSite(siteId);
     if (!site) return;
+    const siteText = resolveLocalSiteText(site);
     setAustraliaView(siteId);
 
     state.australiaSiteLayer?.querySelectorAll('.empire-map-australia-site').forEach((node) => {
@@ -2496,10 +3570,10 @@
     });
 
     state.detailEl.innerHTML = `
-      <div class="empire-map-detail-kicker">AUSTRALIA FOCUS / ${site.label}</div>
-      <h2>${site.name}</h2>
-      <p class="empire-map-detail-summary">${site.title}</p>
-      <div class="empire-map-detail-body">${site.detail}</div>
+      <div class="empire-map-detail-kicker">AUSTRALIA FOCUS / ${escapeHtml(site.label)}</div>
+      <h2>${formatInlineMapText(siteText.title)}</h2>
+      <p class="empire-map-detail-summary">${formatInlineMapText(siteText.summary)}</p>
+      <div class="empire-map-detail-body">${formatMapText(siteText.body)}</div>
       <div class="empire-map-detail-actions">
         <button class="empire-map-action-button empire-map-action-button--ghost" type="button" data-map-action="show-australia">
           返回澳大利亚总览
@@ -2509,16 +3583,20 @@
         </button>
       </div>
       <div class="empire-map-local-legend">
-        <div><span class="legend-swatch legend-swatch--imperial"></span><strong>蓝色主线</strong><em>帝国专用通道</em></div>
-        <div><span class="legend-swatch legend-swatch--restricted"></span><strong>蓝色虚线</strong><em>限制/安保线路</em></div>
-        <div><span class="legend-swatch legend-swatch--facility"></span><strong>浅蓝区块</strong><em>核心机构设施</em></div>
-        <div><span class="legend-swatch legend-swatch--marker"></span><strong>圆形标志</strong><em>机构短代码，悬停查看说明</em></div>
-        <div><span class="legend-swatch legend-swatch--cordon"></span><strong>虚线圆环</strong><em>警戒或管制范围</em></div>
+        <div><span class="legend-swatch legend-swatch--contour"></span><strong>灰色细线</strong><em>真实 DEM 等高线</em></div>
+        <div><span class="legend-swatch legend-swatch--imperial"></span><strong>金色主线</strong><em>帝国专用通道</em></div>
+        <div><span class="legend-swatch legend-swatch--restricted"></span><strong>金色虚线</strong><em>限制/安保线路</em></div>
+        <div><span class="legend-swatch legend-swatch--facility"></span><strong>金色区块</strong><em>核心机构设施</em></div>
+        <div><span class="legend-swatch legend-swatch--marker"></span><strong>机构节点</strong><em>简洁战略标记，悬停查看说明</em></div>
+        <div><span class="legend-swatch legend-swatch--function"></span><strong>功能联络线</strong><em>机构之间的指挥/调度/审查关系</em></div>
+        <div><span class="legend-swatch legend-swatch--plus"></span><strong>区域 + 标记</strong><em>管制区或功能区内部范围</em></div>
+        <div><span class="legend-swatch legend-swatch--structure"></span><strong>内部结构线</strong><em>闸门、档案、港湾等设施分区</em></div>
+        <div><span class="legend-swatch legend-swatch--cordon"></span><strong>虚线警戒线</strong><em>警戒或管制范围</em></div>
       </div>
       <dl class="empire-map-detail-meta">
-        <div><dt>机构职能</dt><dd>${site.role}</dd></div>
+        <div><dt>机构职能</dt><dd>${escapeHtml(site.role)}</dd></div>
         <div><dt>坐标</dt><dd>${site.coordinates[1].toFixed(2)}, ${site.coordinates[0].toFixed(2)}</dd></div>
-        <div><dt>档案标记</dt><dd>${site.label}</dd></div>
+        <div><dt>档案标记</dt><dd>${escapeHtml(site.label)}</dd></div>
       </dl>
     `;
   };
@@ -2528,6 +3606,7 @@
     state.australiaDrag.active = false;
     state.australiaDrag.pointerId = null;
     state.australiaView = nextView;
+    state.selectedLocalFeatureId = '';
     applyAustraliaViewTransform();
 
     state.australiaDetailLayer?.querySelectorAll('[data-detail-site]').forEach((node) => {
@@ -2542,9 +3621,13 @@
       const isSelected = nextView !== 'overview' && node.dataset.siteId === nextView;
       node.classList.toggle('is-selected', isSelected);
       node.classList.toggle('is-muted', nextView !== 'overview' && !isSelected);
+      node.setAttribute('aria-hidden', nextView === 'overview' ? 'false' : 'true');
+      node.tabIndex = nextView === 'overview' ? 0 : -1;
     });
 
+    updateAustraliaSiteScreenScale();
     updateLocalZoomUi();
+    setSelectedLocalFeature(null);
     clearLocalTooltip();
   };
 
@@ -2686,80 +3769,128 @@
         const localProjector = getLocalDetailProjection(siteId);
         state.australiaLocalProjectors.set(siteId, localProjector);
 
+        renderLocalContours(siteId, localProjector);
+
         (area.waterBodies || []).forEach((waterBody) => {
+          const waterText = resolveLocalFeatureText(
+            siteId,
+            waterBody.id,
+            waterBody.name || waterBody.id.replace(/-/g, ' '),
+            waterBody.description || localFeatureDescription(waterBody.type)
+          );
           state.australiaDetailLayer.appendChild(
             createSvgEl('path', {
               class: `empire-map-australia-detail-feature empire-map-australia-detail-feature--detail-water empire-map-australia-detail-feature--detail-water-${waterBody.type || 'default'}`,
               d: coordinatesToPolygonPath(waterBody.coordinates, localProjector),
               'data-detail-site': siteId,
               'data-detail-id': `${siteId}-${waterBody.id}`,
-              'data-map-tooltip-title': waterBody.id.replace(/-/g, ' '),
-              'data-map-tooltip-body': localFeatureDescription(waterBody.type),
+              'data-map-feature-kind': waterBody.type || 'water',
+              'data-map-tooltip-title': waterText.title,
+              'data-map-tooltip-body': waterText.body,
             })
           );
         });
 
         (area.zones || []).forEach((zone) => {
+          const zoneText = resolveLocalFeatureText(
+            siteId,
+            zone.id,
+            zone.name || zone.id.replace(/-/g, ' '),
+            zone.description || localFeatureDescription(zone.type)
+          );
           state.australiaDetailLayer.appendChild(
             createSvgEl('path', {
               class: `empire-map-australia-detail-feature empire-map-australia-detail-feature--detail-zone empire-map-australia-detail-feature--detail-zone-${zone.type || 'default'}`,
               d: coordinatesToPolygonPath(zone.coordinates, localProjector),
               'data-detail-site': siteId,
               'data-detail-id': `${siteId}-${zone.id}`,
-              'data-map-tooltip-title': zone.id.replace(/-/g, ' '),
-              'data-map-tooltip-body': localFeatureDescription(zone.type),
+              'data-local-feature-key': zone.id,
+              'data-map-feature-kind': zone.type || 'zone',
+              'data-map-tooltip-title': zoneText.title,
+              'data-map-tooltip-body': zoneText.body,
             })
           );
+          renderAreaPlusFill(siteId, zone, localProjector);
+          renderInternalStructure(siteId, zone, localProjector, 'zone');
         });
 
         renderLocalRoads(siteId, area, localProjector);
 
         (area.facilities || []).forEach((facility) => {
           const facilityCentroid = getPolygonCentroid(facility.coordinates);
+          const facilityText = resolveLocalFeatureText(
+            siteId,
+            facility.id,
+            facility.name || facility.id.replace(/-/g, ' '),
+            facility.description || localFeatureDescription(facility.type)
+          );
           state.australiaDetailLayer.appendChild(
             createSvgEl('path', {
               class: `empire-map-australia-detail-feature empire-map-australia-detail-feature--detail-facility empire-map-australia-detail-feature--detail-facility-${facility.type || 'default'}`,
               d: coordinatesToPolygonPath(facility.coordinates, localProjector),
               'data-detail-site': siteId,
               'data-detail-id': `${siteId}-${facility.id}`,
-              'data-map-tooltip-title': facility.name || facility.id.replace(/-/g, ' '),
-              'data-map-tooltip-body': localFeatureDescription(facility.type),
+              'data-local-feature-key': facility.id,
+              'data-map-feature-kind': facility.type || 'facility',
+              'data-map-tooltip-title': facilityText.title,
+              'data-map-tooltip-body': facilityText.body,
             })
           );
+          renderInternalStructure(siteId, facility, localProjector, 'facility');
+        });
+        renderFacilityConnectors(siteId, area.facilities || [], localProjector);
 
-          if (facilityCentroid) {
-            const [markerX, markerY] = localProjector(facilityCentroid);
-            const marker = createSvgEl('g', {
-              class: `empire-map-australia-detail-marker empire-map-australia-detail-marker--${facility.type || 'default'}`,
-              'data-detail-site': siteId,
-              'data-detail-id': `${siteId}-${facility.id}-marker`,
-              'data-map-tooltip-title': facility.name || facility.id.replace(/-/g, ' '),
-              'data-map-tooltip-body': localFeatureDescription(facility.type),
-            });
-            marker.setAttribute('transform', `translate(${markerX.toFixed(2)} ${markerY.toFixed(2)})`);
-            marker.innerHTML = `
-              <circle class="empire-map-australia-detail-marker-halo" r="5.8"></circle>
-              <circle class="empire-map-australia-detail-marker-core" r="3.6"></circle>
-              <text class="empire-map-australia-detail-marker-code" y="1.6">${getFacilityMarkerCode(facility)}</text>
-            `;
-            state.australiaDetailLayer.appendChild(marker);
-          }
+        (area.facilities || []).forEach((facility) => {
+          const facilityCentroid = getPolygonCentroid(facility.coordinates);
+          if (!facilityCentroid) return;
+          const facilityText = resolveLocalFeatureText(
+            siteId,
+            facility.id,
+            facility.name || facility.id.replace(/-/g, ' '),
+            facility.description || localFeatureDescription(facility.type)
+          );
+          const [markerX, markerY] = localProjector(facilityCentroid);
+          const markerScale = getFacilityMarkerScale(facility, localProjector);
+          const marker = createSvgEl('g', {
+            class: `empire-map-australia-detail-marker empire-map-australia-detail-marker--${facility.type || 'default'}`,
+            'data-detail-site': siteId,
+            'data-detail-id': `${siteId}-${facility.id}-marker`,
+            'data-local-feature-key': facility.id,
+            'data-marker-scale': markerScale.toFixed(3),
+            'data-map-feature-kind': facility.type || 'facility',
+            'data-map-tooltip-title': facilityText.title,
+            'data-map-tooltip-body': facilityText.body,
+          });
+          const baseTransform = `translate(${markerX.toFixed(2)} ${markerY.toFixed(2)}) scale(${markerScale.toFixed(3)})`;
+          marker.dataset.baseTransform = baseTransform;
+          marker.dataset.centerX = markerX.toFixed(2);
+          marker.dataset.centerY = markerY.toFixed(2);
+          marker.setAttribute('transform', baseTransform);
+          marker.innerHTML = getFacilityTacticalSymbolMarkup(facility.type);
+          state.australiaDetailLayer.appendChild(marker);
         });
 
         (area.arcs || []).forEach((arc) => {
+          const arcText = resolveLocalFeatureText(
+            siteId,
+            arc.id,
+            arc.name || arc.id.replace(/-/g, ' '),
+            arc.description || localFeatureDescription(arc.type, '警戒或监控覆盖范围。')
+          );
           state.australiaDetailLayer.appendChild(
             createSvgEl('path', {
               class: `empire-map-australia-detail-feature empire-map-australia-detail-feature--detail-arc empire-map-australia-detail-feature--detail-arc-${arc.type || 'default'}`,
               d: coordinatesToLinePath(buildDetailArcCoordinates(area, arc), localProjector),
               'data-detail-site': siteId,
               'data-detail-id': `${siteId}-${arc.id}`,
-              'data-map-tooltip-title': arc.id.replace(/-/g, ' '),
-              'data-map-tooltip-body': localFeatureDescription(arc.type, '警戒或监控覆盖范围。'),
+              'data-map-feature-kind': arc.type || 'system',
+              'data-map-tooltip-title': arcText.title,
+              'data-map-tooltip-body': arcText.body,
             })
           );
         });
 
-        buildDetailSecurityRings(area).forEach((ring) => {
+        (area.securityRings || []).forEach((ring) => {
           const [x, y] = localProjector(ring.coordinates);
           const [ringX] = localProjector([ring.coordinates[0] + ring.radius, ring.coordinates[1]]);
           state.australiaDetailLayer.appendChild(
@@ -2768,53 +3899,59 @@
               cx: x.toFixed(2),
               cy: y.toFixed(2),
               r: Math.abs(ringX - x).toFixed(2),
-              'data-detail-site': siteId,
-              'data-map-tooltip-title': `${ring.id.toUpperCase()} CORDON`,
-              'data-map-tooltip-body': '同心警戒圈，表示设施周边的分级管制范围。',
-            })
+            'data-detail-site': siteId,
+            'data-map-feature-kind': 'security',
+            'data-map-tooltip-title': `${ring.id.toUpperCase()} CORDON`,
+            'data-map-tooltip-body': '同心警戒圈，表示设施周边的分级管制范围。',
+          })
           );
         });
 
         area.districts.forEach((district) => {
           const [x, y] = localProjector(district.coordinates);
+          const districtText = resolveLocalFeatureText(
+            siteId,
+            district.id || district.name,
+            district.name,
+            district.description || '城市片区标签，用于辅助定位局部地图。',
+            [district.name]
+          );
           const label = createSvgEl('text', {
             class: 'empire-map-australia-detail-label empire-map-australia-detail-label--district',
             x: x.toFixed(2),
             y: y.toFixed(2),
             'data-detail-site': siteId,
-            'data-map-tooltip-title': district.name,
-            'data-map-tooltip-body': '城市片区标签，用于辅助定位局部地图。',
+            'data-detail-id': `${siteId}-${district.id || district.name}`,
+            'data-map-tooltip-title': districtText.title,
+            'data-map-feature-kind': 'district',
+            'data-map-tooltip-body': districtText.body,
           });
           label.textContent = district.name;
           state.australiaDetailLayer.appendChild(label);
         });
 
-        (area.labels || []).forEach((labelItem) => {
+        (area.labels || []).filter((labelItem) => labelItem.kind !== 'facility').forEach((labelItem) => {
           const [x, y] = localProjector(labelItem.coordinates);
+          const labelText = resolveLocalFeatureText(
+            siteId,
+            labelItem.id || labelItem.name,
+            labelItem.name,
+            labelItem.description || localFeatureDescription(labelItem.kind, '重点标注，表示帝国档案中的地理或机构节点。'),
+            [labelItem.name]
+          );
           const label = createSvgEl('text', {
             class: `empire-map-australia-detail-label empire-map-australia-detail-label--${labelItem.kind || 'system'}`,
             x: x.toFixed(2),
             y: y.toFixed(2),
             'data-detail-site': siteId,
-            'data-map-tooltip-title': labelItem.name,
-            'data-map-tooltip-body': localFeatureDescription(labelItem.kind, '重点标注，表示帝国档案中的地理或机构节点。'),
+            'data-detail-id': `${siteId}-${labelItem.id || labelItem.name}`,
+            'data-map-tooltip-title': labelText.title,
+            'data-map-feature-kind': labelItem.kind || 'system',
+            'data-map-tooltip-body': labelText.body,
           });
           label.textContent = labelItem.name;
           state.australiaDetailLayer.appendChild(label);
         });
-      });
-
-      AUSTRALIA_FOCUS_SITES.forEach((site) => {
-        const [x, y] = projector(site.coordinates);
-        state.australiaDetailLayer.appendChild(
-          createSvgEl('circle', {
-            class: 'empire-map-australia-detail-radius',
-            cx: x.toFixed(2),
-            cy: y.toFixed(2),
-            r: '9',
-            'data-detail-site': site.id,
-          })
-        );
       });
 
     }
@@ -2837,14 +3974,15 @@
       });
       node.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
       node.innerHTML = `
-        <circle class="empire-map-australia-site-hit" r="20"></circle>
-        <circle class="empire-map-australia-site-ring" r="17"></circle>
-        <circle class="empire-map-australia-site-core" r="5"></circle>
+        <circle class="empire-map-australia-site-hit" r="15"></circle>
+        <circle class="empire-map-australia-site-core" r="4.4"></circle>
         <line class="empire-map-australia-site-leader" x1="0" y1="0" x2="${labelX}" y2="${labelY}"></line>
-        <text class="empire-map-australia-site-label" x="${labelX}" y="${labelY - 6}">${site.name}</text>
-        <text class="empire-map-australia-site-code" x="${labelX}" y="${labelY + 10}">${site.label}</text>
+        <text class="empire-map-australia-site-label" x="${labelX}" y="${labelY + 4}">${site.name}</text>
       `;
-      node.addEventListener('click', () => selectAustraliaSite(site.id));
+      node.addEventListener('click', (event) => {
+        event.stopPropagation();
+        selectAustraliaSite(site.id);
+      });
       node.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -2855,6 +3993,7 @@
 
     state.australiaProjector = projector;
     setAustraliaView(state.australiaView || 'overview');
+    updateAustraliaSiteScreenScale();
   };
 
   const setFocusMode = (mode) => {
@@ -3052,23 +4191,28 @@
     applyTerritory(state.currentTerritory, STAGES[state.stageIndex]?.contested || {});
   };
 
-  const init = async (view) => {
+  const init = async (view, options = {}) => {
     const root = view?.querySelector('.empire-map-shell');
     if (!root) return;
 
     state.root = root;
+    state.websiteData = options.websiteData || window.__websiteData || {};
+    state.parseAndColorText = options.parseAndColorText || null;
+    state.mapTextOverrides = state.websiteData?.empireMap?.localFeatureText || {};
 
     if (!state.initialized) {
       renderShell();
       try {
-        const [world, palette, localRoads] = await Promise.all([
+        const [world, palette, localRoads, localContours] = await Promise.all([
           loadWorldData(),
           getMapboxPalette(),
           loadLocalRoadData(),
+          loadLocalContourData(),
         ]);
         state.mapboxPalette = palette;
         state.worldFeatures = Array.isArray(world.features) ? world.features : [];
         state.localRoadFeatures = Array.isArray(localRoads.features) ? localRoads.features : [];
+        state.localContourFeatures = Array.isArray(localContours.features) ? localContours.features : [];
         state.australiaFeature = state.worldFeatures.find((feature) => getFeatureIso(feature) === 'AUS') || null;
         handleResize();
         setStage(0, true);
@@ -3090,5 +4234,10 @@
     }
   };
 
-  window.EmpireMap = { init };
+  window.EmpireMap = {
+    init,
+    selectAustraliaSite,
+    setAustraliaView,
+    getDebugSnapshot: getLocalDebugSnapshot,
+  };
 })();

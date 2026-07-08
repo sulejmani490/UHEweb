@@ -1183,12 +1183,11 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
 
 
 
-/* 图谱所在整屏，背景跟随主题主背景 */
+/* 图谱所在整屏：克制的帝国档案/态势图舞台 */
 #graph-section {
     background:
-        radial-gradient(circle at 50% 48%, rgba(0, 174, 255, 0.10), transparent 30%),
-        radial-gradient(circle at 18% 22%, rgba(255, 215, 0, 0.10), transparent 28%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(234, 242, 248, 0.74)),
+        linear-gradient(180deg, rgba(255, 253, 247, 0.94), rgba(241, 236, 225, 0.82)),
+        linear-gradient(135deg, rgba(215, 170, 92, 0.08), rgba(45, 58, 72, 0.04)),
         var(--bg-main);
     isolation: isolate;
 }
@@ -1204,24 +1203,27 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
 #graph-section::before {
     z-index: 0;
     background-image:
-        linear-gradient(rgba(32, 37, 45, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(32, 37, 45, 0.04) 1px, transparent 1px);
-    background-size: 42px 42px;
-    -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
-    mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+        linear-gradient(rgba(51, 58, 67, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(51, 58, 67, 0.055) 1px, transparent 1px),
+        linear-gradient(rgba(150, 108, 52, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(150, 108, 52, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 160px 160px, 160px 160px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);
 }
 
 #graph-section::after {
     z-index: 0;
     background:
-        radial-gradient(circle at center, transparent 46%, rgba(10, 14, 20, 0.10) 100%);
+        linear-gradient(90deg, rgba(32, 37, 45, 0.08), transparent 16%, transparent 84%, rgba(32, 37, 45, 0.08)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 24%, transparent 76%, rgba(43, 33, 20, 0.08));
 }
 
 /* ECharts 容器本身透明，只负责占位 */
 #relationship-graph-container {
     width: 100%;
-    height: 100vh;
-    min-height: 500px;
+    height: 100dvh;
+    min-height: 620px;
     position: relative;
     z-index: 1;
 }
@@ -1229,13 +1231,16 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
 #relationship-graph-container::before {
     content: "";
     position: absolute;
-    inset: 34px 48px;
-    border: 1px solid rgba(32, 37, 45, 0.08);
-    border-radius: 28px;
+    inset: 28px 46px;
+    border: 1px solid rgba(119, 87, 47, 0.18);
+    border-radius: 18px;
     background:
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.22), transparent 38%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
-    box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.30);
+        linear-gradient(90deg, rgba(215, 170, 92, 0.18) 0 2px, transparent 2px calc(100% - 2px), rgba(215, 170, 92, 0.18) calc(100% - 2px)),
+        linear-gradient(180deg, rgba(215, 170, 92, 0.18) 0 2px, transparent 2px calc(100% - 2px), rgba(215, 170, 92, 0.18) calc(100% - 2px)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06));
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+        inset 0 0 70px rgba(215, 170, 92, 0.08);
     pointer-events: none;
 }
 
@@ -1270,31 +1275,35 @@ body.landing-portal-mode #landing-view .scroll-down-hint {
 
 :root[data-theme="dark"] #graph-section {
     background:
-        radial-gradient(circle at 50% 48%, rgba(53, 182, 255, 0.12), transparent 32%),
-        radial-gradient(circle at 18% 22%, rgba(255, 215, 0, 0.10), transparent 26%),
-        linear-gradient(135deg, rgba(6, 8, 13, 1), rgba(13, 18, 28, 0.96)),
+        linear-gradient(180deg, rgba(10, 12, 17, 1), rgba(19, 22, 29, 0.98)),
+        linear-gradient(135deg, rgba(215, 170, 92, 0.08), rgba(53, 68, 84, 0.05)),
         var(--bg-main);
 }
 
 :root[data-theme="dark"] #graph-section::before {
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        linear-gradient(rgba(244, 239, 226, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(244, 239, 226, 0.04) 1px, transparent 1px),
+        linear-gradient(rgba(215, 170, 92, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(215, 170, 92, 0.055) 1px, transparent 1px);
 }
 
 :root[data-theme="dark"] #graph-section::after {
     background:
-        radial-gradient(circle at center, transparent 42%, rgba(0, 0, 0, 0.45) 100%);
+        linear-gradient(90deg, rgba(0, 0, 0, 0.42), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.42)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 24%, transparent 74%, rgba(0, 0, 0, 0.20));
 }
 
 :root[data-theme="dark"] #relationship-graph-container::before {
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(215, 170, 92, 0.24);
     background:
-        radial-gradient(circle at 50% 50%, rgba(53, 182, 255, 0.08), transparent 42%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.008));
+        linear-gradient(90deg, rgba(215, 170, 92, 0.25) 0 2px, transparent 2px calc(100% - 2px), rgba(215, 170, 92, 0.25) calc(100% - 2px)),
+        linear-gradient(180deg, rgba(215, 170, 92, 0.25) 0 2px, transparent 2px calc(100% - 2px), rgba(215, 170, 92, 0.25) calc(100% - 2px)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.006));
     box-shadow:
-        inset 0 0 90px rgba(53, 182, 255, 0.06),
-        inset 0 0 140px rgba(0, 0, 0, 0.28);
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 0 86px rgba(215, 170, 92, 0.055),
+        inset 0 0 150px rgba(0, 0, 0, 0.32);
 }
 
 
@@ -5476,6 +5485,264 @@ body.image-lightbox-open {
         animation: none !important;
         filter: none !important;
         transform: none !important;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Author message entry and page                                                */
+/* -------------------------------------------------------------------------- */
+
+#author-message-entry {
+    position: fixed;
+    left: 30px;
+    bottom: 30px;
+    z-index: 997;
+    width: 54px;
+    height: 54px;
+    border: 1px solid rgba(0, 123, 255, 0.24);
+    border-radius: 50%;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(235, 245, 255, 0.66)),
+        rgba(255, 255, 255, 0.72);
+    color: #007bff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(0, 72, 128, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px) scale(0.96);
+    transition:
+        opacity 0.28s ease,
+        transform 0.28s ease,
+        color 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+#author-message-entry.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+#author-message-entry:hover,
+#author-message-entry.is-active {
+    color: #0056b3;
+    border-color: rgba(0, 123, 255, 0.52);
+    box-shadow: 0 14px 32px rgba(0, 72, 128, 0.24);
+    transform: translateY(-2px) scale(1.04);
+}
+
+#author-message-entry svg {
+    width: 27px;
+    height: 27px;
+}
+
+#author-message-entry svg path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+#author-message-entry svg path:first-child {
+    fill: rgba(0, 123, 255, 0.08);
+}
+
+#author-message-view {
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 94px min(6vw, 72px) 54px;
+    background:
+        linear-gradient(135deg, rgba(253, 250, 244, 0.94), rgba(232, 244, 255, 0.9)),
+        var(--bg-main);
+}
+
+.author-message-shell {
+    width: min(1060px, 100%);
+    max-height: calc(100vh - 150px);
+    margin: 0 auto;
+    overflow: auto;
+    border: 1px solid rgba(23, 37, 84, 0.12);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.88)),
+        linear-gradient(90deg, rgba(0, 123, 255, 0.08), transparent 38%);
+    box-shadow: 0 26px 72px rgba(15, 23, 42, 0.16);
+}
+
+.author-message-shell--native {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+.author-message-shell--harmony {
+    font-family: "HarmonyOS Sans SC", "HarmonyOS Sans", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+.author-message-panel {
+    padding: clamp(28px, 5vw, 64px);
+}
+
+.author-message-header {
+    margin-bottom: 26px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.author-message-kicker {
+    color: #007bff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.author-message-header h1 {
+    margin: 10px 0 0;
+    color: #111827;
+    font-size: clamp(2rem, 5vw, 4.3rem);
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.author-message-body {
+    color: #243041;
+    font-size: clamp(1rem, 1.25vw, 1.16rem);
+    line-height: 1.9;
+    word-break: break-word;
+}
+
+.author-message-body > *:first-child {
+    margin-top: 0;
+}
+
+.author-message-body p,
+.author-message-body ul,
+.author-message-body ol,
+.author-message-body blockquote,
+.author-message-body figure {
+    margin: 0 0 1.15em;
+}
+
+.author-message-body h2,
+.author-message-body h3,
+.author-message-body h4 {
+    margin: 1.5em 0 0.65em;
+    color: #111827;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.author-message-body a {
+    color: #0068d6;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.author-message-body blockquote {
+    padding: 12px 16px;
+    border-left: 4px solid #007bff;
+    background: rgba(0, 123, 255, 0.06);
+}
+
+.author-message-body img {
+    display: block;
+    max-width: min(100%, 780px);
+    max-height: 58vh;
+    object-fit: contain;
+    margin: 18px auto;
+    border-radius: 8px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+}
+
+.author-message-body figure {
+    margin: 1.4em 0;
+    text-align: center;
+}
+
+.author-message-body figure img {
+    margin-bottom: 8px;
+}
+
+.author-message-body figcaption {
+    max-width: 780px;
+    margin: 4px auto 0;
+    padding: 0 10px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    text-align: center;
+}
+
+:root[data-theme="dark"] #author-message-entry {
+    background:
+        linear-gradient(145deg, rgba(18, 28, 43, 0.92), rgba(7, 13, 24, 0.78)),
+        rgba(18, 22, 32, 0.88);
+    color: #5ac6ff;
+    border-color: rgba(90, 198, 255, 0.28);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42);
+}
+
+:root[data-theme="dark"] #author-message-view {
+    background:
+        linear-gradient(135deg, rgba(6, 10, 18, 0.98), rgba(13, 24, 38, 0.94)),
+        var(--bg-main);
+}
+
+:root[data-theme="dark"] .author-message-shell {
+    background:
+        linear-gradient(180deg, rgba(14, 20, 32, 0.96), rgba(9, 15, 25, 0.94)),
+        linear-gradient(90deg, rgba(53, 182, 255, 0.1), transparent 42%);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 86px rgba(0, 0, 0, 0.68);
+}
+
+:root[data-theme="dark"] .author-message-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="dark"] .author-message-header h1,
+:root[data-theme="dark"] .author-message-body h2,
+:root[data-theme="dark"] .author-message-body h3,
+:root[data-theme="dark"] .author-message-body h4 {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .author-message-body {
+    color: #d6deea;
+}
+
+:root[data-theme="dark"] .author-message-body blockquote {
+    background: rgba(53, 182, 255, 0.08);
+    border-left-color: #5ac6ff;
+}
+
+@media (max-width: 768px) {
+    #author-message-entry {
+        left: 18px;
+        bottom: 18px;
+        width: 48px;
+        height: 48px;
+    }
+
+    #author-message-view {
+        padding: 86px 16px 34px;
+    }
+
+    .author-message-shell {
+        max-height: calc(100vh - 126px);
+    }
+
+    .author-message-panel {
+        padding: 24px 18px 30px;
     }
 }
 

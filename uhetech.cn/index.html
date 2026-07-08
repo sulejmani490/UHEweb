@@ -10,8 +10,8 @@
     <!-- 【【【 FIX: Added root-relative paths to prevent MIME type errors on deep links 】】】 -->
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/timeline.css">
-    <link rel="stylesheet" href="/event-splash.css?v=event-game-entry-20260628">
-    <link rel="stylesheet" href="/empire-map.css">
+    <link rel="stylesheet" href="/event-splash.css?v=event-game-light-20260628">
+    <link rel="stylesheet" href="/empire-map.css?v=map-tactical-symbols-20260629">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 </head>
 <body>
@@ -183,6 +183,12 @@
                 </div>
             </div>
 
+            <div id="author-message-view" class="view-container">
+                <div class="back-button" title="返回上一页">&lsaquo;</div>
+                <nav class="breadcrumb"></nav>
+                <div class="author-message-shell"></div>
+            </div>
+
         </section>
 
         <!-- 第二屏：关系图谱 -->
@@ -232,6 +238,14 @@
     </div>
 
     <!-- AI 助手 UI, 放在 page-scroller 外部以保证全局悬浮 -->
+    <button id="author-message-entry" class="author-message-entry" type="button" title="作者留言" aria-label="打开作者留言" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3.5 20 7.2v5.6c0 4.6-3.1 7.1-8 8.7-4.9-1.6-8-4.1-8-8.7V7.2l8-3.7Z"></path>
+            <path d="M8.2 13.2 14.8 6.6l2.6 2.6-6.6 6.6-3.2.7.6-3.3Z"></path>
+            <path d="m13.7 7.8 2.5 2.5"></path>
+        </svg>
+    </button>
+
     <div id="ai-fab" title="AI 助手">
         <span>AI</span>
     </div>
@@ -258,10 +272,10 @@
    <!-- <script src="/data.js"></script>-->
     <script src="/color-palette.js" defer></script>
     <script src="/timeline.js" defer></script>
-    <script type="text/plain" data-src="/graph-data.js"></script>
-    <script type="text/plain" data-src="/graph.js"></script>
+    <script type="text/plain" data-src="/graph-data.js?v=relationship-graph-20260702"></script>
+    <script type="text/plain" data-src="/graph.js?v=relationship-graph-20260702"></script>
     <script src="/app-modules.js" defer></script>
-    <script src="/empire-map.js" defer></script>
+    <script src="/empire-map.js?v=map-tactical-symbols-20260629" defer></script>
     
     <!-- 主逻辑最后加载，确保其他模块的 window 对象已准备好 -->
     <script>
@@ -467,8 +481,8 @@
         }
     });
     </script>
-    <script src="/event-splash.js?v=event-game-entry-20260628" defer></script>
-    <script src="/script.js" defer></script> <!-- 4. 主逻辑脚本 (保持最后加载) -->
+    <script src="/event-splash.js?v=event-game-light-20260628" defer></script>
+    <script src="/script.js?v=relationship-graph-20260702" defer></script> <!-- 4. 主逻辑脚本 (保持最后加载) -->
   <!--背景按钮 -->
   <button id="background-toggle" class="background-toggle-button">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

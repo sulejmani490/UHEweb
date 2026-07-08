@@ -30,6 +30,8 @@
     'still',
   ]);
 
+  const EFFECT_PRESETS = new Set(['none', 'sky-carrier-light']);
+
   const getCameraPosition = (camera) => {
     if (camera === 'focus-zoom') return '50% 48%';
     if (camera === 'pan-left') return '56% 50%';
@@ -41,6 +43,11 @@
   const normalizeCamera = (value) => {
     const camera = String(value || '').trim();
     return CAMERA_PRESETS.has(camera) ? camera : DEFAULT_EVENT_SLIDE.camera;
+  };
+
+  const normalizeEffect = (value) => {
+    const effect = String(value || '').trim();
+    return EFFECT_PRESETS.has(effect) ? effect : 'none';
   };
 
   const normalizeAssetPath = (value, fallback = DEFAULT_EVENT_SLIDE.image) => {
@@ -76,6 +83,7 @@
         fallbackSlide.text,
       durationMs,
       camera,
+      effect: normalizeEffect(source.effect || fallbackSlide.effect),
       objectPosition:
         String(source.objectPosition || fallbackSlide.objectPosition || getCameraPosition(camera)).trim() ||
         getCameraPosition(camera),
@@ -220,6 +228,42 @@
     return true;
   };
 
+  const createSkyCarrierLightEffect = () => {
+    const effect = document.createElement('div');
+    effect.className = 'event-carrier-fx';
+    effect.setAttribute('aria-hidden', 'true');
+
+    const backglow = document.createElement('div');
+    backglow.className = 'event-carrier-backglow';
+
+    const beams = document.createElement('div');
+    beams.className = 'event-carrier-beams';
+    for (let index = 0; index < 7; index += 1) {
+      const beam = document.createElement('span');
+      beam.className = 'event-carrier-beam';
+      beams.appendChild(beam);
+    }
+
+    const haze = document.createElement('div');
+    haze.className = 'event-carrier-haze';
+
+    const particles = document.createElement('div');
+    particles.className = 'event-carrier-particles';
+
+    const foreground = document.createElement('div');
+    foreground.className = 'event-carrier-foreground-mask';
+
+    effect.append(backglow, beams, haze, particles, foreground);
+    return effect;
+  };
+
+  const createSlideEffect = (slide) => {
+    if (slide.effect === 'sky-carrier-light') {
+      return createSkyCarrierLightEffect();
+    }
+    return null;
+  };
+
   const createSplash = (config) => {
     const overlay = document.createElement('div');
     overlay.className = config.frostFrameEnabled
@@ -241,7 +285,10 @@
 
     config.slides.forEach((slide, index) => {
       const slideElement = document.createElement('div');
-      slideElement.className = `event-splash-slide event-camera-${slide.camera}`;
+      slideElement.className =
+        slide.effect && slide.effect !== 'none'
+          ? `event-splash-slide event-camera-${slide.camera} event-fx-${slide.effect}`
+          : `event-splash-slide event-camera-${slide.camera}`;
       slideElement.dataset.slideIndex = String(index);
       slideElement.style.setProperty('--event-slide-duration', `${slide.durationMs}ms`);
       slideElement.style.setProperty('--event-camera-duration', `${Math.round(slide.durationMs * 1.75)}ms`);
@@ -252,6 +299,8 @@
       image.alt = '';
       image.src = slide.image;
 
+      const effect = createSlideEffect(slide);
+
       const title = document.createElement('p');
       title.className = 'event-splash-slide-title';
       title.dataset.slideIndex = String(index);
@@ -259,6 +308,9 @@
       title.textContent = slide.text;
 
       slideElement.append(image);
+      if (effect) {
+        slideElement.append(effect);
+      }
       stage.append(slideElement);
       captions.append(title);
     });

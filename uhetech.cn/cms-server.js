@@ -1189,6 +1189,8 @@ app.post('/content-api/admin/novels/:id', requireAdmin, handleSaveNovelById);
 
 // ====== 3. 图片上传配置：存到 /images 目录 ======
 
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif']);
+
 function ensureDirectory(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
@@ -1251,9 +1253,8 @@ const upload = multer({
   }),
   fileFilter: function (_req, file, cb) {
     const ext = path.extname(normalizeUploadOriginalName(file.originalname)).toLowerCase();
-    const allowedExt = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif']);
     const mimetype = String(file.mimetype || '').toLowerCase();
-    if (!mimetype.startsWith('image/') && !allowedExt.has(ext)) {
+    if (!mimetype.startsWith('image/') && !ALLOWED_IMAGE_EXTENSIONS.has(ext)) {
       cb(new Error(`仅支持图片文件（当前类型：${ext || mimetype || 'unknown'}）`));
       return;
     }
@@ -1320,6 +1321,46 @@ function handleUploadImage(req, res) {
   });
 }
 
+function listImageAssets() {
+  ensureDirectory(IMAGE_DIR);
+
+  return fs
+    .readdirSync(IMAGE_DIR, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .filter((entry) => ALLOWED_IMAGE_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
+    .map((entry) => {
+      const filePath = path.join(IMAGE_DIR, entry.name);
+      const stat = fs.statSync(filePath);
+      const ext = path.extname(entry.name).toLowerCase();
+
+      return {
+        name: entry.name,
+        path: `/images/${entry.name}`,
+        extension: ext,
+        size: stat.size,
+        mtime: stat.mtime.toISOString(),
+        mtimeMs: stat.mtimeMs,
+      };
+    })
+    .sort((a, b) => {
+      const timeDiff = b.mtimeMs - a.mtimeMs;
+      if (timeDiff !== 0) return timeDiff;
+      return a.name.localeCompare(b.name, 'zh-Hans-CN');
+    });
+}
+
+function handleListImages(_req, res) {
+  try {
+    res.json({
+      ok: true,
+      images: listImageAssets(),
+    });
+  } catch (error) {
+    console.error('读取 images 目录失败：', error);
+    res.status(500).json({ ok: false, error: 'Failed to list images' });
+  }
+}
+
 // 兼容：/api/admin/upload-image
 app.post(
   '/api/admin/upload-image',
@@ -1333,6 +1374,9 @@ app.post(
   requireAdmin,
   withUploadErrorHandling(upload.single('file'), handleUploadImage)
 );
+
+app.get('/api/admin/images', requireAdmin, handleListImages);
+app.get('/content-api/admin/images', requireAdmin, handleListImages);
 
 function handleUploadAudio(req, res) {
   if (!req.file) {
@@ -1465,6 +1509,9 @@ app.listen(PORT, () => {
   console.log(`   POST /content-api/admin/novels/:id/delete`);
   console.log(`   POST /api/admin/novels/manifest`);
   console.log(`   POST /content-api/admin/novels/manifest`);
+  console.log(`   GET  /api/admin/images`);
+  console.log(`   GET  /content-api/admin/images`);
+  console.log(`   POST /api/admin/upload-image`);
   console.log(`   POST /content-api/admin/upload-image`);
   console.log(`   GET  /admin`);
   console.log(`   GET  /images/...`);

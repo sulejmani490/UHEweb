@@ -27,13 +27,26 @@ const Timeline = (() => {
 };
 
 
+  const cancelAutoScroll = (element) => {
+    if (!element) return;
+    element._timelineManualPan = true;
+    element._timelineScrollToken = (element._timelineScrollToken || 0) + 1;
+  };
+
   const animateScroll = (element, to, duration, easingFunc) => {
     return new Promise(resolve => {
+      const token = (element._timelineScrollToken || 0) + 1;
+      element._timelineScrollToken = token;
       const start = element.scrollLeft;
       const change = to - start;
       let startTime = 0;
 
       const animate = currentTime => {
+        if (element._timelineScrollToken !== token) {
+          resolve(false);
+          return;
+        }
+
         if (startTime === 0) startTime = currentTime;
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -44,7 +57,7 @@ const Timeline = (() => {
         if (elapsed < duration) {
           requestAnimationFrame(animate);
         } else {
-          resolve();
+          resolve(true);
         }
       };
       requestAnimationFrame(animate);
@@ -70,6 +83,158 @@ const Timeline = (() => {
       );
       container.scrollTo({ left: nextScrollLeft, behavior: 'auto' });
     });
+  };
+
+  const enableDragPan = (container) => {
+    if (!container) return;
+
+    if (typeof container._timelineDragCleanup === 'function') {
+      container._timelineDragCleanup();
+    }
+
+    const dragThreshold = 6;
+    let dragState = null;
+    let suppressClickUntil = 0;
+    let lastPointerDownAt = 0;
+
+    const getMaxScrollLeft = () =>
+      Math.max(0, container.scrollWidth - container.clientWidth);
+
+    const isDragAllowed = () =>
+      container.classList.contains('is-ready') &&
+      !container.classList.contains('is-settling') &&
+      container.dataset.dragEnabled === 'true';
+
+    const startDrag = (event, pointerId = null) => {
+      if (!isDragAllowed()) return false;
+      if (event.button !== 0 || getMaxScrollLeft() <= 0) return false;
+
+      dragState = {
+        pointerId,
+        startX: event.clientX,
+        startScrollLeft: container.scrollLeft,
+        dragging: false,
+      };
+
+      return true;
+    };
+
+    const moveDrag = (event) => {
+      if (!dragState) return false;
+
+      const deltaX = event.clientX - dragState.startX;
+      if (!dragState.dragging && Math.abs(deltaX) < dragThreshold) return false;
+
+      if (!dragState.dragging) {
+        dragState.dragging = true;
+        cancelAutoScroll(container);
+        container.classList.add('is-dragging');
+        if (
+          dragState.pointerId !== null &&
+          event.currentTarget === container &&
+          typeof container.setPointerCapture === 'function'
+        ) {
+          try {
+            container.setPointerCapture(dragState.pointerId);
+          } catch (_error) {
+            // Pointer capture can fail if the browser has already retargeted the pointer.
+          }
+        }
+      }
+
+      container.scrollLeft = dragState.startScrollLeft - deltaX;
+      event.preventDefault();
+      return true;
+    };
+
+    const finishDrag = (event) => {
+      if (!dragState) return;
+
+      const wasDragging = dragState.dragging;
+      try {
+        if (
+          dragState.pointerId !== null &&
+          container.hasPointerCapture?.(dragState.pointerId)
+        ) {
+          container.releasePointerCapture(dragState.pointerId);
+        }
+      } catch (_error) {
+        // Pointer capture may already be released by the browser.
+      }
+
+      dragState = null;
+      container.classList.remove('is-dragging');
+
+      if (wasDragging) {
+        suppressClickUntil = performance.now() + 350;
+        event?.preventDefault();
+      }
+    };
+
+    const onPointerDown = (event) => {
+      if (!startDrag(event, event.pointerId)) return;
+      lastPointerDownAt = performance.now();
+    };
+
+    const onPointerMove = (event) => {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      moveDrag(event);
+    };
+
+    const onPointerUp = (event) => {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      finishDrag(event);
+    };
+
+    const onPointerCancel = (event) => {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      finishDrag(event);
+    };
+
+    const onMouseDown = (event) => {
+      if (dragState || performance.now() - lastPointerDownAt < 500) return;
+      if (!startDrag(event)) return;
+      event.preventDefault();
+    };
+
+    const onMouseMove = (event) => {
+      if (!dragState || dragState.pointerId !== null) return;
+      moveDrag(event);
+    };
+
+    const onMouseUp = (event) => {
+      if (!dragState || dragState.pointerId !== null) return;
+      finishDrag(event);
+    };
+
+    const onClickCapture = (event) => {
+      if (performance.now() <= suppressClickUntil) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    container.addEventListener('pointerdown', onPointerDown);
+    container.addEventListener('pointermove', onPointerMove);
+    container.addEventListener('pointerup', onPointerUp);
+    container.addEventListener('pointercancel', onPointerCancel);
+    container.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    container.addEventListener('click', onClickCapture, true);
+
+    container._timelineDragCleanup = () => {
+      container.removeEventListener('pointerdown', onPointerDown);
+      container.removeEventListener('pointermove', onPointerMove);
+      container.removeEventListener('pointerup', onPointerUp);
+      container.removeEventListener('pointercancel', onPointerCancel);
+      container.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      container.removeEventListener('click', onClickCapture, true);
+      container.classList.remove('is-dragging');
+      dragState = null;
+    };
   };
 
   // ========= 分支时间线渲染 =========
@@ -107,6 +272,67 @@ const Timeline = (() => {
         Math.max(0, revealTime) + colorSnapDelay + 120
       );
     });
+  };
+
+  const markTimelineReadyForDrag = (container) => {
+    if (!container) return;
+    container.classList.remove('is-wiping', 'is-settling');
+    container.classList.add('is-ready');
+    container.dataset.dragEnabled = 'true';
+    container.style.overflow = 'auto';
+  };
+
+  const playTimelineDetailTransition = (sourceElement, title, onMidpoint) => {
+    if (
+      !sourceElement ||
+      typeof onMidpoint !== 'function' ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    ) {
+      onMidpoint?.();
+      return;
+    }
+
+    document.querySelector('.timeline-detail-transition')?.remove();
+
+    const rect = sourceElement.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.className = 'timeline-detail-transition';
+
+    const card = document.createElement('div');
+    card.className = 'timeline-detail-transition-card';
+    card.style.setProperty('--start-left', `${rect.left}px`);
+    card.style.setProperty('--start-top', `${rect.top}px`);
+    card.style.setProperty('--start-width', `${Math.max(48, rect.width)}px`);
+    card.style.setProperty('--start-height', `${Math.max(42, rect.height)}px`);
+
+    const kicker = document.createElement('span');
+    kicker.className = 'timeline-detail-transition-kicker';
+    kicker.textContent = 'ARCHIVE RECORD';
+
+    const heading = document.createElement('strong');
+    heading.textContent = title || sourceElement.textContent.trim() || '重大事件';
+
+    card.append(kicker, heading);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    document.body.classList.add('timeline-detail-transitioning');
+
+    requestAnimationFrame(() => {
+      overlay.classList.add('is-expanding');
+    });
+
+    window.setTimeout(() => {
+      onMidpoint();
+    }, 360);
+
+    window.setTimeout(() => {
+      overlay.classList.add('is-leaving');
+    }, 780);
+
+    window.setTimeout(() => {
+      overlay.remove();
+      document.body.classList.remove('timeline-detail-transitioning');
+    }, 1120);
   };
 
   const renderBranches = (
@@ -208,7 +434,11 @@ if (evt.marker === 'fiery') {
                 eventIndex
               }
             ];
-            navigateCallback({ viewId: '#detail-view', history });
+            playTimelineDetailTransition(
+              label,
+              evt.title || branch.title || '时间支线',
+              () => navigateCallback({ viewId: '#detail-view', history })
+            );
           } else if (evt.details) {
             // 兜底 fallback，真的出问题再退回 alert
             alert(evt.title + '\n\n' + evt.details);
@@ -232,9 +462,12 @@ if (evt.marker === 'fiery') {
     options = {}
   ) => {
     const container = view.querySelector('.timeline-container');
+    enableDragPan(container);
     container.innerHTML = '';
     container.scrollLeft = 0;
     container.classList.remove('is-wiping', 'is-ready', 'is-settling');
+    container.dataset.dragEnabled = 'false';
+    container._timelineManualPan = false;
     container.style.overflow = 'hidden';
 
     const categoryData = websiteData.categories[catIndex];
@@ -355,9 +588,14 @@ if (evt.marker === 'fiery') {
               container.classList.add('is-settling');
 
               const maxScrollLeft = container.scrollWidth - container.clientWidth;
-              await animateScroll(container, maxScrollLeft, 3000, easeInOutCubic);
+              const reachedEnd = await animateScroll(container, maxScrollLeft, 3000, easeInOutCubic);
+              if (!reachedEnd || container._timelineManualPan) return;
               await new Promise(resolve => setTimeout(resolve, 800));
-              await animateScroll(container, 0, 2500, easeInOutCubic);
+              if (container._timelineManualPan) return;
+              const returnedStart = await animateScroll(container, 0, 2500, easeInOutCubic);
+              if (returnedStart) {
+                markTimelineReadyForDrag(container);
+              }
             }, 100 + totalAnimationTime);
           }, 1200);
         }, 800);
@@ -372,9 +610,8 @@ if (evt.marker === 'fiery') {
 
       timeline.classList.add('timeline--settled');
       setBranchesActive(timeline, true);
-      container.classList.add('is-ready');
+      markTimelineReadyForDrag(container);
       timeline.querySelector('.timeline-arrow')?.classList.add('is-revealing');
-      container.style.overflow = 'auto';
       focusEraInContainer(
         container,
         timeline,
@@ -383,7 +620,7 @@ if (evt.marker === 'fiery') {
       );
     }
 
-    timeline.addEventListener('click', (e) => {
+    const openEraDetail = (e) => {
       const eraNode = e.target.closest('.timeline-era');
       if (eraNode && !eraNode.classList.contains('era-clone')) {
         const catIndexFromDom = parseInt(eraNode.dataset.catIndex);
@@ -394,10 +631,17 @@ if (evt.marker === 'fiery') {
             { type: 'item', catIndex: catIndexFromDom, itemPath: itemPath.toString() }
           ];
           container.classList.remove('is-wiping');
-          navigateCallback({ viewId: '#detail-view', history });
+          const titleSource = eraNode.querySelector('.era-title') || eraNode;
+          playTimelineDetailTransition(
+            titleSource,
+            titleSource.textContent.trim(),
+            () => navigateCallback({ viewId: '#detail-view', history })
+          );
         }
       }
-    });
+    };
+
+    timeline.addEventListener('click', openEraDetail);
   };
 
   return { init };

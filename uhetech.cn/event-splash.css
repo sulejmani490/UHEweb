@@ -173,6 +173,180 @@
     animation-name: event-camera-still;
 }
 
+.event-fx-sky-carrier-light .event-splash-slide-image {
+    filter: saturate(0.86) contrast(1.16) brightness(0.96);
+}
+
+.event-fx-sky-carrier-light.is-active .event-splash-slide-image {
+    animation-name: event-camera-carrier-rise;
+}
+
+.event-carrier-fx,
+.event-carrier-fx > div {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.event-carrier-fx {
+    z-index: 3;
+    overflow: hidden;
+    opacity: 0;
+    mix-blend-mode: screen;
+}
+
+.event-fx-sky-carrier-light.is-active .event-carrier-fx {
+    animation: event-carrier-fx-in var(--event-slide-duration, 7600ms) ease forwards;
+}
+
+.event-carrier-backglow {
+    z-index: 1;
+    background:
+        radial-gradient(ellipse at 44% 18%, rgba(255, 255, 255, 0.82) 0 4%, rgba(218, 238, 255, 0.5) 9%, rgba(145, 183, 210, 0.22) 18%, transparent 34%),
+        radial-gradient(ellipse at 51% 33%, rgba(255, 255, 255, 0.5) 0 5%, rgba(193, 224, 246, 0.24) 13%, transparent 27%),
+        radial-gradient(ellipse at 55% 46%, rgba(190, 220, 236, 0.22) 0 10%, transparent 32%);
+    filter: blur(16px);
+    opacity: 0.78;
+    animation: event-carrier-backglow 3.8s ease-in-out infinite alternate;
+}
+
+.event-carrier-beams {
+    z-index: 2;
+    filter: blur(5px);
+}
+
+.event-carrier-beam {
+    position: absolute;
+    top: 33%;
+    left: 50%;
+    width: 13vw;
+    min-width: 120px;
+    height: 59vh;
+    transform-origin: 50% 0;
+    opacity: 0.52;
+    mix-blend-mode: screen;
+    clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(217, 236, 246, 0.46) 22%, rgba(159, 190, 207, 0.16) 62%, transparent 100%),
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+    animation: event-carrier-beam-drift 2.65s ease-in-out infinite alternate;
+}
+
+.event-carrier-beam:nth-child(1) {
+    left: 42%;
+    top: 34%;
+    width: 9.5vw;
+    height: 46vh;
+    transform: rotate(17deg) translate3d(-3%, 0, 0);
+    opacity: 0.42;
+    animation-duration: 3.15s;
+}
+
+.event-carrier-beam:nth-child(2) {
+    left: 47%;
+    top: 32%;
+    width: 12vw;
+    height: 58vh;
+    transform: rotate(6deg) translate3d(-1%, 0, 0);
+    opacity: 0.56;
+    animation-delay: -1.2s;
+}
+
+.event-carrier-beam:nth-child(3) {
+    left: 51%;
+    top: 32%;
+    width: 13vw;
+    height: 62vh;
+    transform: rotate(-2deg);
+    opacity: 0.66;
+    animation-duration: 3.45s;
+    animation-delay: -2.3s;
+}
+
+.event-carrier-beam:nth-child(4) {
+    left: 56%;
+    top: 33%;
+    width: 10vw;
+    height: 53vh;
+    transform: rotate(-14deg) translate3d(2%, 0, 0);
+    opacity: 0.44;
+    animation-duration: 2.95s;
+    animation-delay: -0.7s;
+}
+
+.event-carrier-beam:nth-child(5) {
+    left: 48%;
+    top: 37%;
+    width: 7vw;
+    height: 39vh;
+    transform: rotate(22deg) translate3d(-6%, 0, 0);
+    opacity: 0.35;
+    animation-duration: 2.35s;
+    animation-delay: -1.9s;
+}
+
+.event-carrier-beam:nth-child(6) {
+    left: 59%;
+    top: 38%;
+    width: 7vw;
+    height: 42vh;
+    transform: rotate(-26deg) translate3d(5%, 0, 0);
+    opacity: 0.31;
+    animation-duration: 2.75s;
+    animation-delay: -2.9s;
+}
+
+.event-carrier-beam:nth-child(7) {
+    left: 53%;
+    top: 36%;
+    width: 19vw;
+    height: 50vh;
+    transform: rotate(-7deg);
+    opacity: 0.18;
+    filter: blur(10px);
+    animation-duration: 3.9s;
+    animation-delay: -3.4s;
+}
+
+.event-carrier-haze {
+    z-index: 3;
+    opacity: 0.64;
+    background:
+        radial-gradient(ellipse at 45% 26%, rgba(255, 255, 255, 0.28) 0 7%, transparent 28%),
+        radial-gradient(ellipse at 54% 45%, rgba(210, 230, 238, 0.26) 0 12%, transparent 42%),
+        radial-gradient(ellipse at 32% 56%, rgba(182, 205, 214, 0.16) 0 13%, transparent 45%),
+        radial-gradient(ellipse at 69% 55%, rgba(182, 205, 214, 0.13) 0 13%, transparent 44%),
+        repeating-linear-gradient(118deg, transparent 0 24px, rgba(255, 255, 255, 0.035) 25px 26px, transparent 28px 58px);
+    filter: blur(13px);
+    animation: event-carrier-haze-flow 6.4s ease-in-out infinite alternate;
+}
+
+.event-carrier-particles {
+    z-index: 4;
+    opacity: 0.34;
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.54) 0 1px, transparent 1.6px),
+        radial-gradient(circle, rgba(182, 210, 224, 0.32) 0 1px, transparent 1.7px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.6px);
+    background-size: 86px 120px, 132px 168px, 54px 78px;
+    background-position: 4% 16%, 62% 28%, 44% 8%;
+    filter: blur(0.25px);
+    animation: event-carrier-particle-fall 8.2s linear infinite;
+}
+
+.event-carrier-foreground-mask {
+    z-index: 5;
+    opacity: 0.84;
+    mix-blend-mode: multiply;
+    background:
+        radial-gradient(ellipse at 47% 83%, rgba(0, 0, 0, 0.8) 0 10%, rgba(0, 0, 0, 0.5) 18%, transparent 34%),
+        radial-gradient(ellipse at 56% 84%, rgba(0, 0, 0, 0.78) 0 8%, rgba(0, 0, 0, 0.45) 17%, transparent 31%),
+        linear-gradient(180deg, transparent 0 62%, rgba(0, 0, 0, 0.36) 86%, rgba(0, 0, 0, 0.82) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.62), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.62));
+}
+
 .event-splash-slide-title {
     position: absolute;
     left: 50%;
@@ -836,6 +1010,53 @@ body.event-splash-active {
     outline-offset: 4px;
 }
 
+:root[data-theme="light"] .event-game-entry {
+    color: rgba(18, 35, 52, 0.94);
+    border-color: rgba(37, 126, 172, 0.36);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(231, 241, 247, 0.72)),
+        radial-gradient(circle at 18% 0%, rgba(73, 168, 217, 0.2), transparent 45%);
+    box-shadow:
+        0 18px 38px rgba(26, 58, 82, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.82),
+        0 0 22px rgba(55, 146, 198, 0.12);
+    backdrop-filter: blur(12px) saturate(1.08);
+}
+
+:root[data-theme="light"] .event-game-entry::before {
+    background:
+        linear-gradient(90deg, rgba(55, 146, 198, 0.26), transparent 34% 66%, rgba(55, 146, 198, 0.14)),
+        repeating-linear-gradient(90deg, transparent 0 12px, rgba(0, 63, 105, 0.045) 13px 14px);
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+}
+
+:root[data-theme="light"] .event-game-entry::after {
+    background: linear-gradient(90deg, rgba(37, 126, 172, 0), rgba(37, 126, 172, 0.7), rgba(37, 126, 172, 0));
+}
+
+:root[data-theme="light"] .event-game-entry:hover,
+:root[data-theme="light"] .event-game-entry:focus-visible {
+    border-color: rgba(22, 111, 164, 0.58);
+    box-shadow:
+        0 22px 44px rgba(26, 58, 82, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 0 30px rgba(55, 146, 198, 0.2);
+}
+
+:root[data-theme="light"] .event-game-entry:focus-visible {
+    outline-color: rgba(22, 111, 164, 0.62);
+}
+
+:root[data-theme="light"] .event-game-entry-kicker {
+    color: rgba(22, 111, 164, 0.76);
+}
+
+:root[data-theme="light"] .event-game-entry-title {
+    color: rgba(13, 30, 45, 0.96);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
 .event-game-entry-kicker,
 .event-game-entry-title {
     position: relative;
@@ -1173,6 +1394,119 @@ body.event-splash-reveal #background-toggle {
     100% {
         transform: scale(1.04);
         filter: blur(0) saturate(0.98) contrast(1.08);
+    }
+}
+
+@keyframes event-camera-carrier-rise {
+    0% {
+        transform: scale(1.035) translate3d(0, 0.75%, 0);
+        filter: blur(2px) saturate(0.78) contrast(1.13) brightness(0.92);
+    }
+
+    14% {
+        filter: blur(0) saturate(0.84) contrast(1.18) brightness(0.98);
+    }
+
+    100% {
+        transform: scale(1.105) translate3d(0, -1.25%, 0);
+        filter: blur(0) saturate(0.9) contrast(1.2) brightness(1.02);
+    }
+}
+
+@keyframes event-carrier-fx-in {
+    0% {
+        opacity: 0;
+    }
+
+    14% {
+        opacity: 0.92;
+    }
+
+    74% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.42;
+    }
+}
+
+@keyframes event-carrier-backglow {
+    0% {
+        opacity: 0.58;
+        transform: translate3d(-0.6%, 0.3%, 0) scale(0.98);
+        filter: blur(18px);
+    }
+
+    48% {
+        opacity: 0.92;
+        transform: translate3d(0.25%, -0.15%, 0) scale(1.03);
+        filter: blur(13px);
+    }
+
+    100% {
+        opacity: 0.72;
+        transform: translate3d(0.8%, -0.35%, 0) scale(1.06);
+        filter: blur(17px);
+    }
+}
+
+@keyframes event-carrier-beam-drift {
+    0% {
+        opacity: 0.28;
+        filter: blur(8px) brightness(0.86);
+        margin-left: -2.4vw;
+        scale: 0.88 0.96;
+    }
+
+    42% {
+        opacity: 0.82;
+        filter: blur(3px) brightness(1.2);
+        margin-left: 1.1vw;
+        scale: 1.08 1.08;
+    }
+
+    100% {
+        opacity: 0.42;
+        filter: blur(7px) brightness(0.95);
+        margin-left: 2.25vw;
+        scale: 1.12 1.02;
+    }
+}
+
+@keyframes event-carrier-haze-flow {
+    0% {
+        opacity: 0.46;
+        transform: translate3d(-1.4%, 0.8%, 0) scale(1.02);
+        filter: blur(15px);
+    }
+
+    52% {
+        opacity: 0.78;
+        transform: translate3d(0.6%, -0.4%, 0) scale(1.05);
+        filter: blur(11px);
+    }
+
+    100% {
+        opacity: 0.58;
+        transform: translate3d(1.6%, -1%, 0) scale(1.08);
+        filter: blur(14px);
+    }
+}
+
+@keyframes event-carrier-particle-fall {
+    from {
+        background-position: 4% 16%, 62% 28%, 44% 8%;
+        opacity: 0.2;
+    }
+
+    45% {
+        opacity: 0.42;
+    }
+
+    to {
+        background-position: 6% 124%, 59% 146%, 48% 116%;
+        opacity: 0.28;
     }
 }
 

@@ -8,6 +8,14 @@ const WEBSITE_DATA_ENDPOINT = `${CONTENT_API_BASE}/content-api/website-data`;
 const LOCAL_WEBSITE_DATA_ENDPOINT = '/website-data.json';
 const DEFAULT_ICP_URL = 'https://beian.miit.gov.cn/';
 const DEFAULT_LANDING_INTRO_HTML = document.getElementById('intro')?.innerHTML || '';
+const AUTHOR_MESSAGE_VIEW_ID = '#author-message-view';
+const DEFAULT_AUTHOR_MESSAGE = {
+    title: '作者留言',
+    eyebrow: 'AUTHOR NOTE',
+    fontFamily: 'native',
+    bodyHtml:
+        '<p>这里是网站作者的留言。你可以在后台的“作者留言”节点里编辑这段文字、插入图片，并切换原生字体或鸿蒙字体。</p>',
+};
 
 let websiteData = { categories: [] };
 
@@ -15,6 +23,28 @@ function getSiteSettings(data = websiteData) {
     return data && typeof data.siteSettings === 'object' && !Array.isArray(data.siteSettings)
         ? data.siteSettings
         : {};
+}
+
+function normalizeAuthorMessageFont(value) {
+    return String(value || '').trim() === 'harmony' ? 'harmony' : 'native';
+}
+
+function getAuthorMessageSettings(data = websiteData) {
+    const source =
+        data &&
+        typeof data.authorMessage === 'object' &&
+        !Array.isArray(data.authorMessage)
+            ? data.authorMessage
+            : {};
+
+    return {
+        ...DEFAULT_AUTHOR_MESSAGE,
+        ...source,
+        title: String(source.title || DEFAULT_AUTHOR_MESSAGE.title).trim(),
+        eyebrow: String(source.eyebrow || DEFAULT_AUTHOR_MESSAGE.eyebrow).trim(),
+        fontFamily: normalizeAuthorMessageFont(source.fontFamily),
+        bodyHtml: String(source.bodyHtml || source.body || DEFAULT_AUTHOR_MESSAGE.bodyHtml),
+    };
 }
 
 function normalizeIcpUrl(value) {
@@ -202,6 +232,7 @@ const appState = {
     pendingMapEntryTransition: false,
 };
 const logo = document.getElementById('logo');
+const authorMessageEntryButton = document.getElementById('author-message-entry');
 
 
 
@@ -249,6 +280,7 @@ const views = {
     '#map-view': document.getElementById('map-view'),
     '#detail-view': document.getElementById('detail-view'),
     '#reader-view': document.getElementById('reader-view'),
+    [AUTHOR_MESSAGE_VIEW_ID]: document.getElementById('author-message-view'),
 };
 
 const DEFAULT_PLACEHOLDER_IMAGE = '/images/placeholder.png';
@@ -269,6 +301,115 @@ const resolveAssetPath = (value, fallback = DEFAULT_PLACEHOLDER_IMAGE) => {
         ? rawValue
         : `/${rawValue.replace(/^\.?\//, '')}`;
 };
+
+const escapeHtmlText = (value) =>
+    String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const AUTHOR_MESSAGE_ALLOWED_TAGS = new Set([
+    'a',
+    'blockquote',
+    'br',
+    'b',
+    'del',
+    'div',
+    'em',
+    'figcaption',
+    'figure',
+    'h2',
+    'h3',
+    'h4',
+    'hr',
+    'i',
+    'img',
+    'li',
+    'ol',
+    'p',
+    's',
+    'span',
+    'strike',
+    'strong',
+    'u',
+    'ul',
+]);
+
+function normalizeAuthorMessageUrl(value, { image = false } = {}) {
+    const rawValue = String(value || '').trim();
+    if (!rawValue || /^(?:javascript|vbscript):/i.test(rawValue)) return '';
+    if (image && /^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(rawValue)) {
+        return rawValue;
+    }
+    if (/^(?:https?:)?\/\//i.test(rawValue)) return rawValue;
+    if (rawValue.startsWith('/') || rawValue.startsWith('./') || rawValue.startsWith('../')) {
+        return image ? resolveAssetPath(rawValue, '') : rawValue;
+    }
+    return image ? resolveAssetPath(rawValue, '') : '';
+}
+
+function sanitizeAuthorMessageHtml(html) {
+    const template = document.createElement('template');
+    template.innerHTML = String(html || '');
+
+    const sanitizeNode = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return document.createTextNode(node.textContent || '');
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            return document.createDocumentFragment();
+        }
+
+        const tagName = node.tagName.toLowerCase();
+        if (!AUTHOR_MESSAGE_ALLOWED_TAGS.has(tagName)) {
+            const fragment = document.createDocumentFragment();
+            Array.from(node.childNodes).forEach((child) => {
+                fragment.appendChild(sanitizeNode(child));
+            });
+            return fragment;
+        }
+
+        const next = document.createElement(tagName);
+
+        if (tagName === 'a') {
+            const href = normalizeAuthorMessageUrl(node.getAttribute('href'));
+            if (href) {
+                next.setAttribute('href', href);
+                next.setAttribute('target', '_blank');
+                next.setAttribute('rel', 'noopener noreferrer');
+            }
+            const title = node.getAttribute('title');
+            if (title) next.setAttribute('title', title);
+        }
+
+        if (tagName === 'img') {
+            const src = normalizeAuthorMessageUrl(node.getAttribute('src'), { image: true });
+            if (!src) return document.createDocumentFragment();
+            next.setAttribute('src', src);
+            next.setAttribute('loading', 'lazy');
+            next.setAttribute('alt', node.getAttribute('alt') || '作者留言图片');
+            const title = node.getAttribute('title');
+            if (title) next.setAttribute('title', title);
+        }
+
+        Array.from(node.childNodes).forEach((child) => {
+            next.appendChild(sanitizeNode(child));
+        });
+        return next;
+    };
+
+    const fragment = document.createDocumentFragment();
+    Array.from(template.content.childNodes).forEach((child) => {
+        fragment.appendChild(sanitizeNode(child));
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(fragment);
+    return wrapper.innerHTML;
+}
 
 const stripRouteMarkup = (value) =>
     String(value || '')
@@ -533,6 +674,8 @@ const buildRouteUrl = (state) => {
         : '';
 
     switch (safeState.viewId) {
+        case AUTHOR_MESSAGE_VIEW_ID:
+            return '/author-message';
         case '#library-view':
             return '/library';
         case '#category-view':
@@ -727,6 +870,15 @@ const parseRouteStateFromLocation = () => {
                 return { viewId: '#library-view', history: [{ type: 'library' }] };
             }
             if (
+                normalizedHashPath === '/author-message' ||
+                normalizedHashPath === '/author'
+            ) {
+                return {
+                    viewId: AUTHOR_MESSAGE_VIEW_ID,
+                    history: [{ type: 'authorMessage' }],
+                };
+            }
+            if (
                 normalizedHashPath === '/categories' ||
                 normalizedHashPath === '/category'
             ) {
@@ -866,6 +1018,12 @@ const parseRouteStateFromLocation = () => {
             return DEFAULT_ROUTE_STATE;
         case 'library':
             return { viewId: '#library-view', history: [{ type: 'library' }] };
+        case 'author':
+        case 'author-message':
+            return {
+                viewId: AUTHOR_MESSAGE_VIEW_ID,
+                history: [{ type: 'authorMessage' }],
+            };
         case 'categories':
         case 'category':
             return { viewId: '#category-view', history: [] };
@@ -1057,6 +1215,7 @@ const KNOWN_VIEW_IDS = [
     '#map-view',
     '#detail-view',
     '#reader-view',
+    AUTHOR_MESSAGE_VIEW_ID,
 ];
 
 // Dedicated configuration for the Empire Laws experience.
@@ -1064,6 +1223,26 @@ const KNOWN_VIEW_IDS = [
 // but the rendering is custom so the page can mimic a codex / statute board.
 const LAW_CATEGORY_ID = 'laws';
 const DEFAULT_ROUTE_STATE = { viewId: '#landing-view', history: [] };
+const AUTHOR_MESSAGE_ENTRY_VIEW_IDS = new Set([
+    '#library-view',
+    '#category-view',
+    '#law-hub-view',
+    '#law-detail-view',
+    '#list-view',
+    '#timeline-view',
+    '#map-view',
+    '#detail-view',
+    '#reader-view',
+    AUTHOR_MESSAGE_VIEW_ID,
+]);
+
+function syncAuthorMessageEntryForView(viewId) {
+    if (!authorMessageEntryButton) return;
+    const isVisible = AUTHOR_MESSAGE_ENTRY_VIEW_IDS.has(viewId);
+    authorMessageEntryButton.hidden = !isVisible;
+    authorMessageEntryButton.classList.toggle('is-visible', isVisible);
+    authorMessageEntryButton.classList.toggle('is-active', viewId === AUTHOR_MESSAGE_VIEW_ID);
+}
 
 function revealLandingIntro(delayMs = 100) {
     const intro = document.getElementById('intro');
@@ -1093,6 +1272,8 @@ const APP_BOOT_CONFIG = {
     novelManifestFallbackDelayMs: 800,
     // CDN used for the chart dependency on the graph page.
     graphCdnUrl: 'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js',
+    graphDataUrl: '/graph-data.js?v=relationship-graph-20260702',
+    graphScriptUrl: '/graph.js?v=relationship-graph-20260702',
     // CDN used for the G6 dependency on the relationship tree page.
     g6CdnUrl: 'https://unpkg.com/@antv/g6@4.8.24/dist/g6.min.js',
 };
@@ -1196,8 +1377,8 @@ const scrollToPage = (pageIndex) => {
                 // 2) 再按需加载本地图谱脚本（初始不阻塞首屏）
                 if (!window.RelationshipGraph) {
                     graphContainer.innerHTML = `<div class="loading-placeholder">正在加载关系图谱数据...</div>`;
-                    await loadScript('/graph-data.js');
-                    await loadScript('/graph.js');
+                    await loadScript(APP_BOOT_CONFIG.graphDataUrl);
+                    await loadScript(APP_BOOT_CONFIG.graphScriptUrl);
                     graphContainer.innerHTML = '';
                 }
 
@@ -3236,6 +3417,29 @@ const initG6Tree = (data) => {
 };
 
 // --- 2. 渲染引擎 ---
+function renderAuthorMessageView(view) {
+    const shell = view?.querySelector?.('.author-message-shell');
+    if (!shell) return;
+
+    const message = getAuthorMessageSettings();
+    const fontMode = normalizeAuthorMessageFont(message.fontFamily);
+    const bodyHtml = sanitizeAuthorMessageHtml(message.bodyHtml);
+
+    shell.classList.toggle('author-message-shell--harmony', fontMode === 'harmony');
+    shell.classList.toggle('author-message-shell--native', fontMode !== 'harmony');
+    shell.innerHTML = `
+        <article class="author-message-panel">
+            <header class="author-message-header">
+                <div class="author-message-kicker">${escapeHtmlText(message.eyebrow || 'AUTHOR NOTE')}</div>
+                <h1>${escapeHtmlText(message.title || '作者留言')}</h1>
+            </header>
+            <div class="author-message-body">
+                ${bodyHtml || '<p>作者留言尚未填写。</p>'}
+            </div>
+        </article>
+    `;
+}
+
 const render = (state) => {
     try {
         const { viewId, history: stateHistory } = state || {};
@@ -3285,6 +3489,8 @@ const render = (state) => {
                     title = '小说原文';
                 } else if (crumb.type === 'library') {
                     title = '帝国中央文库';
+                } else if (crumb.type === 'authorMessage') {
+                    title = '作者留言';
                 } else if (crumb.type === 'map') {
                     title = '地图';
                 } else if (crumb.type === 'branchEvent') {
@@ -3328,6 +3534,8 @@ const render = (state) => {
                     novelCrumb.paragraphId
                 );
             }
+        } else if (viewId === AUTHOR_MESSAGE_VIEW_ID) {
+            renderAuthorMessageView(view);
         } else if (viewId === '#category-view') {
             const container = view.querySelector('.category-gateway');
             const displayCategories = websiteData.categories.filter(
@@ -3449,7 +3657,7 @@ const render = (state) => {
             }
         } else if (viewId === '#map-view') {
             if (window.EmpireMap && typeof window.EmpireMap.init === 'function') {
-                window.EmpireMap.init(view, { parseAndColorText });
+                window.EmpireMap.init(view, { parseAndColorText, websiteData });
             }
         } else if (viewId === '#detail-view') {
             removeTimelineDetailNavigator(view);
@@ -3557,6 +3765,15 @@ const render = (state) => {
             );
             renderTimelineBranchControls(view, stateHistory);
             rememberTimelineDetailFocus(stateHistory);
+
+            if (isTimelineDetail) {
+                view.querySelectorAll('.detail-left, .detail-right').forEach((panel, index) => {
+                    panel.classList.remove('animate-in');
+                    panel.style.animationDelay = `${index * 80}ms`;
+                    void panel.offsetWidth;
+                    panel.classList.add('animate-in');
+                });
+            }
         }
     } catch (error) {
         console.error('Render Error:', error);
@@ -3574,7 +3791,8 @@ const syncGlobalControlsForView = (viewId) => {
         '#list-view',
         '#map-view',
         '#detail-view',
-        '#reader-view'
+        '#reader-view',
+        AUTHOR_MESSAGE_VIEW_ID
     ]);
 
     const inLibrary = libraryViewIds.has(viewId);
@@ -3595,6 +3813,8 @@ const syncGlobalControlsForView = (viewId) => {
         logo.style.visibility = 'visible';
         revealLandingIntro();
     }
+
+    syncAuthorMessageEntryForView(viewId);
 };
 
 const animateViewEntryElements = (view, viewId) => {
@@ -3608,9 +3828,9 @@ const animateViewEntryElements = (view, viewId) => {
     });
 
     if (viewId !== '#library-view') {
-        const animatedContent = view.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .empire-map-shell, .reader-content-wrapper');
+        const animatedContent = view.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .empire-map-shell, .reader-content-wrapper, .author-message-shell');
         animatedContent.forEach((el) => {
-             const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right, .empire-map-panel, .empire-map-stage');
+             const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right, .empire-map-panel, .empire-map-stage, .author-message-panel');
              if (childrenToAnimate.length > 0){
                 void el.offsetWidth;
                 childrenToAnimate.forEach((child, index) => {
@@ -3662,7 +3882,8 @@ const showView = (state) => {
             '#list-view',
             '#map-view',
             '#detail-view',
-            '#reader-view'
+            '#reader-view',
+            AUTHOR_MESSAGE_VIEW_ID
         ]);
 
         const inLibrary = libraryViewIds.has(state.viewId);
@@ -3688,6 +3909,8 @@ const showView = (state) => {
             revealLandingIntro();
         }
 
+        syncAuthorMessageEntryForView(state.viewId);
+
         const commonElements = nextView.querySelectorAll('.back-button, .breadcrumb, .view-mode-toggle, .reader-controls');
         commonElements.forEach(el => {
             el.classList.remove('animate-in');
@@ -3696,9 +3919,9 @@ const showView = (state) => {
         });
 
         if (state.viewId !== '#library-view') {
-            const animatedContent = nextView.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .empire-map-shell, .reader-content-wrapper');
+            const animatedContent = nextView.querySelectorAll('.category-gateway, .law-hub-shell, .law-detail-shell, .view-content-container, .detail-content, .timeline-container, .empire-map-shell, .reader-content-wrapper, .author-message-shell');
             animatedContent.forEach((el) => {
-                 const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right, .empire-map-panel, .empire-map-stage');
+                 const childrenToAnimate = el.querySelectorAll('.category-panel, .law-column, .law-entry-shell, .law-entry, .law-clause-card, .law-history-card, .law-detail-copy, .law-detail-visual, .law-charter-track, .law-charter-center, .law-charter-final-wrap, .law-charter-focus, .list-item, .detail-left, .detail-right, .empire-map-panel, .empire-map-stage, .author-message-panel');
                  if (childrenToAnimate.length > 0){
                     void el.offsetWidth;
                     childrenToAnimate.forEach((child, index) => {
@@ -3822,6 +4045,18 @@ document.body.addEventListener('click', (e) => {
     
     const backButton = e.target.closest('.back-button');
     if (backButton) { e.preventDefault(); history.back(); return; }
+
+    const authorMessageEntry = e.target.closest('#author-message-entry');
+    if (authorMessageEntry) {
+        e.preventDefault();
+        if (currentViewId !== AUTHOR_MESSAGE_VIEW_ID) {
+            navigate({
+                viewId: AUTHOR_MESSAGE_VIEW_ID,
+                history: [{ type: 'authorMessage' }],
+            });
+        }
+        return;
+    }
 
     const libraryIcon = e.target.closest('#library-icon');
     if (libraryIcon) {

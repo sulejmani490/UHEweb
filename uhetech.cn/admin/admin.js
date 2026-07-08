@@ -16,6 +16,7 @@ const API_BASE = `${CONTENT_API_BASE}/content-api`;
 const GET_ENDPOINT = `${API_BASE}/website-data`;
 const SAVE_ENDPOINT = `${API_BASE}/admin/website-data`;
 const UPLOAD_ENDPOINT = `${API_BASE}/admin/upload-image`;
+const IMAGE_LIBRARY_ENDPOINT = `${API_BASE}/admin/images`;
 const UPLOAD_AUDIO_ENDPOINT = `${API_BASE}/admin/upload-audio`;
 const DELETE_AUDIO_ENDPOINT = `${API_BASE}/admin/delete-audio`;
 const ADMIN_SECURITY_ENDPOINT = `${API_BASE}/admin/security`;
@@ -42,11 +43,14 @@ let lastSearchResultsCount = 0;
 const SEARCH_RESULTS_COLLAPSED_KEY = "uhe_admin_search_results_collapsed";
 let collapsedTreeNodeKeys = new Set();
 const TREE_COLLAPSE_STORAGE_KEY = "uhe_admin_tree_collapsed_nodes";
+const MAP_TEXT_DEFAULT_COLLAPSE_KEY = "uhe_admin_map_text_default_collapsed";
 const EDITOR_ACTION_DOCK_STORAGE_KEY = "uhe_admin_editor_action_dock";
 const EDITOR_ACTION_DOCK_TOP = 0;
 const EDITOR_ACTION_DOCK_SIDE = 18;
 const EDITOR_ACTION_DOCK_SNAP = 18;
 let editorActionDockState = null;
+let imageLibraryCache = null;
+let imageLibraryLoadedAt = 0;
 
 // 小说数据（独立于 websiteData，仅在后台使用）
 let novelsState = {
@@ -57,7 +61,28 @@ let novelsState = {
 };
 const MUSIC_ROOT_NODE = { id: "__music_root", title: "音乐库" };
 const SITE_SETTINGS_ROOT_NODE = { id: "__site_settings", title: "站点设置" };
+const AUTHOR_MESSAGE_ROOT_NODE = { id: "__author_message", title: "作者留言" };
+const MAP_TEXT_ROOT_NODE = { id: "__map_text_root", title: "地图文本" };
+const MAP_TEXT_SITE_LABELS = {
+  canberra: "堪培拉",
+  nikenbah: "Nikenbah",
+  sydney: "悉尼",
+};
+const MAP_TEXT_ROOT_PATH = ["__mapText", "root"];
+const AUTHOR_MESSAGE_ROOT_PATH = ["__authorMessage", "root"];
 const DEFAULT_ICP_URL = "https://beian.miit.gov.cn/";
+const DEFAULT_AUTHOR_MESSAGE = {
+  title: "作者留言",
+  eyebrow: "AUTHOR NOTE",
+  fontFamily: "native",
+  bodyHtml:
+    "<p>这里是网站作者的留言。你可以在后台编辑这段文字，插入图片，使用下划线、删除线和符号。</p>",
+};
+const AUTHOR_MESSAGE_FONT_OPTIONS = [
+  { value: "native", label: "原生字体" },
+  { value: "harmony", label: "鸿蒙字体" },
+];
+const AUTHOR_MESSAGE_SYMBOLS = ["—", "·", "※", "◆", "◇", "§", "№", "「」", "『』", "【】"];
 const DEFAULT_SITE_EVENT_SLIDE = {
   image: "/images/总理府活动.png",
   text: "这是你的梦想吗？",
@@ -71,6 +96,10 @@ const SITE_EVENT_CAMERA_OPTIONS = [
   { value: "pan-right", label: "向右横移" },
   { value: "drift-up", label: "向上抬升" },
   { value: "still", label: "轻微静帧" },
+];
+const SITE_EVENT_EFFECT_OPTIONS = [
+  { value: "none", label: "无镜头特效" },
+  { value: "sky-carrier-light", label: "空天母舰背光" },
 ];
 const DEFAULT_SITE_EVENT = {
   enabled: true,
@@ -196,6 +225,44 @@ function restoreCollapsedTreeState() {
   }
 }
 
+function getMapTextTreePaths() {
+  return [
+    MAP_TEXT_ROOT_PATH,
+    ...Object.keys(MAP_TEXT_SITE_LABELS).map((siteId) => ["__mapText", "site", siteId]),
+  ];
+}
+
+function collapseMapTextTree(options = {}) {
+  const { includeRoot = true, persist = true } = options;
+  getMapTextTreePaths().forEach((path) => {
+    if (!includeRoot && path[1] === "root") return;
+    collapsedTreeNodeKeys.add(getTreePathKey(path));
+  });
+  if (persist) persistCollapsedTreeState();
+}
+
+function expandMapTextTree(options = {}) {
+  const { persist = true } = options;
+  getMapTextTreePaths().forEach((path) => {
+    collapsedTreeNodeKeys.delete(getTreePathKey(path));
+  });
+  if (persist) persistCollapsedTreeState();
+}
+
+function ensureDefaultMapTextTreeCollapse() {
+  try {
+    if (localStorage.getItem(MAP_TEXT_DEFAULT_COLLAPSE_KEY) === "1") return;
+  } catch (_error) {
+    return;
+  }
+  collapseMapTextTree();
+  try {
+    localStorage.setItem(MAP_TEXT_DEFAULT_COLLAPSE_KEY, "1");
+  } catch (_error) {
+    // Ignore storage issues; the tree still uses the in-memory default for this session.
+  }
+}
+
 function isTreeNodeCollapsed(path) {
   return collapsedTreeNodeKeys.has(getTreePathKey(path));
 }
@@ -213,6 +280,15 @@ function toggleTreeNodeCollapsed(path) {
 
 function expandTreeAncestors(path) {
   if (!Array.isArray(path) || !path.length) return;
+
+  if (isMapTextPath(path)) {
+    collapsedTreeNodeKeys.delete(getTreePathKey(["__mapText", "root"]));
+    if (path[1] === "feature") {
+      collapsedTreeNodeKeys.delete(getTreePathKey(["__mapText", "site", path[2]]));
+    }
+    persistCollapsedTreeState();
+    return;
+  }
 
   for (let i = 2; i <= path.length; i += 2) {
     collapsedTreeNodeKeys.delete(getTreePathKey(path.slice(0, i)));
@@ -609,6 +685,307 @@ function handleAdminAuthFailure() {
   alert("管理员会话已失效，或备用 Token 不正确。请重新打开 /admin 并输入管理员密钥。");
 }
 
+function normalizeImagePathForPreview(value) {
+  const rawImage = String(value || "").trim();
+  if (!rawImage) return "";
+  if (rawImage.startsWith("http://") || rawImage.startsWith("https://")) {
+    return rawImage;
+  }
+  if (rawImage.startsWith("/")) {
+    return rawImage;
+  }
+  return `/${rawImage.replace(/^\.?\//, "")}`;
+}
+
+const AUTHOR_MESSAGE_ALLOWED_TAGS = new Set([
+  "a",
+  "blockquote",
+  "br",
+  "b",
+  "del",
+  "div",
+  "em",
+  "figcaption",
+  "figure",
+  "h2",
+  "h3",
+  "h4",
+  "hr",
+  "i",
+  "img",
+  "li",
+  "ol",
+  "p",
+  "s",
+  "span",
+  "strike",
+  "strong",
+  "u",
+  "ul",
+]);
+
+function normalizeAuthorMessageUrl(value, { image = false } = {}) {
+  const rawValue = String(value || "").trim();
+  if (!rawValue || /^(?:javascript|vbscript):/i.test(rawValue)) return "";
+  if (image && /^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(rawValue)) {
+    return rawValue;
+  }
+  if (/^(?:https?:)?\/\//i.test(rawValue)) return rawValue;
+  if (rawValue.startsWith("/") || rawValue.startsWith("./") || rawValue.startsWith("../")) {
+    return image ? normalizeImagePathForPreview(rawValue) : rawValue;
+  }
+  return image ? normalizeImagePathForPreview(rawValue) : "";
+}
+
+function sanitizeAuthorMessageHtml(html) {
+  const template = document.createElement("template");
+  template.innerHTML = String(html || "");
+
+  const sanitizeNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent || "");
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return document.createDocumentFragment();
+    }
+
+    const tagName = node.tagName.toLowerCase();
+    if (!AUTHOR_MESSAGE_ALLOWED_TAGS.has(tagName)) {
+      const fragment = document.createDocumentFragment();
+      Array.from(node.childNodes).forEach((child) => {
+        fragment.appendChild(sanitizeNode(child));
+      });
+      return fragment;
+    }
+
+    const next = document.createElement(tagName);
+    if (tagName === "a") {
+      const href = normalizeAuthorMessageUrl(node.getAttribute("href"));
+      if (href) {
+        next.setAttribute("href", href);
+        next.setAttribute("target", "_blank");
+        next.setAttribute("rel", "noopener noreferrer");
+      }
+      const title = node.getAttribute("title");
+      if (title) next.setAttribute("title", title);
+    }
+
+    if (tagName === "img") {
+      const src = normalizeAuthorMessageUrl(node.getAttribute("src"), { image: true });
+      if (!src) return document.createDocumentFragment();
+      next.setAttribute("src", src);
+      next.setAttribute("loading", "lazy");
+      next.setAttribute("alt", node.getAttribute("alt") || "作者留言图片");
+      const title = node.getAttribute("title");
+      if (title) next.setAttribute("title", title);
+    }
+
+    Array.from(node.childNodes).forEach((child) => {
+      next.appendChild(sanitizeNode(child));
+    });
+    return next;
+  };
+
+  const fragment = document.createDocumentFragment();
+  Array.from(template.content.childNodes).forEach((child) => {
+    fragment.appendChild(sanitizeNode(child));
+  });
+  const wrapper = document.createElement("div");
+  wrapper.appendChild(fragment);
+  return wrapper.innerHTML;
+}
+
+function formatAssetFileSize(bytes) {
+  const size = Number(bytes) || 0;
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(size < 10240 ? 1 : 0)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(size < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+}
+
+function formatAssetDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+async function loadImageLibrary(options = {}) {
+  const maxAgeMs = 30000;
+  const now = Date.now();
+  if (!options.force && imageLibraryCache && now - imageLibraryLoadedAt < maxAgeMs) {
+    return imageLibraryCache;
+  }
+
+  const res = await fetch(IMAGE_LIBRARY_ENDPOINT, {
+    cache: "no-cache",
+    headers: buildAdminHeaders(),
+  });
+  const data = await res.json().catch(async () => ({
+    error: await res.text().catch(() => "图片库读取失败"),
+  }));
+
+  if (res.status === 401 || data.error === "Invalid admin token") {
+    handleAdminAuthFailure();
+    return [];
+  }
+
+  if (!res.ok || data.error || data.ok === false) {
+    throw new Error(data.error || `HTTP ${res.status}`);
+  }
+
+  imageLibraryCache = Array.isArray(data.images) ? data.images : [];
+  imageLibraryLoadedAt = now;
+  return imageLibraryCache;
+}
+
+function invalidateImageLibraryCache() {
+  imageLibraryCache = null;
+  imageLibraryLoadedAt = 0;
+}
+
+function bindImageLibraryDetails(details, options = {}) {
+  if (!details) return;
+  const body = details.querySelector("[data-image-library-body]");
+  if (!body) return;
+
+  const openPicker = () => {
+    if (body.dataset.imageLibraryLoaded === "1") return;
+    body.dataset.imageLibraryLoaded = "1";
+    renderImageLibraryPicker(body, options);
+  };
+
+  details.addEventListener("toggle", () => {
+    if (details.open) openPicker();
+  });
+
+  if (details.open) openPicker();
+}
+
+function renderImageLibraryPicker(container, options = {}) {
+  if (!container) return;
+  const {
+    inputSelector,
+    previewSelector,
+    onSelect,
+    emptyText = "images 文件夹里还没有可选图片。",
+  } = options;
+
+  container.classList.add("image-library-picker");
+  container.innerHTML = `
+    <div class="image-library-toolbar">
+      <input
+        type="search"
+        class="image-library-search"
+        placeholder="搜索图片文件名"
+        aria-label="搜索图片文件名"
+      >
+      <button type="button" class="secondary image-library-refresh">刷新</button>
+    </div>
+    <div class="image-library-status">正在读取 images 文件夹...</div>
+    <div class="image-library-grid" aria-live="polite"></div>
+  `;
+
+  const searchInput = container.querySelector(".image-library-search");
+  const refreshButton = container.querySelector(".image-library-refresh");
+  const status = container.querySelector(".image-library-status");
+  const grid = container.querySelector(".image-library-grid");
+  let assets = [];
+
+  const setSelectedImagePath = (assetPath) => {
+    const input = inputSelector ? document.querySelector(inputSelector) : null;
+    const preview = previewSelector ? document.querySelector(previewSelector) : null;
+
+    if (input) {
+      input.value = assetPath;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    if (preview) {
+      preview.src = normalizeImagePathForPreview(assetPath);
+      preview.style.display = assetPath ? "block" : "none";
+    }
+
+    if (typeof onSelect === "function") {
+      onSelect(assetPath);
+    }
+
+    setStatus("已选择 images 文件夹中的图片（记得应用修改并保存）", "ok");
+  };
+
+  const paint = () => {
+    const query = String(searchInput?.value || "").trim().toLowerCase();
+    const visibleAssets = query
+      ? assets.filter((asset) =>
+          [asset.name, asset.path, asset.extension]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+            .includes(query)
+        )
+      : assets;
+
+    if (!visibleAssets.length) {
+      grid.innerHTML = `<div class="image-library-empty">${escapeHtml(query ? "没有匹配的图片。" : emptyText)}</div>`;
+      return;
+    }
+
+    grid.innerHTML = visibleAssets
+      .map((asset, index) => `
+        <button
+          type="button"
+          class="image-library-tile"
+          data-image-library-index="${index}"
+          title="${escapeEditorValue(asset.path || asset.name || "")}"
+        >
+          <img src="${escapeEditorValue(asset.path || "")}" alt="${escapeEditorValue(asset.name || "图片")}">
+          <span class="image-library-name">${escapeHtml(asset.name || asset.path || "未命名图片")}</span>
+          <span class="image-library-meta">${escapeHtml([
+            formatAssetFileSize(asset.size),
+            formatAssetDate(asset.mtime),
+          ].filter(Boolean).join(" · "))}</span>
+        </button>
+      `)
+      .join("");
+
+    grid.querySelectorAll("[data-image-library-index]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const index = Number(button.getAttribute("data-image-library-index"));
+        const asset = visibleAssets[index];
+        if (!asset?.path) return;
+        setSelectedImagePath(asset.path);
+      });
+    });
+  };
+
+  const refresh = async (options = {}) => {
+    status.textContent = "正在读取 images 文件夹...";
+    status.classList.remove("error");
+
+    try {
+      assets = await loadImageLibrary(options);
+      status.textContent = assets.length
+        ? `共 ${assets.length} 张图片，点击缩略图即可选择。`
+        : emptyText;
+      paint();
+    } catch (error) {
+      console.error(error);
+      status.textContent = `图片库读取失败：${error?.message || error}`;
+      status.classList.add("error");
+      grid.innerHTML = "";
+      setStatus("图片库读取失败", "error");
+    }
+  };
+
+  searchInput?.addEventListener("input", paint);
+  refreshButton?.addEventListener("click", () => refresh({ force: true }));
+  refresh();
+}
+
 // ====== 小说管理：工具函数（新增） ======
 function isNovelsPath(path) {
   return Array.isArray(path) && path[0] === "__novels";
@@ -634,6 +1011,65 @@ function isMusicPath(path) {
 
 function isSiteSettingsPath(path) {
   return Array.isArray(path) && path[0] === "__siteSettings";
+}
+
+function isAuthorMessagePath(path) {
+  return Array.isArray(path) && path[0] === "__authorMessage";
+}
+
+function isMapTextPath(path) {
+  return Array.isArray(path) && path[0] === "__mapText";
+}
+
+function ensureEmpireMap(data = websiteData) {
+  if (!data || typeof data !== "object") return { localFeatureText: {} };
+  if (!data.empireMap || typeof data.empireMap !== "object" || Array.isArray(data.empireMap)) {
+    data.empireMap = {};
+  }
+  if (
+    !data.empireMap.localFeatureText ||
+    typeof data.empireMap.localFeatureText !== "object" ||
+    Array.isArray(data.empireMap.localFeatureText)
+  ) {
+    data.empireMap.localFeatureText = {};
+  }
+  Object.keys(MAP_TEXT_SITE_LABELS).forEach((siteId) => {
+    if (
+      !data.empireMap.localFeatureText[siteId] ||
+      typeof data.empireMap.localFeatureText[siteId] !== "object" ||
+      Array.isArray(data.empireMap.localFeatureText[siteId])
+    ) {
+      data.empireMap.localFeatureText[siteId] = {};
+    }
+    if (!data.empireMap.localFeatureText[siteId].__site) {
+      data.empireMap.localFeatureText[siteId].__site = {
+        title: MAP_TEXT_SITE_LABELS[siteId],
+        summary: "",
+        body: "",
+      };
+    }
+  });
+  return data.empireMap;
+}
+
+function getMapTextNode(path) {
+  const empireMap = ensureEmpireMap(websiteData);
+  if (!isMapTextPath(path)) return null;
+  if (path[1] === "root") return MAP_TEXT_ROOT_NODE;
+  if (path[1] === "site") {
+    const siteId = path[2];
+    return {
+      id: siteId,
+      title: MAP_TEXT_SITE_LABELS[siteId] || siteId,
+      items: empireMap.localFeatureText?.[siteId] || {},
+    };
+  }
+  if (path[1] === "feature") {
+    const siteId = path[2];
+    const featureKey = path[3];
+    return empireMap.localFeatureText?.[siteId]?.[featureKey] || null;
+  }
+  return null;
 }
 
 function normalizeExternalUrl(value, fallback = DEFAULT_ICP_URL) {
@@ -667,11 +1103,45 @@ function ensureSiteSettings(data = websiteData) {
   return data.siteSettings;
 }
 
+function normalizeAuthorMessageFont(value) {
+  return String(value || "").trim() === "harmony" ? "harmony" : "native";
+}
+
+function ensureAuthorMessage(data = websiteData) {
+  if (!data || typeof data !== "object") return { ...DEFAULT_AUTHOR_MESSAGE };
+  if (!data.authorMessage || typeof data.authorMessage !== "object" || Array.isArray(data.authorMessage)) {
+    data.authorMessage = {};
+  }
+
+  data.authorMessage = {
+    ...DEFAULT_AUTHOR_MESSAGE,
+    ...data.authorMessage,
+    title: String(data.authorMessage.title || DEFAULT_AUTHOR_MESSAGE.title).trim(),
+    eyebrow: String(data.authorMessage.eyebrow || DEFAULT_AUTHOR_MESSAGE.eyebrow).trim(),
+    fontFamily: normalizeAuthorMessageFont(data.authorMessage.fontFamily),
+    bodyHtml: String(
+      data.authorMessage.bodyHtml ||
+        data.authorMessage.body ||
+        DEFAULT_AUTHOR_MESSAGE.bodyHtml
+    ),
+  };
+
+  delete data.authorMessage.body;
+  return data.authorMessage;
+}
+
 function normalizeSiteEventCamera(value) {
   const camera = String(value || "").trim();
   return SITE_EVENT_CAMERA_OPTIONS.some((option) => option.value === camera)
     ? camera
     : DEFAULT_SITE_EVENT_SLIDE.camera;
+}
+
+function normalizeSiteEventEffect(value) {
+  const effect = String(value || "").trim();
+  return SITE_EVENT_EFFECT_OPTIONS.some((option) => option.value === effect)
+    ? effect
+    : "none";
 }
 
 function normalizeSiteEventSlide(slide, fallback = DEFAULT_SITE_EVENT_SLIDE) {
@@ -689,6 +1159,7 @@ function normalizeSiteEventSlide(slide, fallback = DEFAULT_SITE_EVENT_SLIDE) {
         DEFAULT_SITE_EVENT_SLIDE.durationMs
     ),
     camera: normalizeSiteEventCamera(source.camera || fallbackSlide.camera),
+    effect: normalizeSiteEventEffect(source.effect || fallbackSlide.effect),
   };
 }
 
@@ -1788,10 +2259,19 @@ function initColorToolbar(container) {
 
 // ====== 工具函数：节点操作 ======
 function getNode(root, path) {
+  if (isMapTextPath(path)) {
+    return getMapTextNode(path);
+  }
   if (isSiteSettingsPath(path)) {
     return {
       ...ensureSiteSettings(root),
       title: SITE_SETTINGS_ROOT_NODE.title,
+    };
+  }
+  if (isAuthorMessagePath(path)) {
+    return {
+      ...ensureAuthorMessage(root),
+      title: ensureAuthorMessage(root).title || AUTHOR_MESSAGE_ROOT_NODE.title,
     };
   }
   if (isNovelsPath(path)) {
@@ -1828,7 +2308,7 @@ function isSamePath(a, b) {
 }
 
 function getSortableInfo(path) {
-  if (!Array.isArray(path) || path.length < 2 || isNovelsPath(path) || isSiteSettingsPath(path)) return null;
+  if (!Array.isArray(path) || path.length < 2 || isNovelsPath(path) || isSiteSettingsPath(path) || isAuthorMessagePath(path) || isMapTextPath(path)) return null;
 
   if (isMusicPath(path)) {
     if (path[1] !== "playlist") return null;
@@ -1880,7 +2360,14 @@ function decorateDropTarget(el, placement) {
 
 function getNodeType(path) {
   if (!path) return "node";
+  if (isMapTextPath(path)) {
+    if (path[1] === "root") return "mapTextRoot";
+    if (path[1] === "site") return "mapTextSite";
+    if (path[1] === "feature") return path[3] === "__site" ? "mapTextOverview" : "mapTextFeature";
+    return "mapTextNode";
+  }
   if (isSiteSettingsPath(path)) return "siteSettings";
+  if (isAuthorMessagePath(path)) return "authorMessage";
   // 小说树（独立于 websiteData）
   if (isNovelsPath(path)) {
     if (path[1] === "root") return "novelsRoot";
@@ -2009,6 +2496,7 @@ function collectSiteEventSlidesFromEditor() {
       text: getField("text"),
       durationMs: getField("durationMs"),
       camera: getField("camera"),
+      effect: getField("effect"),
     });
   });
   return slides.length ? slides : [{ ...DEFAULT_SITE_EVENT_SLIDE }];
@@ -2046,6 +2534,12 @@ function getDisplayTypeLabel(type) {
       branch: "分支",
       branchEvent: "分支事件",
       siteSettings: "站点设置",
+      authorMessage: "作者留言",
+      mapTextRoot: "地图文本",
+      mapTextSite: "地图城市",
+      mapTextOverview: "城市总览文本",
+      mapTextFeature: "地图要素文本",
+      mapTextNode: "地图文本节点",
       musicRoot: "音乐库",
       musicTrack: "歌曲",
       musicNode: "音乐节点",
@@ -2064,6 +2558,26 @@ function getPathDisplay(path) {
 
   if (isSiteSettingsPath(path)) {
     return SITE_SETTINGS_ROOT_NODE.title;
+  }
+
+  if (isAuthorMessagePath(path)) {
+    return AUTHOR_MESSAGE_ROOT_NODE.title;
+  }
+
+  if (isMapTextPath(path)) {
+    const parts = [MAP_TEXT_ROOT_NODE.title];
+    if (path[1] === "root") return parts.join(" / ");
+    if (path[1] === "site") {
+      parts.push(MAP_TEXT_SITE_LABELS[path[2]] || path[2]);
+      return parts.join(" / ");
+    }
+    if (path[1] === "feature") {
+      parts.push(MAP_TEXT_SITE_LABELS[path[2]] || path[2]);
+      const node = getMapTextNode(path);
+      parts.push(node?.title || path[3]);
+      return parts.join(" / ");
+    }
+    return parts.join(" / ");
   }
 
   if (isMusicPath(path)) {
@@ -2129,6 +2643,32 @@ function getTreeNodeSubtitle(node, path, type) {
     return `${icpText} · 活动${event.enabled ? "开启" : "关闭"}`;
   }
 
+  if (type === "authorMessage") {
+    const message = ensureAuthorMessage(websiteData);
+    const plainText = String(message.bodyHtml || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const fontLabel = message.fontFamily === "harmony" ? "鸿蒙字体" : "原生字体";
+    return plainText ? `${fontLabel} · ${plainText.slice(0, 36)}` : `${fontLabel} · 正文未填写`;
+  }
+
+  if (type === "mapTextRoot") {
+    const empireMap = ensureEmpireMap(websiteData);
+    const total = Object.values(empireMap.localFeatureText || {}).reduce(
+      (sum, siteItems) => sum + Object.keys(siteItems || {}).length,
+      0
+    );
+    return total > 0 ? `${total} 条地图文案` : "暂无地图文案";
+  }
+
+  if (type === "mapTextSite") {
+    const siteItems = ensureEmpireMap(websiteData).localFeatureText?.[path[2]] || {};
+    return `${Object.keys(siteItems).length} 条可编辑文本`;
+  }
+
+  if (type === "mapTextOverview" || type === "mapTextFeature") {
+    const body = node?.body || node?.details || "";
+    return body ? String(body).slice(0, 42).replace(/\s+/g, " ") : "正文未填写";
+  }
+
   if (type === "musicRoot") {
     const total = ensureMusicPlaylist(websiteData).length;
     return total > 0 ? `${total} 首歌曲` : "暂无歌曲";
@@ -2175,6 +2715,14 @@ function getNodeMetaChips(path, node, type, sectionCount = 0) {
       ? ensureMusicPlaylist(websiteData).length
       : type === "siteSettings"
         ? 0
+        : type === "authorMessage"
+          ? 0
+          : type === "mapTextRoot"
+           ? Object.keys(ensureEmpireMap(websiteData).localFeatureText || {}).length
+          : type === "mapTextSite"
+            ? Object.keys(getMapTextNode(path)?.items || {}).length
+            : type === "mapTextOverview" || type === "mapTextFeature"
+              ? 0
         : countNodeChildren(node);
 
   if (childCount > 0) {
@@ -2191,6 +2739,28 @@ function getNodeMetaChips(path, node, type, sectionCount = 0) {
       text: event.enabled ? "活动已开启" : "活动已关闭",
       tone: event.enabled ? "accent" : "neutral",
     });
+  }
+
+  if (type === "authorMessage") {
+    const message = ensureAuthorMessage(websiteData);
+    chips.push({
+      text: message.bodyHtml ? "富文本已填写" : "正文待填写",
+      tone: message.bodyHtml ? "asset" : "warn",
+    });
+    chips.push({
+      text: message.fontFamily === "harmony" ? "鸿蒙字体" : "原生字体",
+      tone: "accent",
+    });
+  }
+
+  if (type === "mapTextRoot" || type === "mapTextSite" || type === "mapTextOverview" || type === "mapTextFeature") {
+    chips.push({ text: "前台地图可读取", tone: "accent" });
+    if (type === "mapTextFeature" || type === "mapTextOverview") {
+      chips.push({
+        text: node?.body || node?.details ? "正文已填写" : "正文待填写",
+        tone: node?.body || node?.details ? "asset" : "warn",
+      });
+    }
   }
 
   if (node?.image) {
@@ -2353,7 +2923,12 @@ function updateEditorChrome(context = {}) {
   const type = context.type || "";
   const sectionCount = Number(context.sectionCount || 0);
   const hasSelection = Array.isArray(path) && path.length > 0;
-  const canChangeTree = hasSelection && !isNovelsPath(path) && !isSiteSettingsPath(path);
+  const canChangeTree =
+    hasSelection &&
+    !isNovelsPath(path) &&
+    !isSiteSettingsPath(path) &&
+    !isAuthorMessagePath(path) &&
+    !isMapTextPath(path);
   const canApplyCurrent = !!editor?.querySelector("#apply-edit");
 
   if (pathEl) pathEl.textContent = hasSelection ? getPathDisplay(path) : "未选择节点";
@@ -2416,7 +2991,8 @@ function bindGlobalShortcuts() {
       const active = document.activeElement;
       const withinEditableControl =
         active &&
-        ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
+        (["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName) ||
+          active.isContentEditable);
 
       if (!withinEditableControl) return;
 
@@ -2516,6 +3092,72 @@ function searchNodes(keyword, typeFilter = "all") {
       snippet: `${settings.icpNumber || "ICP备案未填写"} · 活动${event.enabled ? "开启" : "关闭"}`,
     });
   }
+
+  const authorMessage = ensureAuthorMessage(websiteData);
+  const authorMessagePlainText = String(authorMessage.bodyHtml || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const authorMessageHaystack = [
+    AUTHOR_MESSAGE_ROOT_NODE.title,
+    "作者 留言 富文本 图片 下划线 删除线 符号 字体 鸿蒙 原生",
+    authorMessage.title,
+    authorMessage.eyebrow,
+    authorMessage.fontFamily,
+    authorMessagePlainText,
+  ]
+    .join(" ")
+    .toLowerCase();
+  if (
+    (typeFilter === "all" || typeFilter === "authorMessage") &&
+    authorMessageHaystack.includes(kw)
+  ) {
+    results.push({
+      path: AUTHOR_MESSAGE_ROOT_PATH,
+      title: authorMessage.title || AUTHOR_MESSAGE_ROOT_NODE.title,
+      type: "authorMessage",
+      snippet: authorMessagePlainText || "作者留言正文未填写",
+    });
+  }
+
+  const empireMap = ensureEmpireMap(websiteData);
+  const mapTextRootHaystack = [MAP_TEXT_ROOT_NODE.title, "地图 澳大利亚 堪培拉 悉尼 Nikenbah 可点击 文本"]
+    .join(" ")
+    .toLowerCase();
+  if ((typeFilter === "all" || typeFilter === "mapTextRoot") && mapTextRootHaystack.includes(kw)) {
+    results.push({
+      path: ["__mapText", "root"],
+      title: MAP_TEXT_ROOT_NODE.title,
+      type: "mapTextRoot",
+      snippet: "澳大利亚二级地图可点击区域文本",
+    });
+  }
+  Object.entries(empireMap.localFeatureText || {}).forEach(([siteId, entries]) => {
+    const siteTitle = MAP_TEXT_SITE_LABELS[siteId] || siteId;
+    const siteHaystack = `${siteTitle} ${siteId}`.toLowerCase();
+    if ((typeFilter === "all" || typeFilter === "mapTextSite") && siteHaystack.includes(kw)) {
+      results.push({
+        path: ["__mapText", "site", siteId],
+        title: `${siteTitle} 地图文本`,
+        type: "mapTextSite",
+        snippet: `${Object.keys(entries || {}).length} 条文本`,
+      });
+    }
+    if (typeFilter !== "all" && typeFilter !== "mapTextFeature" && typeFilter !== "mapTextOverview") return;
+    Object.entries(entries || {}).forEach(([featureKey, entry]) => {
+      const fields = [featureKey, entry?.title, entry?.summary, entry?.body, entry?.details]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!fields.includes(kw)) return;
+      results.push({
+        path: ["__mapText", "feature", siteId, featureKey],
+        title: entry?.title || featureKey,
+        type: featureKey === "__site" ? "mapTextOverview" : "mapTextFeature",
+        snippet: makeSnippet(entry?.body || entry?.details || entry?.summary || "", kw),
+      });
+    });
+  });
 
   const playlist = ensureMusicPlaylist(websiteData);
   const musicRootHaystack = [MUSIC_ROOT_NODE.title, "音乐 歌曲 播放列表"]
@@ -2729,7 +3371,9 @@ async function loadData() {
 
     ensureMusicPlaylist(websiteData);
     ensureSiteSettings(websiteData);
+    ensureAuthorMessage(websiteData);
     ensureSiteEvent(websiteData);
+    ensureEmpireMap(websiteData);
 
     // 额外加载小说清单（失败也不影响 website-data）
     await loadNovelsManifest();
@@ -2751,7 +3395,9 @@ async function saveData() {
 
   ensureMusicPlaylist(websiteData);
   ensureSiteSettings(websiteData);
+  ensureAuthorMessage(websiteData);
   ensureSiteEvent(websiteData);
+  ensureEmpireMap(websiteData);
   setStatus("正在保存 website-data…", "warn");
 
   try {
@@ -2793,6 +3439,8 @@ function renderTree() {
   }
 
   renderSiteSettingsTree(container);
+  renderAuthorMessageTree(container);
+  renderMapTextTree(container);
 
   websiteData.categories.forEach((cat, i) => {
     renderTreeNode(container, cat, ["categories", i], 0);
@@ -2819,6 +3467,19 @@ function renderTree() {
         return;
       }
       if (isSiteSettingsPath(path)) {
+        selectedPath = path;
+        renderTree();
+        renderEditor();
+        return;
+      }
+      if (isAuthorMessagePath(path)) {
+        selectedPath = path;
+        renderTree();
+        renderEditor();
+        return;
+      }
+      if (isMapTextPath(path)) {
+        expandTreeAncestors(path);
         selectedPath = path;
         renderTree();
         renderEditor();
@@ -2857,6 +3518,88 @@ function renderSiteSettingsTree(container) {
     getDisplayTypeLabel("siteSettings"),
     false
   );
+}
+
+function renderAuthorMessageTree(container) {
+  renderMusicTreeLine(
+    container,
+    AUTHOR_MESSAGE_ROOT_NODE,
+    AUTHOR_MESSAGE_ROOT_PATH,
+    0,
+    "✎",
+    getDisplayTypeLabel("authorMessage"),
+    false
+  );
+}
+
+function renderMapTextTree(container) {
+  const empireMap = ensureEmpireMap(websiteData);
+  const rootPath = ["__mapText", "root"];
+  renderVirtualTreeLine(container, MAP_TEXT_ROOT_NODE, rootPath, 0, "▦", true, false);
+  if (isTreeNodeCollapsed(rootPath)) return;
+
+  Object.keys(MAP_TEXT_SITE_LABELS).forEach((siteId) => {
+    const sitePath = ["__mapText", "site", siteId];
+    const siteItems = empireMap.localFeatureText?.[siteId] || {};
+    const featureKeys = Object.keys(siteItems)
+      .sort((a, b) => (a === "__site" ? -1 : b === "__site" ? 1 : a.localeCompare(b)));
+    renderVirtualTreeLine(
+      container,
+      { title: MAP_TEXT_SITE_LABELS[siteId] },
+      sitePath,
+      1,
+      "□",
+      featureKeys.length > 0,
+      false
+    );
+
+    if (isTreeNodeCollapsed(sitePath)) return;
+
+    featureKeys.forEach((featureKey) => {
+        const entry = siteItems[featureKey] || {};
+        renderVirtualTreeLine(
+          container,
+          { title: entry.title || featureKey },
+          ["__mapText", "feature", siteId, featureKey],
+          2,
+          featureKey === "__site" ? "◎" : "▣",
+          false,
+          false
+        );
+      });
+  });
+}
+
+function renderVirtualTreeLine(container, node, path, depth, icon, hasChildren, draggable) {
+  const type = getNodeType(path);
+  const isSelected =
+    selectedPath && JSON.stringify(selectedPath) === JSON.stringify(path);
+  const isCollapsed = hasChildren ? isTreeNodeCollapsed(path) : false;
+
+  let indent = "";
+  for (let i = 0; i < depth; i++) {
+    indent += `<span class="tree-indent"></span>`;
+  }
+
+  const badgesHtml = renderMetaChips(getNodeMetaChips(path, getNode(websiteData, path), type), "tree-badge");
+
+  container.innerHTML += `
+    <div class="tree-node ${isSelected ? "selected" : ""}"
+         data-path='${JSON.stringify(path)}'
+         draggable="${draggable ? "true" : "false"}">
+      ${indent}
+      ${
+        hasChildren
+          ? `<button type="button" class="tree-toggle ${isCollapsed ? "collapsed" : "expanded"}" aria-label="${isCollapsed ? "展开子节点" : "收起子节点"}" aria-expanded="${isCollapsed ? "false" : "true"}">▸</button>`
+          : `<span class="tree-toggle-spacer" aria-hidden="true"></span>`
+      }
+      <span class="label-main">${icon} ${escapeHtml(node.title || "(未命名)")}</span>
+      <span class="tree-node-tags">
+        ${badgesHtml}
+        <span class="label-type">${escapeHtml(type)}</span>
+      </span>
+    </div>
+  `;
 }
 
 function renderTreeNode(container, node, path, depth) {
@@ -3456,6 +4199,13 @@ function renderNovelManifestEditor(editor, path) {
         <input id="novel-image" type="text" value="${escapeEditorValue(entry.image || "")}">
       </div>
 
+      <div class="field-row" style="flex-direction:column;align-items:flex-start;">
+        <details class="image-library-details">
+          <summary>从 images 文件夹选择封面</summary>
+          <div data-image-library-body></div>
+        </details>
+      </div>
+
       <div class="field-row" style="gap:8px;">
         <button id="novel-apply-manifest" class="secondary">应用元信息</button>
         <button id="novel-save-manifest" class="primary">保存 manifest</button>
@@ -3470,6 +4220,10 @@ function renderNovelManifestEditor(editor, path) {
       <div class="field-hint">正文编辑已统一到全文编辑器。加载后可直接搜索词句、整本修改，并用上方颜色工具条处理标色。</div>
     </div>
   `;
+
+  bindImageLibraryDetails(editor.querySelector(".image-library-details"), {
+    inputSelector: "#novel-image",
+  });
 
   const applyBtn = document.getElementById("novel-apply-manifest");
   if (applyBtn && applyBtn.id !== "apply-edit") {
@@ -3989,6 +4743,12 @@ function renderSiteSettingsEditor(editor, settings) {
         ${escapeHtml(option.label)}
       </option>
     `).join("");
+  const renderEffectOptions = (selectedEffect) =>
+    SITE_EVENT_EFFECT_OPTIONS.map((option) => `
+      <option value="${escapeEditorValue(option.value)}" ${option.value === selectedEffect ? "selected" : ""}>
+        ${escapeHtml(option.label)}
+      </option>
+    `).join("");
   const eventSlidesHtml = eventSlides.map((slide, index) => `
     <div class="site-event-slide-card" data-site-event-slide-index="${index}">
       <div class="site-event-slide-head">
@@ -4022,12 +4782,23 @@ function renderSiteSettingsEditor(editor, settings) {
             ${renderCameraOptions(slide.camera)}
           </select>
         </label>
+        <label>
+          镜头特效
+          <select data-site-event-slide-field="effect">
+            ${renderEffectOptions(slide.effect || "none")}
+          </select>
+        </label>
       </div>
 
       <div class="site-event-slide-upload">
         <input type="file" accept="image/*" data-site-event-slide-upload-file="${index}" style="color:#e5e7eb;">
         <button class="secondary" type="button" data-site-event-slide-action="upload" data-slide-index="${index}">上传到此镜头</button>
       </div>
+
+      <details class="image-library-details image-library-details--compact" data-site-event-slide-picker="${index}">
+        <summary>从 images 文件夹选择此镜头</summary>
+        <div data-image-library-body></div>
+      </details>
 
       <img
         class="site-event-slide-preview"
@@ -4134,6 +4905,13 @@ function renderSiteSettingsEditor(editor, settings) {
         <label>替换第一张</label>
         <input type="file" id="site-event-upload-file" accept="image/*" style="color:#e5e7eb;">
         <button id="site-event-upload-btn" class="secondary" type="button">上传到第一张</button>
+      </div>
+
+      <div class="field-row" style="flex-direction:column;align-items:flex-start;">
+        <details class="image-library-details" data-site-event-first-picker>
+          <summary>从 images 文件夹选择第一张</summary>
+          <div data-image-library-body></div>
+        </details>
       </div>
 
       <div class="field-row" style="flex-direction:column;align-items:flex-start;">
@@ -4320,6 +5098,33 @@ function renderSiteSettingsEditor(editor, settings) {
   bindSyncedInputs(firstShortcutCamera, firstSlideCamera, "change");
   bindSyncedInputs(firstSlideCamera, firstShortcutCamera, "change");
 
+  bindImageLibraryDetails(editor.querySelector("[data-site-event-first-picker]"), {
+    inputSelector: "#site-event-image",
+    previewSelector: "#site-event-image-preview",
+    onSelect: (assetPath) => {
+      const slideImageInput = document.querySelector('[data-site-event-slide-index="0"] [data-site-event-slide-field="image"]');
+      const slidePreview = document.querySelector('[data-site-event-slide-preview="0"]');
+      if (slideImageInput) slideImageInput.value = assetPath;
+      if (slidePreview) slidePreview.src = normalizeImagePathForPreview(assetPath);
+    },
+  });
+
+  editor.querySelectorAll("[data-site-event-slide-picker]").forEach((details) => {
+    const index = details.getAttribute("data-site-event-slide-picker");
+    bindImageLibraryDetails(details, {
+      inputSelector: `[data-site-event-slide-index="${index}"] [data-site-event-slide-field="image"]`,
+      previewSelector: `[data-site-event-slide-preview="${index}"]`,
+      onSelect: (assetPath) => {
+        if (index === "0") {
+          const firstImageInput = document.getElementById("site-event-image");
+          const firstPreview = document.getElementById("site-event-image-preview");
+          if (firstImageInput) firstImageInput.value = assetPath;
+          if (firstPreview) firstPreview.src = normalizeImagePathForPreview(assetPath);
+        }
+      },
+    });
+  });
+
   editor.querySelectorAll('[data-site-event-slide-field="image"]').forEach((input) => {
     input.addEventListener("input", () => {
       const card = findSiteEventSlideCard(input);
@@ -4385,6 +5190,7 @@ function renderSiteSettingsEditor(editor, settings) {
           const preview = document.querySelector(`[data-site-event-slide-preview="${index}"]`);
           if (imageInput) imageInput.value = result.path;
           if (preview) preview.src = result.path;
+          invalidateImageLibraryCache();
           if (index === 0) {
             const firstImageInput = document.getElementById("site-event-image");
             const firstPreview = document.getElementById("site-event-image-preview");
@@ -4461,6 +5267,7 @@ function renderSiteSettingsEditor(editor, settings) {
       if (preview) preview.src = result.path;
       if (slideImageInput) slideImageInput.value = result.path;
       if (slidePreview) slidePreview.src = result.path;
+      invalidateImageLibraryCache();
       setStatus("活动图片上传成功（记得应用修改并保存）", "ok");
     } catch (error) {
       console.error(error);
@@ -4469,6 +5276,345 @@ function renderSiteSettingsEditor(editor, settings) {
       alert(message);
     }
   });
+}
+
+function renderAuthorMessageEditor(editor, message) {
+  const cleanHtml = sanitizeAuthorMessageHtml(message.bodyHtml);
+  const fontOptionsHtml = AUTHOR_MESSAGE_FONT_OPTIONS.map((option) => `
+    <option value="${escapeEditorValue(option.value)}" ${message.fontFamily === option.value ? "selected" : ""}>
+      ${escapeHtml(option.label)}
+    </option>
+  `).join("");
+  const symbolButtonsHtml = AUTHOR_MESSAGE_SYMBOLS.map((symbol) => `
+    <button type="button" class="author-message-tool author-message-symbol" data-author-symbol="${escapeEditorValue(symbol)}" title="插入 ${escapeEditorValue(symbol)}">${escapeHtml(symbol)}</button>
+  `).join("");
+
+  editor.innerHTML = `
+    <div class="editor-section">
+      <h2>作者留言页面</h2>
+
+      <div class="field-row">
+        <label>页面标题</label>
+        <input id="author-message-title" type="text" value="${escapeEditorValue(message.title)}">
+      </div>
+
+      <div class="field-row">
+        <label>页眉标识</label>
+        <input id="author-message-eyebrow" type="text" value="${escapeEditorValue(message.eyebrow)}">
+      </div>
+
+      <div class="field-row">
+        <label>页面字体</label>
+        <select id="author-message-font">
+          ${fontOptionsHtml}
+        </select>
+      </div>
+
+      <div class="field-row author-message-editor-row">
+        <label>留言正文</label>
+        <div class="author-message-editor-wrap">
+          <div class="author-message-rich-toolbar" aria-label="作者留言富文本工具栏">
+            <button type="button" class="author-message-tool" data-author-command="bold" title="加粗"><strong>B</strong></button>
+            <button type="button" class="author-message-tool" data-author-command="italic" title="斜体"><em>I</em></button>
+            <button type="button" class="author-message-tool" data-author-command="underline" title="下划线"><u>U</u></button>
+            <button type="button" class="author-message-tool" data-author-command="strikeThrough" title="删除线"><s>S</s></button>
+            <button type="button" class="author-message-tool" data-author-command="insertUnorderedList" title="项目列表">•</button>
+            <button type="button" class="author-message-tool" data-author-command="insertOrderedList" title="编号列表">1.</button>
+            <button type="button" class="author-message-tool" data-author-block="h2" title="二级标题">H2</button>
+            <button type="button" class="author-message-tool" data-author-block="p" title="正文段落">P</button>
+            <button type="button" class="author-message-tool" data-author-action="link" title="插入链接">链</button>
+            <button type="button" class="author-message-tool" data-author-action="caption" title="手动加入图片说明">图注</button>
+            ${symbolButtonsHtml}
+          </div>
+
+          <div id="author-message-rich-editor" class="author-message-rich-editor" contenteditable="true">${cleanHtml}</div>
+
+          <div class="author-message-image-tools">
+            <input id="author-message-upload-file" type="file" accept="image/*">
+            <input id="author-message-caption-text" class="author-message-caption-text" type="text" placeholder="图片说明文字（可选）">
+            <button id="author-message-upload-btn" class="secondary" type="button">上传并插入图片</button>
+            <button id="author-message-caption-btn" class="secondary" type="button">手动加入图片说明</button>
+          </div>
+
+          <details class="image-library-details image-library-details--compact" data-author-message-image-picker>
+            <summary>从 images 文件夹插入图片</summary>
+            <div data-image-library-body></div>
+          </details>
+        </div>
+      </div>
+
+      <div class="field-row author-message-preview-row">
+        <label>前台预览</label>
+        <div id="author-message-preview" class="author-message-preview"></div>
+      </div>
+
+      <div class="field-row">
+        <label>快捷操作</label>
+        <button id="apply-edit" class="primary" type="button">应用修改</button>
+      </div>
+    </div>
+  `;
+
+  const richEditor = document.getElementById("author-message-rich-editor");
+  const preview = document.getElementById("author-message-preview");
+  const fontSelect = document.getElementById("author-message-font");
+  const captionInput = document.getElementById("author-message-caption-text");
+  const toolbar = editor.querySelector(".author-message-rich-toolbar");
+  let savedRange = null;
+
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount || !richEditor) return;
+    const range = selection.getRangeAt(0);
+    if (richEditor.contains(range.commonAncestorContainer)) {
+      savedRange = range.cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    if (!richEditor) return;
+    richEditor.focus();
+    if (!savedRange) return;
+    const selection = window.getSelection();
+    if (!selection) return;
+    selection.removeAllRanges();
+    selection.addRange(savedRange);
+  };
+
+  const updatePreview = () => {
+    if (!preview || !richEditor) return;
+    const fontMode = normalizeAuthorMessageFont(fontSelect?.value);
+    preview.classList.toggle("author-message-preview--harmony", fontMode === "harmony");
+    preview.classList.toggle("author-message-preview--native", fontMode !== "harmony");
+    preview.innerHTML = sanitizeAuthorMessageHtml(richEditor.innerHTML) || "<p>作者留言尚未填写。</p>";
+  };
+
+  const insertHtml = (html) => {
+    restoreSelection();
+    document.execCommand("insertHTML", false, html);
+    saveSelection();
+    updatePreview();
+  };
+
+  const getCaptionText = () => {
+    const value = String(captionInput?.value || "").trim();
+    return value || "图片说明";
+  };
+
+  const getCaptionHtml = () => `<figcaption>${escapeHtml(getCaptionText())}</figcaption>`;
+
+  const placeCaretAtEnd = (element) => {
+    if (!element) return;
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.collapse(false);
+    const selection = window.getSelection();
+    if (!selection) return;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    savedRange = range.cloneRange();
+  };
+
+  const wrapImageInFigure = (image) => {
+    if (!image || !richEditor?.contains(image)) return null;
+    const existingFigure = image.closest("figure");
+    if (existingFigure && richEditor.contains(existingFigure)) return existingFigure;
+    const figure = document.createElement("figure");
+    image.parentNode?.insertBefore(figure, image);
+    figure.appendChild(image);
+    return figure;
+  };
+
+  const getSelectionElement = () => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return null;
+    const node = selection.getRangeAt(0).commonAncestorContainer;
+    return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+  };
+
+  const findNearbyImageOrFigure = () => {
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : savedRange;
+    const element = getSelectionElement();
+    const directFigure = element?.closest?.("figure");
+    if (directFigure && richEditor?.contains(directFigure)) return directFigure;
+    if (element?.matches?.("img") && richEditor?.contains(element)) return element;
+
+    if (range?.startContainer?.nodeType === Node.ELEMENT_NODE) {
+      const children = range.startContainer.childNodes;
+      const nearbyNodes = [
+        children[Math.max(0, range.startOffset - 1)],
+        children[range.startOffset],
+      ];
+      for (const node of nearbyNodes) {
+        if (!node || node.nodeType !== Node.ELEMENT_NODE) continue;
+        if (node.matches("figure, img") && richEditor?.contains(node)) return node;
+      }
+    }
+
+    const candidates = Array.from(richEditor?.querySelectorAll("figure, img") || []);
+    return candidates[candidates.length - 1] || null;
+  };
+
+  const insertManualCaption = () => {
+    restoreSelection();
+    const target = findNearbyImageOrFigure();
+    const figure = target?.matches?.("figure") ? target : wrapImageInFigure(target);
+    if (!figure) {
+      insertHtml(`<figure>${getCaptionHtml()}</figure>`);
+      setStatus("已在当前位置手动加入图片说明（记得应用修改并保存）", "ok");
+      return;
+    }
+
+    let caption = Array.from(figure.children).find((child) => child.tagName?.toLowerCase() === "figcaption");
+    if (!caption) {
+      caption = document.createElement("figcaption");
+      figure.appendChild(caption);
+    }
+    caption.textContent = getCaptionText();
+    placeCaretAtEnd(caption);
+    updatePreview();
+    setStatus("已给图片加入说明（记得应用修改并保存）", "ok");
+  };
+
+  const insertImage = (assetPath) => {
+    const src = normalizeAuthorMessageUrl(assetPath, { image: true });
+    if (!src) return;
+    insertHtml(`<figure><img src="${escapeEditorValue(src)}" alt="作者留言图片">${getCaptionHtml()}</figure>`);
+    setStatus("已插入图片（记得应用修改并保存）", "ok");
+  };
+
+  richEditor?.addEventListener("focus", saveSelection);
+  richEditor?.addEventListener("keyup", saveSelection);
+  richEditor?.addEventListener("mouseup", saveSelection);
+  richEditor?.addEventListener("input", () => {
+    saveSelection();
+    updatePreview();
+  });
+  fontSelect?.addEventListener("change", updatePreview);
+
+  toolbar?.addEventListener("mousedown", (event) => {
+    if (event.target.closest("button")) {
+      event.preventDefault();
+    }
+  });
+
+  toolbar?.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button || !richEditor) return;
+    const command = button.getAttribute("data-author-command");
+    const block = button.getAttribute("data-author-block");
+    const symbol = button.getAttribute("data-author-symbol");
+    const action = button.getAttribute("data-author-action");
+
+    if (command) {
+      restoreSelection();
+      document.execCommand(command, false, null);
+      saveSelection();
+      updatePreview();
+      return;
+    }
+
+    if (block) {
+      restoreSelection();
+      document.execCommand("formatBlock", false, block);
+      saveSelection();
+      updatePreview();
+      return;
+    }
+
+    if (symbol) {
+      insertHtml(escapeHtml(symbol));
+      return;
+    }
+
+    if (action === "link") {
+      const rawUrl = String(window.prompt("请输入链接地址", "https://") || "").trim();
+      if (!rawUrl) return;
+      const url = /^(?:https?:)?\/\//i.test(rawUrl) || rawUrl.startsWith("/")
+        ? rawUrl
+        : `https://${rawUrl}`;
+      const safeUrl = normalizeAuthorMessageUrl(url);
+      if (!safeUrl) {
+        setStatus("链接地址无效", "error");
+        return;
+      }
+      restoreSelection();
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount && String(selection.toString()).trim()) {
+        document.execCommand("createLink", false, safeUrl);
+      } else {
+        insertHtml(`<a href="${escapeEditorValue(safeUrl)}" target="_blank" rel="noopener noreferrer">链接文字</a>`);
+      }
+      saveSelection();
+      updatePreview();
+      return;
+    }
+
+    if (action === "caption") {
+      insertManualCaption();
+    }
+  });
+
+  document.getElementById("author-message-caption-btn")?.addEventListener("click", insertManualCaption);
+
+  document.getElementById("author-message-upload-btn")?.addEventListener("click", async () => {
+    const fileInput = document.getElementById("author-message-upload-file");
+    const file = fileInput?.files?.[0];
+    if (!file) {
+      alert("请选择图片文件");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    setStatus("正在上传作者留言图片...", "warn");
+
+    try {
+      const res = await fetch(UPLOAD_ENDPOINT, {
+        method: "POST",
+        headers: buildAdminHeaders(),
+        body: formData,
+      });
+      const result = await res.json().catch(async () => ({
+        error: await res.text().catch(() => "上传失败"),
+      }));
+
+      if (res.status === 401 || result.error === "Invalid admin token") {
+        handleAdminAuthFailure();
+        return;
+      }
+
+      if (!res.ok || !result.ok) {
+        throw new Error(result.error || `HTTP ${res.status}`);
+      }
+
+      invalidateImageLibraryCache();
+      insertImage(result.path);
+      if (fileInput) fileInput.value = "";
+    } catch (error) {
+      console.error(error);
+      setStatus(`作者留言图片上传失败：${error.message || "上传过程中出错"}`, "error");
+    }
+  });
+
+  bindImageLibraryDetails(editor.querySelector("[data-author-message-image-picker]"), {
+    onSelect: insertImage,
+    emptyText: "images 文件夹里还没有可插入的图片。",
+  });
+
+  document.getElementById("apply-edit")?.addEventListener("click", () => {
+    const nextMessage = ensureAuthorMessage(websiteData);
+    nextMessage.title = String(document.getElementById("author-message-title")?.value || DEFAULT_AUTHOR_MESSAGE.title).trim();
+    nextMessage.eyebrow = String(document.getElementById("author-message-eyebrow")?.value || DEFAULT_AUTHOR_MESSAGE.eyebrow).trim();
+    nextMessage.fontFamily = normalizeAuthorMessageFont(fontSelect?.value);
+    nextMessage.bodyHtml = sanitizeAuthorMessageHtml(richEditor?.innerHTML || "");
+    setStatus("已修改作者留言（未保存）", "warn");
+    renderTree();
+    renderEditor();
+  });
+
+  updatePreview();
 }
 
 function renderMusicEditor(editor, path) {
@@ -4712,6 +5858,115 @@ function renderMusicEditor(editor, path) {
   });
 }
 
+function renderMapTextEditor(editor, path) {
+  const type = getNodeType(path);
+  const node = getMapTextNode(path);
+
+  if (type === "mapTextRoot" || type === "mapTextSite") {
+    const siteId = path[2];
+    const siteItems = type === "mapTextSite"
+      ? ensureEmpireMap(websiteData).localFeatureText?.[siteId] || {}
+      : null;
+    editor.innerHTML = `
+      <div class="editor-section">
+        <h2>${escapeHtml(type === "mapTextRoot" ? "地图文本" : `${MAP_TEXT_SITE_LABELS[siteId] || siteId} 地图文本`)}</h2>
+        <p class="field-hint">
+          这里编辑澳大利亚二级地图中可点击区域的标题和详情文本。经纬度、道路、等高线和区域几何仍由地图文件维护，避免误改真实地理数据。
+        </p>
+        ${
+          type === "mapTextSite"
+            ? `<p class="field-hint">当前城市共有 ${Object.keys(siteItems).length} 条文本。选择左侧具体要素后可编辑。</p>`
+            : `<p class="field-hint">选择 Canberra / Nikenbah / Sydney 下的具体要素进行编辑。</p>`
+        }
+        <div class="map-text-tree-actions">
+          <button type="button" class="secondary" data-map-text-tree-action="collapse">统一折叠地图文本</button>
+          <button type="button" class="secondary" data-map-text-tree-action="expand">展开全部地图文本</button>
+        </div>
+      </div>
+    `;
+    editor.querySelectorAll("[data-map-text-tree-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.getAttribute("data-map-text-tree-action");
+        if (action === "expand") {
+          expandMapTextTree();
+          setStatus("已展开全部地图文本节点", "ok");
+        } else {
+          collapseMapTextTree();
+          setStatus("已统一折叠地图文本节点", "ok");
+        }
+        renderTree();
+        renderEditor();
+      });
+    });
+    finalizeEditorRender(editor, { path, node, type });
+    return;
+  }
+
+  if (!node) {
+    editor.innerHTML = `
+      <div class="editor-section">
+        <h2>地图文本不存在</h2>
+        <p class="field-hint">该路径没有对应文本，请刷新后台数据后重试。</p>
+      </div>
+    `;
+    finalizeEditorRender(editor, { path, node: {}, type });
+    return;
+  }
+
+  const siteId = path[2];
+  const featureKey = path[3];
+  const isOverview = featureKey === "__site";
+  editor.innerHTML = `
+    <div class="editor-section">
+      <h2>${escapeHtml(isOverview ? "城市总览文本" : "地图要素文本")}</h2>
+      <div class="field-row">
+        <label>城市</label>
+        <input type="text" value="${escapeEditorValue(MAP_TEXT_SITE_LABELS[siteId] || siteId)}" disabled>
+      </div>
+      <div class="field-row">
+        <label>要素 Key</label>
+        <input type="text" value="${escapeEditorValue(featureKey)}" disabled>
+      </div>
+      <div class="field-row">
+        <label>标题 title</label>
+        <input id="map-text-title" type="text" value="${escapeEditorValue(node.title || "")}">
+      </div>
+      ${
+        isOverview
+          ? `
+            <div class="field-row">
+              <label>摘要 summary</label>
+              <input id="map-text-summary" type="text" value="${escapeEditorValue(node.summary || "")}">
+            </div>
+          `
+          : ""
+      }
+      <div class="field-row" style="flex-direction:column;align-items:flex-start;">
+        <label>详情 body</label>
+        <textarea id="map-text-body" class="editor-textarea">${escapeEditorValue(node.body || node.details || "")}</textarea>
+        <div class="field-hint">支持多行文本；前台地图点击该区域后会显示这里的内容。</div>
+      </div>
+      <button id="apply-edit" class="primary" type="button">应用修改</button>
+    </div>
+  `;
+
+  document.getElementById("apply-edit")?.addEventListener("click", () => {
+    const target = getMapTextNode(path);
+    if (!target) return;
+    target.title = $("map-text-title")?.value || "";
+    if (isOverview) {
+      target.summary = $("map-text-summary")?.value || "";
+    }
+    target.body = $("map-text-body")?.value || "";
+    delete target.details;
+    renderTree();
+    renderEditor();
+    setStatus("地图文本已应用（记得保存全部）", "warn");
+  });
+
+  finalizeEditorRender(editor, { path, node, type });
+}
+
 // ====== 右侧编辑面板：标题 / 图片 / 上传图片 / 预览 / details + 渲染预览 ======
 function renderEditor() {
   const editor = $("editor-container");
@@ -4737,6 +5992,22 @@ function renderEditor() {
       node: getNode(websiteData, selectedPath),
       type: getNodeType(selectedPath),
     });
+    return;
+  }
+
+  if (isAuthorMessagePath(selectedPath)) {
+    const message = ensureAuthorMessage(websiteData);
+    renderAuthorMessageEditor(editor, message);
+    finalizeEditorRender(editor, {
+      path: selectedPath,
+      node: getNode(websiteData, selectedPath),
+      type: getNodeType(selectedPath),
+    });
+    return;
+  }
+
+  if (isMapTextPath(selectedPath)) {
+    renderMapTextEditor(editor, selectedPath);
     return;
   }
 
@@ -4787,19 +6058,7 @@ function renderEditor() {
       : !!charterLawNode;
 
   const rawImage = node.image || "";
-
-  // 预览路径处理：兼容 "images/xxx.png" / "/images/xxx.png" / 完整 URL
-  let previewSrc = "";
-  if (rawImage) {
-    if (rawImage.startsWith("http://") || rawImage.startsWith("https://")) {
-      previewSrc = rawImage;
-    } else if (rawImage.startsWith("/")) {
-      previewSrc = rawImage;
-    } else {
-      const cleaned = rawImage.replace(/^\.?\//, "");
-      previewSrc = "/" + cleaned;
-    }
-  }
+  const previewSrc = normalizeImagePathForPreview(rawImage);
 
   editor.innerHTML = `
     <div class="editor-section">
@@ -4819,6 +6078,13 @@ function renderEditor() {
         <label>上传图片</label>
         <input type="file" id="upload-file-input" accept="image/*" style="color:#e5e7eb;">
         <button id="upload-file-btn" class="secondary">上传</button>
+      </div>
+
+      <div class="field-row" style="flex-direction:column;align-items:flex-start;">
+        <details class="image-library-details">
+          <summary>从 images 文件夹选择</summary>
+          <div data-image-library-body></div>
+        </details>
       </div>
 
       <div class="field-row" style="flex-direction:column;align-items:flex-start;">
@@ -4845,6 +6111,11 @@ function renderEditor() {
 
     </div>
   `;
+
+  bindImageLibraryDetails(editor.querySelector(".image-library-details"), {
+    inputSelector: "#field-image",
+    previewSelector: "#image-preview",
+  });
 
   // ====== 时间线节点样式：era / branchEvent 通用 ======
   if (type === "era" || type === "branchEvent") {
@@ -5532,6 +6803,7 @@ function renderEditor() {
       const img = $("image-preview");
       img.src = result.path;
       img.style.display = "block";
+      invalidateImageLibraryCache();
 
       setStatus("图片上传成功（记得点击“应用修改”并保存）", "ok");
     } catch (err) {
@@ -5584,6 +6856,16 @@ function addChild() {
 
   if (isSiteSettingsPath(selectedPath)) {
     setStatus("站点设置不支持新增子节点，请直接编辑右侧表单。", "warn");
+    return;
+  }
+
+  if (isAuthorMessagePath(selectedPath)) {
+    setStatus("作者留言不支持新增子节点，请直接编辑右侧富文本。", "warn");
+    return;
+  }
+
+  if (isMapTextPath(selectedPath)) {
+    setStatus("地图文本不支持用左下角新增节点；请在 website-data 的 empireMap.localFeatureText 中添加新 key。", "warn");
     return;
   }
 
@@ -5723,6 +7005,16 @@ async function deleteNode() {
 
   if (isSiteSettingsPath(selectedPath)) {
     setStatus("站点设置不能删除。", "warn");
+    return;
+  }
+
+  if (isAuthorMessagePath(selectedPath)) {
+    setStatus("作者留言不能删除。", "warn");
+    return;
+  }
+
+  if (isMapTextPath(selectedPath)) {
+    setStatus("地图文本节点不能在这里删除，避免前台地图失去说明。", "warn");
     return;
   }
 
@@ -5954,6 +7246,7 @@ function bindSearchEvents() {
 window.addEventListener("DOMContentLoaded", () => {
   injectNovelsEditorStyles();
   restoreCollapsedTreeState();
+  ensureDefaultMapTextTreeCollapse();
   const saved = localStorage.getItem("uhe_admin_token");
   if (saved) {
     adminToken = saved;

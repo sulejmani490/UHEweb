@@ -8,7 +8,11 @@
     "start": "node server.js",
     "start:cms": "node cms-server.js",
     "start:ai": "node server.js",
-    "start:local": "powershell -ExecutionPolicy Bypass -File .\\start-local.ps1"
+    "start:local": "powershell -ExecutionPolicy Bypass -File .\\start-local.ps1",
+    "verify:map-contours": "node tools/verify-local-contours.mjs",
+    "verify:map-visual": "node tools/verify-local-map-visual.mjs",
+    "verify:map-roads": "node tools/verify-local-roads.mjs",
+    "verify:map-text": "node tools/verify-local-map-text.mjs"
   },
   "author": "",
   "license": "ISC",
